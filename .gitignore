@@ -82,3 +82,9 @@ sample-spring-boot-kitchensink/.gitignore
 sample-spring-boot-kitchensink/.settings/gradle/org.springsource.ide.eclipse.gradle.core.prefs
 sample-spring-boot-kitchensink/.settings/org.eclipse.jdt.apt.core.prefs
 sample-spring-boot-kitchensink/.settings/org.eclipse.jdt.core.prefs
+line-bot-api-client/.settings/org.eclipse.wst.common.project.facet.core.xml
+line-bot-model/.settings/org.eclipse.wst.common.project.facet.core.xml
+line-bot-servlet/.settings/org.eclipse.wst.common.project.facet.core.xml
+line-bot-spring-boot/.settings/org.eclipse.wst.common.project.facet.core.xml
+sample-spring-boot-echo/.settings/org.eclipse.wst.common.project.facet.core.xml
+sample-spring-boot-kitchensink/.settings/org.eclipse.wst.common.project.facet.core.xml
