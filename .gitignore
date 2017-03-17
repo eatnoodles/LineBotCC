@@ -52,3 +52,33 @@ local.properties
 
 # PDT-specific
 .buildpath
+line-bot-api-client/.factorypath
+line-bot-api-client/.gitignore
+line-bot-api-client/.settings/gradle/org.springsource.ide.eclipse.gradle.core.prefs
+line-bot-api-client/.settings/org.eclipse.jdt.apt.core.prefs
+line-bot-api-client/.settings/org.eclipse.jdt.core.prefs
+line-bot-model/.factorypath
+line-bot-model/.gitignore
+line-bot-model/.settings/gradle/org.springsource.ide.eclipse.gradle.core.prefs
+line-bot-model/.settings/org.eclipse.jdt.apt.core.prefs
+line-bot-model/.settings/org.eclipse.jdt.core.prefs
+line-bot-servlet/.factorypath
+line-bot-servlet/.gitignore
+line-bot-servlet/.settings/gradle/org.springsource.ide.eclipse.gradle.core.prefs
+line-bot-servlet/.settings/org.eclipse.jdt.apt.core.prefs
+line-bot-servlet/.settings/org.eclipse.jdt.core.prefs
+line-bot-spring-boot/.factorypath
+line-bot-spring-boot/.gitignore
+line-bot-spring-boot/.settings/gradle/org.springsource.ide.eclipse.gradle.core.prefs
+line-bot-spring-boot/.settings/org.eclipse.jdt.apt.core.prefs
+line-bot-spring-boot/.settings/org.eclipse.jdt.core.prefs
+sample-spring-boot-echo/.factorypath
+sample-spring-boot-echo/.gitignore
+sample-spring-boot-echo/.settings/gradle/org.springsource.ide.eclipse.gradle.core.prefs
+sample-spring-boot-echo/.settings/org.eclipse.jdt.apt.core.prefs
+sample-spring-boot-echo/.settings/org.eclipse.jdt.core.prefs
+sample-spring-boot-kitchensink/.factorypath
+sample-spring-boot-kitchensink/.gitignore
+sample-spring-boot-kitchensink/.settings/gradle/org.springsource.ide.eclipse.gradle.core.prefs
+sample-spring-boot-kitchensink/.settings/org.eclipse.jdt.apt.core.prefs
+sample-spring-boot-kitchensink/.settings/org.eclipse.jdt.core.prefs
