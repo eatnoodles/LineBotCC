@@ -36,7 +36,12 @@ public class EchoApplication {
     @EventMapping
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
         System.out.println("event: " + event);
-        return new TextMessage(event.getMessage().getText());
+        if ("陳柏全".equals(event.getMessage().getText())) {
+        	return new TextMessage("今晚喝高湯");
+        }else{
+        	return null;
+        }
+//        return new TextMessage(event.getMessage().getText());
     }
 
     @EventMapping
