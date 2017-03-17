@@ -1,8 +1,6 @@
 package com.cc;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -22,11 +20,11 @@ public class Application {
 
     @EventMapping
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
-    	final Logger slf4jLogger = LoggerFactory.getLogger("com.linecorp.bot.client.wire");
-    	slf4jLogger.info("event: " + event);
+//    	final Logger slf4jLogger = LoggerFactory.getLogger("com.linecorp.bot.client.wire");
+//    	slf4jLogger.info("event: " + event);
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
-        	return new TextMessage(String.format("Source={%s}, ReplyToken={%s}", event.getSource(), event.getReplyToken()));
+        	return new TextMessage(mesg);
         } else {
         	return null;
         }
