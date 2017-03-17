@@ -40,11 +40,9 @@ public class Application {
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
-        	if (mesg.indexOf("蔡明憲") != -1) {
-        		return new TextMessage("ㄎㄎ");
-        	} else if (mesg.indexOf("杯麵") != -1) {
-        		return new TextMessage("幹");
-        	} else if (mesg.indexOf("陳彥霖") != -1) {
+        	if (mesg.indexOf("杯麵") != -1) {
+        		return new TextMessage("杯麵杯麵杯麵~~");
+        	} else if (mesg.indexOf("的") != -1) {
         		return new TextMessage("哀");
         	}
         	else {
