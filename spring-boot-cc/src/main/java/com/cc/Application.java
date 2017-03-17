@@ -16,6 +16,9 @@
 
 package com.cc;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -35,13 +38,20 @@ public class Application {
 
     @EventMapping
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
-        System.out.println("event: " + event);
-        if ("陳柏全".equals(event.getMessage().getText())) {
-        	return new TextMessage("今晚喝高湯");
-        }else{
-        	return null;
+        String mesg = event.getMessage().getText();
+        if (StringUtils.isNotBlank(mesg)) {
+        	if (mesg.indexOf("蔡明憲") != -1) {
+        		return new TextMessage("ㄎㄎ");
+        	} else if (mesg.indexOf("杯麵") != -1) {
+        		return new TextMessage("國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國");
+        	}
+        	else {
+        		return null;
+        	}
+        } else {
+            return null;
         }
-//        return new TextMessage(event.getMessage().getText());
+
     }
 
     @EventMapping
