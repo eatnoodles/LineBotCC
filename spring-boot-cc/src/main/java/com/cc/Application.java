@@ -1,6 +1,8 @@
 package com.cc;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -20,11 +22,11 @@ public class Application {
 
     @EventMapping
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
-        System.out.println("event: " + event);
+    	final Logger slf4jLogger = LoggerFactory.getLogger("com.linecorp.bot.client.wire");
+    	slf4jLogger.info("event: " + event);
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
-        	String userId = event.getSource().getUserId();
-        	return new TextMessage("說話的人是->" + userId);
+        	return new TextMessage(String.format("Source={%s}, ReplyToken={%s}", event.getSource(), event.getReplyToken()));
         } else {
         	return null;
         }
