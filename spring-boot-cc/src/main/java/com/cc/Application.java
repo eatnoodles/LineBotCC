@@ -43,7 +43,9 @@ public class Application {
         	if (mesg.indexOf("蔡明憲") != -1) {
         		return new TextMessage("ㄎㄎ");
         	} else if (mesg.indexOf("杯麵") != -1) {
-        		return new TextMessage("國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國國");
+        		return new TextMessage("幹");
+        	} else if (mesg.indexOf("陳彥霖") != -1) {
+        		return new TextMessage("哀");
         	}
         	else {
         		return null;
