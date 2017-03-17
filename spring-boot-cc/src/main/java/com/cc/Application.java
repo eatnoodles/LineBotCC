@@ -42,7 +42,8 @@ public class Application {
         if (StringUtils.isNotBlank(mesg)) {
         	if (mesg.indexOf("杯麵") != -1) {
         		return new TextMessage("杯麵杯麵杯麵~~");
-        	} else if (mesg.indexOf("的") != -1) {
+        	} else if (mesg.indexOf("的") != -1 || mesg.indexOf("霖") != -1 || mesg.indexOf("哀") != -1 || mesg.indexOf("唉") != -1
+        			|| mesg.indexOf("!") != -1) {
         		return new TextMessage("哀");
         	}
         	else {
