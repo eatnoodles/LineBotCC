@@ -28,25 +28,38 @@ import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
+import com.utils.MessageUtil;
 
+/**
+ * 
+ * @author Caleb.Cheng
+ *
+ */
 @SpringBootApplication
 @LineMessageHandler
 public class Application {
+	
+	/**
+	 * 
+	 * @param args
+	 */
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
 
+    /**
+     * 
+     * @param event
+     * @return
+     */
     @EventMapping
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
-        	if (mesg.indexOf("杯麵") != -1) {
-        		return new TextMessage("杯麵杯麵杯麵~~");
-        	} else if (mesg.indexOf("的") != -1 || mesg.indexOf("霖") != -1 || mesg.indexOf("哀") != -1 || mesg.indexOf("唉") != -1
-        			|| mesg.indexOf("!") != -1) {
-        		return new TextMessage("哀");
-        	}
-        	else {
+        	TextMessage caculResult = MessageUtil.getCaculResult(mesg);
+        	if (caculResult != null) {
+        		return caculResult;
+        	} else {
         		return null;
         	}
         } else {
@@ -55,6 +68,10 @@ public class Application {
 
     }
 
+    /**
+     * 
+     * @param event
+     */
     @EventMapping
     public void handleDefaultMessageEvent(Event event) {
         System.out.println("event: " + event);
