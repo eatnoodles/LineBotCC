@@ -28,7 +28,7 @@ public class NudoCCServiceImpl implements INudoCCService{
 			WowCharacterProfileResponse resp = wowCharacterProfileService.doSend(paramBean);
 			return String.format("群組: %s, 等級: %s級", resp.getBattlegroup(), resp.getLevel());
 		} catch (Exception e) {
-			return "找無此人";
+			return null;
 		}
 	}
 
