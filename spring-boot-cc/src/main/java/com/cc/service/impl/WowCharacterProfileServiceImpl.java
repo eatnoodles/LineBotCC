@@ -14,7 +14,7 @@ import com.cc.service.WowCommunityService;
  * @author Caleb.Cheng
  *
  */
-@Component
+//@Component
 public class WowCharacterProfileServiceImpl extends WowCommunityService<WowCharacterProfileResponse, WowCharacterProfileParamBean> implements IWowCharacterProfileService{
 
 	@Override

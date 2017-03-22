@@ -15,10 +15,10 @@ import com.cc.service.IWowCharacterProfileService;
  * @author Caleb-2109
  *
  */
-@Component
+//@Component
 public class NudoCCServiceImpl implements INudoCCService{
 
-	@Autowired
+//	@Autowired
 	private IWowCharacterProfileService wowCharacterProfileService;
 	
 	@Override

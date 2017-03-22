@@ -41,7 +41,7 @@ import com.utils.NudoCCUtil;
 @LineMessageHandler
 public class Application {
 	
-	@Autowired
+//	@Autowired
 	private INudoCCService nudoCCService;
 	
 	/**
@@ -61,8 +61,9 @@ public class Application {
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
-        	String result = nudoCCService.findWowCharacterProfile(mesg.trim(), NudoCCUtil.DEFAULT_SERVER);
-        	return StringUtils.isBlank(result) ? null : new TextMessage(result);
+//        	String result = nudoCCService.findWowCharacterProfile(mesg.trim(), NudoCCUtil.DEFAULT_SERVER);
+//        	return StringUtils.isBlank(result) ? null : new TextMessage(result);
+        	return null;
         } else {
             return null;
         }
