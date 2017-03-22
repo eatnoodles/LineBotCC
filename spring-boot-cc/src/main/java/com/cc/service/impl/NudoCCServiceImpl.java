@@ -4,6 +4,7 @@
 package com.cc.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.cc.bean.WowCharacterProfileParamBean;
 import com.cc.bean.WowCharacterProfileResponse;
@@ -14,6 +15,7 @@ import com.cc.service.IWowCharacterProfileService;
  * @author Caleb-2109
  *
  */
+@Component
 public class NudoCCServiceImpl implements INudoCCService{
 
 	@Autowired

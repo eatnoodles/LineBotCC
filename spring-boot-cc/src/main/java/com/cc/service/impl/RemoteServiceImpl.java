@@ -14,6 +14,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.springframework.stereotype.Component;
 
 import com.cc.service.IRemoteService;
 
@@ -21,6 +22,7 @@ import com.cc.service.IRemoteService;
  * @author Caleb.Cheng
  *
  */
+@Component
 public class RemoteServiceImpl implements IRemoteService{
 
 	@Override
