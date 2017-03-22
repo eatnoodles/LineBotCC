@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 import com.cc.service.INudoCCService;
 import com.linecorp.bot.model.event.Event;
@@ -36,6 +37,7 @@ import com.utils.NudoCCUtil;
  *
  */
 @SpringBootApplication
+@ComponentScan
 @LineMessageHandler
 public class Application {
 	
