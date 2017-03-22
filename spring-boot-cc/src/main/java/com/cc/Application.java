@@ -17,18 +17,18 @@
 package com.cc;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import com.cc.service.INudoCCService;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
-import com.utils.MessageUtil;
+import com.utils.NudoCCUtil;
 
 /**
  * 
@@ -38,6 +38,9 @@ import com.utils.MessageUtil;
 @SpringBootApplication
 @LineMessageHandler
 public class Application {
+	
+	@Autowired
+	private INudoCCService nudoCCService;
 	
 	/**
 	 * 
@@ -56,12 +59,8 @@ public class Application {
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
-        	TextMessage caculResult = MessageUtil.getCaculResult(mesg);
-        	if (caculResult != null) {
-        		return caculResult;
-        	} else {
-        		return null;
-        	}
+        	String result = nudoCCService.findWowCharacterProfile(mesg.trim(), NudoCCUtil.DEFAULT_SERVER);
+        	return StringUtils.isBlank(result) ? null : new TextMessage(result);
         } else {
             return null;
         }
