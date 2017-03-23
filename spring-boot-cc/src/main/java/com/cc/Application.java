@@ -37,7 +37,7 @@ import com.utils.NudoCCUtil;
  *
  */
 @SpringBootApplication
-@ComponentScan
+//@ComponentScan
 @LineMessageHandler
 public class Application {
 	
