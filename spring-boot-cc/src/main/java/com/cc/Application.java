@@ -73,7 +73,7 @@ public class Application {
         	    
         	    if ( (matcherCh.matches() && name.length() <= 6) ||
         	    	 (matcherEn.matches() && name.length() <= 12) ) {
-        	    	String result = nudoCCService.findWowCharacterProfileByName(mesg);
+        	    	String result = nudoCCService.findWowCharacterProfileByName(name);
                 	return StringUtils.isBlank(result) ? null : new TextMessage(result);
         	    }else {
         	    	return new TextMessage("角色名稱的格式有誤哦~");

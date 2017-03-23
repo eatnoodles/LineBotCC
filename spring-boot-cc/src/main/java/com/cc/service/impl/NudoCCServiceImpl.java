@@ -3,6 +3,9 @@
  */
 package com.cc.service.impl;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -13,6 +16,7 @@ import com.cc.enums.WowClassEnum;
 import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
 import com.cc.service.IWowCharacterProfileService;
+import com.linecorp.bot.model.message.TextMessage;
 import com.utils.NudoCCUtil;
 
 /**
