@@ -29,7 +29,10 @@ import com.cc.service.INudoCCService;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
+import com.linecorp.bot.model.message.ImagemapMessage;
+import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TextMessage;
+import com.linecorp.bot.model.message.imagemap.ImagemapBaseSize;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 import com.utils.NudoCCUtil;
@@ -61,23 +64,39 @@ public class Application {
      * @return
      */
     @EventMapping
-    public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
+    public Message handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
         	if (mesg.startsWith("-wow ")) {
-        		String name = mesg.replaceAll("-wow ", StringUtils.EMPTY).trim();
-        		Pattern patternCh = Pattern.compile(NudoCCUtil.PATTERN_CH);
-        		Pattern patternEn = Pattern.compile(NudoCCUtil.PATTERN_EN);
-        	    Matcher matcherCh = patternCh.matcher(name);
-        	    Matcher matcherEn = patternEn.matcher(name);
-        	    
-        	    if ( (matcherCh.matches() && name.length() <= 6) ||
-        	    	 (matcherEn.matches() && name.length() <= 12) ) {
-        	    	String result = nudoCCService.findWowCharacterProfileByName(name);
-                	return StringUtils.isBlank(result) ? null : new TextMessage(result);
-        	    }else {
-        	    	return new TextMessage("角色名稱的格式有誤哦~");
-        	    }
+        		//wow api
+        		mesg = mesg.replaceAll("-wow ", StringUtils.EMPTY).trim();
+        		if (mesg.startsWith("-img ")) {
+        			String name = mesg.replaceAll("-img ", StringUtils.EMPTY).trim();
+            		Pattern patternCh = Pattern.compile(NudoCCUtil.PATTERN_CH);
+            		Pattern patternEn = Pattern.compile(NudoCCUtil.PATTERN_EN);
+            	    Matcher matcherCh = patternCh.matcher(name);
+            	    Matcher matcherEn = patternEn.matcher(name);
+            	    if ( (matcherCh.matches() && name.length() <= 6) ||
+            	    	 (matcherEn.matches() && name.length() <= 12) ) {
+            	    	String result = nudoCCService.findWowCharacterProfileByName(name);
+                    	return StringUtils.isBlank(result) ? null : new ImagemapMessage("http://render-tw.worldofwarcraft.com/character/arthas/89/56938841-avatar.jpg", result, new ImagemapBaseSize(84, 84), null);
+            	    }else {
+            	    	return new TextMessage("角色名稱的格式有誤哦~");
+            	    }
+        		} else {
+        			String name = mesg;
+            		Pattern patternCh = Pattern.compile(NudoCCUtil.PATTERN_CH);
+            		Pattern patternEn = Pattern.compile(NudoCCUtil.PATTERN_EN);
+            	    Matcher matcherCh = patternCh.matcher(name);
+            	    Matcher matcherEn = patternEn.matcher(name);
+            	    if ( (matcherCh.matches() && name.length() <= 6) ||
+            	    	 (matcherEn.matches() && name.length() <= 12) ) {
+            	    	String result = nudoCCService.findWowCharacterProfileByName(name);
+                    	return StringUtils.isBlank(result) ? null : new TextMessage(result);
+            	    }else {
+            	    	return new TextMessage("角色名稱的格式有誤哦~");
+            	    }
+        		}
         	} else {
         		//TODO
         		return null;
