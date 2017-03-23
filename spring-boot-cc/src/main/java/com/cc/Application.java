@@ -31,13 +31,11 @@ import com.cc.service.INudoCCService;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
-import com.linecorp.bot.model.message.ImagemapMessage;
+import com.linecorp.bot.model.message.ImageMessage;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.imagemap.ImagemapAction;
-import com.linecorp.bot.model.message.imagemap.ImagemapArea;
 import com.linecorp.bot.model.message.imagemap.ImagemapBaseSize;
-import com.linecorp.bot.model.message.imagemap.MessageImagemapAction;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 import com.utils.NudoCCUtil;
@@ -84,10 +82,14 @@ public class Application {
             	    if ( (matcherCh.matches() && name.length() <= 6) ||
             	    	 (matcherEn.matches() && name.length() <= 12) ) {
             	    	String result = nudoCCService.findWowCharacterProfileByName(name);
-            	    	List<ImagemapAction> actions = new ArrayList<>();
+//            	    	List<ImagemapAction> actions = new ArrayList<>();
 //            	    	actions.add(new MessageImagemapAction(result, new ImagemapArea(84, 84, 84, 84)));
-                    	return StringUtils.isBlank(result) ? null : new ImagemapMessage("https://devdocs.line.me/images/linedevelopers.png", "this is an imagemap",
-                    			new ImagemapBaseSize(1040, 1040), actions);
+            	    	
+            	    	return StringUtils.isBlank(result) ? null : new ImageMessage("https://render-tw.worldofwarcraft.com/character/arthas/89/56938841-avatar.jpg",
+            	    			"https://render-tw.worldofwarcraft.com/character/arthas/89/56938841-avatar.jpg");
+            	    	
+//                    	return StringUtils.isBlank(result) ? null : new ImagemapMessage("https://devdocs.line.me/images/linedevelopers.png", "this is an imagemap",
+//                    			new ImagemapBaseSize(1040, 1040), actions);
             	    }else {
             	    	return new TextMessage("角色名稱的格式有誤哦~");
             	    }
