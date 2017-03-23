@@ -61,8 +61,9 @@ public class Application {
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
-        	if (mesg.length() <= 12) {
-        		String result = nudoCCService.findWowCharacterProfileByName(mesg.trim());
+        	if (mesg.length() <= 12 && mesg.startsWith("-wow ")) {
+        		mesg = mesg.replace("-wow", StringUtils.EMPTY).trim();
+        		String result = nudoCCService.findWowCharacterProfileByName(mesg);
             	return StringUtils.isBlank(result) ? null : new TextMessage(result);
         	} else {
         		//TODO
