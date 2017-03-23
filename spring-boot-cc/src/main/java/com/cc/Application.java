@@ -63,7 +63,7 @@ public class Application {
         if (StringUtils.isNotBlank(mesg)) {
 //        	String result = nudoCCService.findWowCharacterProfile(mesg.trim(), NudoCCUtil.DEFAULT_SERVER);
 //        	return StringUtils.isBlank(result) ? null : new TextMessage(result);
-        	return null;
+        	return "test".equals(mesg) ? new TextMessage("hello") : null;
         } else {
             return null;
         }
