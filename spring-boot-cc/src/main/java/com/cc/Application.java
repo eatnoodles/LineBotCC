@@ -86,7 +86,7 @@ public class Application {
             	    	String result = nudoCCService.findWowCharacterProfileByName(name);
             	    	List<ImagemapAction> actions = new ArrayList<>();
             	    	actions.add(new MessageImagemapAction(result, new ImagemapArea(84, 84, 84, 84)));
-                    	return StringUtils.isBlank(result) ? null : new ImagemapMessage("https://render-tw.worldofwarcraft.com/character/arthas/89/56938841-avatar.jpg", "this is an imagemap",
+                    	return StringUtils.isBlank(result) ? null : new ImagemapMessage("https://devdocs.line.me/images/linedevelopers.png", "this is an imagemap",
                     			new ImagemapBaseSize(84, 84), actions);
             	    }else {
             	    	return new TextMessage("角色名稱的格式有誤哦~");
