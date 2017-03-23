@@ -22,7 +22,7 @@ import com.cc.service.IRemoteService;
  * @author Caleb.Cheng
  *
  */
-//@Component
+@Component
 public class RemoteServiceImpl implements IRemoteService{
 
 	@Override
