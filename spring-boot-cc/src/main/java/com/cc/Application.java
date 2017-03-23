@@ -87,7 +87,7 @@ public class Application {
             	    	List<ImagemapAction> actions = new ArrayList<>();
 //            	    	actions.add(new MessageImagemapAction(result, new ImagemapArea(84, 84, 84, 84)));
                     	return StringUtils.isBlank(result) ? null : new ImagemapMessage("https://devdocs.line.me/images/linedevelopers.png", "this is an imagemap",
-                    			new ImagemapBaseSize(84, 84), actions);
+                    			new ImagemapBaseSize(1040, 1040), actions);
             	    }else {
             	    	return new TextMessage("角色名稱的格式有誤哦~");
             	    }
