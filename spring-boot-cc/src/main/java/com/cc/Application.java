@@ -85,7 +85,7 @@ public class Application {
             	    	 (matcherEn.matches() && name.length() <= 12) ) {
             	    	String result = nudoCCService.findWowCharacterProfileByName(name);
             	    	List<ImagemapAction> actions = new ArrayList<>();
-            	    	actions.add(new MessageImagemapAction(result, new ImagemapArea(84, 84, 84, 84)));
+//            	    	actions.add(new MessageImagemapAction(result, new ImagemapArea(84, 84, 84, 84)));
                     	return StringUtils.isBlank(result) ? null : new ImagemapMessage("https://devdocs.line.me/images/linedevelopers.png", "this is an imagemap",
                     			new ImagemapBaseSize(84, 84), actions);
             	    }else {
