@@ -16,10 +16,12 @@ import com.cc.service.IWowCharacterProfileService;
  *
  */
 @Component
-public class NudoCCServiceImpl implements INudoCCService{
+public class NudoCCServiceImpl implements INudoCCService {
 
 	@Autowired
 	private IWowCharacterProfileService wowCharacterProfileService;
+	
+	private String[] realms = new String[]{"阿薩斯", "狂熱之刃", "地獄吼"};
 	
 	@Override
 	public String findWowCharacterProfile(String name, String server) {
@@ -33,5 +35,20 @@ public class NudoCCServiceImpl implements INudoCCService{
 			return null;
 		}
 	}
-
+	
+	@Override
+	public String findWowCharacterProfileByName(String name) {
+		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
+		paramBean.setCharacterName(name);
+		for (String realm : realms) {
+			paramBean.setRealm(realm);
+			try {
+				WowCharacterProfileResponse resp = wowCharacterProfileService.doSend(paramBean);
+				return String.format("群組: %s, 伺服器: %s, 等級: %s級", resp.getBattlegroup(), resp.getRealm(), resp.getLevel());
+			} catch (Exception e) {
+				continue;
+			}
+		}
+		return null;
+	}
 }

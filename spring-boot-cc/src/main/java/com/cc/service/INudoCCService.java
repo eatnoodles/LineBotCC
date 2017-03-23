@@ -10,4 +10,6 @@ package com.cc.service;
 public interface INudoCCService {
 
 	public String findWowCharacterProfile(String name, String server);
+	
+	public String findWowCharacterProfileByName(String name);
 }

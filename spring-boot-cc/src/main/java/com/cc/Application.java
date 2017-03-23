@@ -62,7 +62,7 @@ public class Application {
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
         	if (mesg.length() <= 12) {
-        		String result = nudoCCService.findWowCharacterProfile(mesg.trim(), NudoCCUtil.DEFAULT_SERVER);
+        		String result = nudoCCService.findWowCharacterProfileByName(mesg.trim());
             	return StringUtils.isBlank(result) ? null : new TextMessage(result);
         	} else {
         		//TODO
