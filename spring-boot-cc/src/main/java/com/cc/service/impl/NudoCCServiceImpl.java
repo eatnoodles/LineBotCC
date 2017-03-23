@@ -3,13 +3,17 @@
  */
 package com.cc.service.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.cc.bean.WowCharacterProfileParamBean;
 import com.cc.bean.WowCharacterProfileResponse;
+import com.cc.enums.WowClassEnum;
+import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
 import com.cc.service.IWowCharacterProfileService;
+import com.utils.NudoCCUtil;
 
 /**
  * @author Caleb-2109
@@ -21,8 +25,6 @@ public class NudoCCServiceImpl implements INudoCCService {
 	@Autowired
 	private IWowCharacterProfileService wowCharacterProfileService;
 	
-	private String[] realms = new String[]{"阿薩斯", "狂熱之刃", "地獄吼"};
-	
 	@Override
 	public String findWowCharacterProfile(String name, String server) {
 		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
@@ -30,7 +32,14 @@ public class NudoCCServiceImpl implements INudoCCService {
 		paramBean.setRealm(server);
 		try {
 			WowCharacterProfileResponse resp = wowCharacterProfileService.doSend(paramBean);
-			return String.format("群組: %s, 等級: %s級", resp.getBattlegroup(), resp.getLevel());
+			if (StringUtils.isBlank(resp.getName())) {
+				return null;
+			}
+			String race = WowRaceEnum.getEnumByValue(resp.getRace()).getContext();
+			String clz = WowClassEnum.getEnumByValue(resp.getClz()).getContext();
+			
+			return String.format("群組: %s, 等級: %s級的<%s>是一隻%s%s，他殺了%s個人、有%s成就點數！",
+					resp.getBattlegroup(), resp.getLevel(), resp.getName(), race, clz, resp.getTotalHonorableKills(), resp.getAchievementPoints());
 		} catch (Exception e) {
 			return null;
 		}
@@ -40,11 +49,18 @@ public class NudoCCServiceImpl implements INudoCCService {
 	public String findWowCharacterProfileByName(String name) {
 		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
 		paramBean.setCharacterName(name);
-		for (String realm : realms) {
+		for (String realm : NudoCCUtil.REALMS) {
 			paramBean.setRealm(realm);
 			try {
 				WowCharacterProfileResponse resp = wowCharacterProfileService.doSend(paramBean);
-				return String.format("群組: %s, 伺服器: %s, 等級: %s級", resp.getBattlegroup(), resp.getRealm(), resp.getLevel());
+				if (StringUtils.isBlank(resp.getName())) {
+					return null;
+				}
+				String race = WowRaceEnum.getEnumByValue(resp.getRace()).getContext();
+				String clz = WowClassEnum.getEnumByValue(resp.getClz()).getContext();
+				
+				return String.format("群組: %s, 等級: %s級的<%s>是一隻%s%s，他殺了%s個人、有%s成就點數！",
+						resp.getBattlegroup(), resp.getLevel(), resp.getName(), race, clz, resp.getTotalHonorableKills(), resp.getAchievementPoints());
 			} catch (Exception e) {
 				continue;
 			}

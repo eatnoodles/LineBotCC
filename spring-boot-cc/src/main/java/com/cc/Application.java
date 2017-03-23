@@ -16,6 +16,9 @@
 
 package com.cc;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -61,10 +64,20 @@ public class Application {
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
-        	if (mesg.length() <= 16 && mesg.startsWith("-wow ")) {
-        		mesg = mesg.replace("-wow", StringUtils.EMPTY).trim();
-        		String result = nudoCCService.findWowCharacterProfileByName(mesg);
-            	return StringUtils.isBlank(result) ? null : new TextMessage(result);
+        	if (mesg.startsWith("-wow ")) {
+        		String name = mesg.replace("-wow", StringUtils.EMPTY).trim();
+        		Pattern patternCh = Pattern.compile(NudoCCUtil.PATTERN_CH);
+        		Pattern patternEn = Pattern.compile(NudoCCUtil.PATTERN_EN);
+        	    Matcher matcherCh = patternCh.matcher(name);
+        	    Matcher matcherEn = patternEn.matcher(name);
+        	    
+        	    if ( (matcherCh.matches() && name.length() <= 6) ||
+        	    	 (matcherEn.matches() && name.length() <= 12) ) {
+        	    	String result = nudoCCService.findWowCharacterProfileByName(mesg);
+                	return StringUtils.isBlank(result) ? null : new TextMessage(result);
+        	    }else {
+        	    	return new TextMessage("角色名稱的格式有誤哦~");
+        	    }
         	} else {
         		//TODO
         		return null;

@@ -11,30 +11,60 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class WowCharacterProfileResponse {
 	
+	/**
+	 * 最後更新時間
+	 */
 	private Long lastModified;
 	
+	/**
+	 * 名稱
+	 */
 	private String name;
 	
+	/**
+	 * server
+	 */
 	private String realm;
 
+	/**
+	 * group
+	 */
 	private String battlegroup;
 	
+	/**
+	 * 職業
+	 */
 	private Integer clz;
 	
+	/**
+	 * 種族
+	 */
 	private Integer race;
 	
 	private Integer gender;
 	
+	/**
+	 * 等級
+	 */
 	private Integer level;
 	
+	/**
+	 * 成就點數
+	 */
 	private Long achievementPoints;
 	
 	private String thumbnail;
 	
+	/**
+	 * 天賦(?)
+	 */
 	private String calcClass;
 	
 	private Integer faction;
 	
+	/**
+	 * 榮譽擊殺
+	 */
 	private Long totalHonorableKills;
 	
 	
