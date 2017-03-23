@@ -79,7 +79,7 @@ public class Application {
             	    if ( (matcherCh.matches() && name.length() <= 6) ||
             	    	 (matcherEn.matches() && name.length() <= 12) ) {
             	    	String result = nudoCCService.findWowCharacterProfileByName(name);
-                    	return StringUtils.isBlank(result) ? null : new ImagemapMessage("http://render-tw.worldofwarcraft.com/character/arthas/89/56938841-avatar.jpg", result, new ImagemapBaseSize(84, 84), null);
+                    	return StringUtils.isBlank(result) ? null : new ImagemapMessage("https://render-tw.worldofwarcraft.com/character/arthas/89/56938841-avatar.jpg", result, new ImagemapBaseSize(84, 84), null);
             	    }else {
             	    	return new TextMessage("角色名稱的格式有誤哦~");
             	    }
