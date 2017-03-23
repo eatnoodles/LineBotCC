@@ -65,7 +65,7 @@ public class Application {
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
         	if (mesg.startsWith("-wow ")) {
-        		String name = mesg.replace("-wow", StringUtils.EMPTY).trim();
+        		String name = mesg.replaceAll("-wow ", StringUtils.EMPTY).trim();
         		Pattern patternCh = Pattern.compile(NudoCCUtil.PATTERN_CH);
         		Pattern patternEn = Pattern.compile(NudoCCUtil.PATTERN_EN);
         	    Matcher matcherCh = patternCh.matcher(name);

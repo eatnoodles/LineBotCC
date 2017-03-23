@@ -15,7 +15,7 @@ public class NudoCCUtil {
 	
 	public static final String DEFAULT_SERVER = "阿薩斯";
 	
-	public static final String PATTERN_EN = "^[a-zA-z]+$";
+	public static final String PATTERN_EN = "^[a-zA-Z]+$";
 	
 	public static final String PATTERN_CH = "^[\u4e00-\u9fa5]+$";
 	
