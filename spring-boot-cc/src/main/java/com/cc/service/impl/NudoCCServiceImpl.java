@@ -71,4 +71,23 @@ public class NudoCCServiceImpl implements INudoCCService {
 		}
 		return null;
 	}
+
+	@Override
+	public String findWowCharacterImgPath(String name) {
+		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
+		paramBean.setCharacterName(name);
+		for (String realm : NudoCCUtil.REALMS) {
+			paramBean.setRealm(realm);
+			try {
+				WowCharacterProfileResponse resp = wowCharacterProfileService.doSend(paramBean);
+				if (StringUtils.isBlank(resp.getName())) {
+					return null;
+				}
+				return NudoCCUtil.WOW_IMG_BASE_PATH.concat(resp.getThumbnail());
+			} catch (Exception e) {
+				continue;
+			}
+		}
+		return null;
+	}
 }
