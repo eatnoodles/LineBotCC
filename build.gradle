@@ -59,7 +59,6 @@ subprojects {
     apply plugin: 'propdeps-maven'
     apply plugin: 'propdeps-idea'
     apply plugin: 'propdeps-eclipse'
-    apply plugin: 'findbugs'
     apply plugin: 'java'
     if (new File("${project.rootDir}/.git").exists()) {
         logger.info("There's .git directory. Create git.properties.")
@@ -69,8 +68,8 @@ subprojects {
     }
     apply plugin: 'io.spring.dependency-management'
 
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
     group = rootProject.group
     version = rootProject.version
