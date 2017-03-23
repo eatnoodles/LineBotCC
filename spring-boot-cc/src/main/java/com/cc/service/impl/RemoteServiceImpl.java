@@ -36,7 +36,7 @@ public class RemoteServiceImpl implements IRemoteService{
                 request = new HttpGet(requestUri.toString());
                 BasicCookieStore cookieStore = new BasicCookieStore();
                 httpclient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
-                RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(3000).setConnectTimeout(3000).build();
+                RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(150000).setConnectTimeout(150000).build();
                 request.setConfig(requestConfig);
                 CloseableHttpResponse response = httpclient.execute(request);
                 try {
