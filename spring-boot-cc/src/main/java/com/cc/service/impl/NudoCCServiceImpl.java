@@ -80,7 +80,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 			paramBean.setRealm(realm);
 			try {
 				WowCharacterProfileResponse resp = wowCharacterProfileService.doSend(paramBean);
-				if (StringUtils.isBlank(resp.getName())) {
+				if (StringUtils.isBlank(resp.getThumbnail())) {
 					return null;
 				}
 				return NudoCCUtil.WOW_IMG_BASE_PATH.concat(resp.getThumbnail());
