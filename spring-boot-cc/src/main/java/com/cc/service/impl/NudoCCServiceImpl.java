@@ -248,6 +248,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 			
 			int i = 0;
 			for (WowItemPartsEnum partsEnum :WowItemPartsEnum.values()) {
+				if (partsEnum == WowItemPartsEnum.NULL) {
+					continue;
+				}
 				String partsName = partsEnum.getContext();
 				ItemParts itemParts = (ItemParts)PropertyUtils.getProperty(items, partsEnum.getValue());
 				if (itemParts == null) {
