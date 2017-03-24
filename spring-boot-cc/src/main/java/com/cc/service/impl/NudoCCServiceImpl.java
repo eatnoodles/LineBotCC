@@ -24,7 +24,7 @@ import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
 import com.cc.service.IWowCharacterProfileService;
 import com.linecorp.bot.model.action.Action;
-import com.linecorp.bot.model.action.MessageAction;
+import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.message.ImageMessage;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
@@ -190,9 +190,10 @@ public class NudoCCServiceImpl implements INudoCCService {
 				String race = WowRaceEnum.getEnumByValue(resp.getRace()).getContext();
 				String clz = WowClassEnum.getEnumByValue(resp.getClz()).getContext();
 				String imgPath = NudoCCUtil.WOW_IMG_BASE_PATH.concat(resp.getThumbnail());
-				MessageAction messageAction = this.genItemMessageAction(resp.getName(), resp.getRealm());
+				PostbackAction postbackAction = this.genItemPostbackAction(resp.getName(), resp.getRealm());
+				
 				List<Action> actions = new ArrayList<>();
-				actions.add(messageAction);
+				actions.add(postbackAction);
 				String alt = String.format("群組: %s, 等級: %s級的<%s>是一隻%s%s，他殺了%s個人、有%s成就點數！",
 						resp.getBattlegroup(), resp.getLevel(), resp.getName(), race, clz, resp.getTotalHonorableKills(), resp.getAchievementPoints());
 				
@@ -244,16 +245,18 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 	
 	/**
-	 * generate 裝備資訊 message action
+	 * generate 裝備資訊 postback action
 	 * 
 	 * @param name :角色名稱
 	 * @param realm :伺服器
 	 * @return
 	 */
-	private MessageAction genItemMessageAction(String name, String realm) {
+	private PostbackAction genItemPostbackAction(String name, String realm) {
 		String command = "-wow -i ".concat(name).concat(";").concat(realm);
-		return new com.linecorp.bot.model.action.MessageAction(WowEventEnum.ITEM.getContext(), command);
+		return new PostbackAction(WowEventEnum.ITEM.getContext(), command);
 	}
+	
+	
 
 	/**
 	 * check wow name
