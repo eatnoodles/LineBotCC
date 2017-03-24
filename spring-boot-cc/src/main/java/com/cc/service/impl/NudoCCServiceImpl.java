@@ -123,7 +123,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 */
 	@Override
 	public WowCommandBean processCommand(String command) {
-		if (StringUtils.isBlank(command) && !command.startsWith(NudoCCUtil.WOW_COMMAND)) {
+		if (StringUtils.isBlank(command) || !command.startsWith(NudoCCUtil.WOW_COMMAND)) {
 			return null;
 		}
 		command = command.replaceAll(NudoCCUtil.WOW_COMMAND, StringUtils.EMPTY).trim();
