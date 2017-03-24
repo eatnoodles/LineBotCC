@@ -12,13 +12,17 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.apache.commons.beanutils.PropertyUtils;
 
 import com.cc.bean.WowCharacterProfileItemResponse;
+import com.cc.bean.WowCharacterProfileItemResponse.ItemParts;
+import com.cc.bean.WowCharacterProfileItemResponse.Items;
 import com.cc.bean.WowCharacterProfileParamBean;
 import com.cc.bean.WowCharacterProfileResponse;
 import com.cc.bean.WowCommandBean;
 import com.cc.enums.WowClassEnum;
 import com.cc.enums.WowEventEnum;
+import com.cc.enums.WowItemPartsEnum;
 import com.cc.enums.WowProfileFieldEnum;
 import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
@@ -230,15 +234,37 @@ public class NudoCCServiceImpl implements INudoCCService {
 			if (StringUtils.isBlank(resp.getName())) {
 				return null;
 			}
-			String result = null;
+			StringBuilder sb = new StringBuilder();
 			if (resp.getItems().getAverageItemLevel() >= 900) {
-				result = "豪可怕!! 背包裝等%s, 穿在身上的裝等居然%s!!";
+				sb.append("豪可怕!! 背包裝等%s, 穿在身上的裝等居然%s!!");
 			} else if (resp.getItems().getAverageItemLevel() <= 860){
-				result = "好費... 背包裝等%s, 穿在身上的裝等....%s...額";
+				sb.append("好費... 背包裝等%s, 穿在身上的裝等....%s...額");
 			} else {
-				result = "背包裝等%s, 穿在身上的裝等%s";
+				sb.append("背包裝等%s, 穿在身上的裝等%s");
 			}
-			return new TextMessage(String.format(result, resp.getItems().getAverageItemLevel(), resp.getItems().getAverageItemLevel()));
+			Items items = resp.getItems();
+			sb.append("\r\n");
+			sb.append("---<").append(name).append("-").append(realm).append(">的詳細資訊---\r\n");
+			
+			int i = 0;
+			for (WowItemPartsEnum partsEnum :WowItemPartsEnum.values()) {
+				String partsName = partsEnum.getContext();
+				ItemParts itemParts = (ItemParts)PropertyUtils.getProperty(items, partsEnum.getValue());
+				if (itemParts == null) {
+					continue;
+				}
+				i++;
+				if (i % 3 == 1) {
+					sb.append("　");
+				}
+				sb.append(String.format("%s－%s %s", partsName, itemParts.getItemLevel(), itemParts.getName()));
+				if (i % 3 == 0) {
+					sb.append("\r\n");
+				}
+			}
+			sb.append("\r\n---------------------------------");
+			
+			return new TextMessage(String.format(sb.toString(), resp.getItems().getAverageItemLevel(), resp.getItems().getAverageItemLevel()));
 		} catch (Exception e) {
 			return null;
 		}

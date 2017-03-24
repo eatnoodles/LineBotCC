@@ -24,7 +24,6 @@ import org.springframework.context.annotation.ComponentScan;
 
 import com.cc.bean.WowCommandBean;
 import com.cc.service.INudoCCService;
-import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.PostbackEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
