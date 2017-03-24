@@ -253,7 +253,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 */
 	private PostbackAction genItemPostbackAction(String name, String realm) {
 		String command = "-wow -i ".concat(name).concat(";").concat(realm);
-		return new PostbackAction(WowEventEnum.ITEM.getContext(), command);
+		return new PostbackAction(WowEventEnum.ITEM.getContext(), command, String.format("我想知道<%s-%s>的裝等o.o", name, realm));
 	}
 	
 	
