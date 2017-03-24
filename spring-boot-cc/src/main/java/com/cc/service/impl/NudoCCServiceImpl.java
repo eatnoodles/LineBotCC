@@ -310,13 +310,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 				Appearance appearance = itemParts.getAppearance();
 				if (appearance == null || appearance.getEnchantDisplayInfoId() == null) {
 					if (sb.length() > 0) {
-						sb.append("、");
+						sb.append("\r\n");
 					}
 					sb.append(String.format("%s-%s", partsEnum.getContext(), itemParts.getName()));
 				}
 			}
 			if (sb.length() > 0) {
-				sb.append(String.format("。。%s-%s沒有腹膜。。", name, realm));
+				sb.append(String.format("\r\n。。%s-%s沒有腹膜。。", name, realm));
 				return new TextMessage(sb.toString());
 			} else {
 				return new TextMessage(String.format("%s-%s都有好好附魔~", name, realm));
