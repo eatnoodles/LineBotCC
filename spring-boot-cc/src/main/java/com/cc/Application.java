@@ -26,6 +26,7 @@ import com.cc.bean.WowCommandBean;
 import com.cc.service.INudoCCService;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.PostbackEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TextMessage;
@@ -85,13 +86,35 @@ public class Application {
         }
 
     }
-
+    
     /**
      * 
      * @param event
      */
     @EventMapping
-    public void handleDefaultMessageEvent(Event event) {
-        System.out.println("event: " + event);
+    public Message handleDefaultMessageEvent(PostbackEvent event) {
+    	String data = event.getPostbackContent().getData();
+    	if (StringUtils.isNotBlank(data)) {
+        	WowCommandBean commandBean = nudoCCService.processCommand(data);
+        	if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
+        		return new TextMessage(commandBean.getErrorMsg());
+        	} else {
+        		switch (commandBean.getEventEnum()) {
+					case PROFILE:
+						return nudoCCService.findWowCharacterProfileByName(commandBean.getName());
+					case IMG:
+						return nudoCCService.findWowCharacterImgPath(commandBean.getName());
+					case ITEM:
+						return nudoCCService.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
+					case TEST:
+						//TODO
+						return nudoCCService.buildCharacterTemplate(commandBean.getName());
+					default:
+						return null;
+				}
+        	}
+        } else {
+            return null;
+        }
     }
 }
