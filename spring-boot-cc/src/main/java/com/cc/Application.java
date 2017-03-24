@@ -104,6 +104,8 @@ public class Application {
 						return nudoCCService.findWowCharacterImgPath(commandBean.getName());
 					case ITEM:
 						return nudoCCService.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
+					case CHECK_ENCHANTS:
+						return nudoCCService.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
 					case TEST:
 						//TODO
 						return nudoCCService.buildCharacterTemplate(commandBean.getName());

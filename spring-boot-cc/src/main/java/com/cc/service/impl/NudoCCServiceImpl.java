@@ -9,14 +9,15 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.apache.commons.beanutils.PropertyUtils;
 
 import com.cc.bean.WowCharacterProfileItemResponse;
 import com.cc.bean.WowCharacterProfileItemResponse.ItemParts;
 import com.cc.bean.WowCharacterProfileItemResponse.Items;
+import com.cc.bean.WowCharacterProfileItemResponse.Items.Appearance;
 import com.cc.bean.WowCharacterProfileParamBean;
 import com.cc.bean.WowCharacterProfileResponse;
 import com.cc.bean.WowCommandBean;
@@ -162,6 +163,20 @@ public class NudoCCServiceImpl implements INudoCCService {
 				return bean;
 			}
 			bean.setRealm(realm);
+		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_CHECK_ENCHANTS)) {
+			bean.setEventEnum(WowEventEnum.CHECK_ENCHANTS);
+			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_CHECK_ENCHANTS, StringUtils.EMPTY).trim().split(";");
+			if (array.length != 2) {
+				bean.setErrorMsg(NudoCCUtil.WOW_COMMAND_CHECK_ENCHANTS);
+				return bean;
+			}
+			name = array[0];
+			String realm = array[1];
+			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
+				bean.setErrorMsg(NudoCCUtil.WOW_ITEM_PARAM_ERROR_MSG);
+				return bean;
+			}
+			bean.setRealm(realm);
 		} else {
 			bean.setEventEnum(WowEventEnum.PROFILE);
 			name = command;
@@ -194,10 +209,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 				String race = WowRaceEnum.getEnumByValue(resp.getRace()).getContext();
 				String clz = WowClassEnum.getEnumByValue(resp.getClz()).getContext();
 				String imgPath = NudoCCUtil.WOW_IMG_BASE_PATH.concat(resp.getThumbnail());
-				PostbackAction postbackAction = this.genItemPostbackAction(resp.getName(), resp.getRealm());
+				PostbackAction postbackAction1 = this.genItemPostbackAction(resp.getName(), resp.getRealm());
+				PostbackAction postbackAction2 = this.genCheckEnchantsPostbackAction(resp.getName(), resp.getRealm());
 				
 				List<Action> actions = new ArrayList<>();
-				actions.add(postbackAction);
+				actions.add(postbackAction1);
+				actions.add(postbackAction2);
 				String alt = String.format("群組: %s, 等級: %s級的<%s>是一隻%s%s，他殺了%s個人、有%s成就點數！",
 						resp.getBattlegroup(), resp.getLevel(), resp.getName(), race, clz, resp.getTotalHonorableKills(), resp.getAchievementPoints());
 				
@@ -215,7 +232,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * 取得角色裝備資訊
 	 * 
@@ -266,6 +283,50 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 	
 	/**
+	 * 檢核裝備有無附魔
+	 * 
+	 * @param name :角色名稱
+	 * @param realm :伺服器名稱
+	 * @return
+	 */
+	@Override
+	public TextMessage checkCharacterEnchants(String name, String realm) {
+		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
+		paramBean.setCharacterName(name);
+		paramBean.setRealm(realm);
+		paramBean.setFields(WowProfileFieldEnum.ITEMS);
+		try {
+			WowCharacterProfileItemResponse resp = wowCharacterProfileService.doSendItem(paramBean);
+			if (StringUtils.isBlank(resp.getName())) {
+				return null;
+			}
+			StringBuilder sb = new StringBuilder();
+			Items items = resp.getItems();
+			for (WowItemPartsEnum partsEnum : NudoCCUtil.enchantsParts) {
+				ItemParts itemParts = (ItemParts)PropertyUtils.getProperty(items, partsEnum.getValue());
+				if (itemParts == null) {
+					continue;
+				}
+				Appearance appearance = items.getAppearance();
+				if (appearance == null || appearance.getEnchantDisplayInfoId() == null) {
+					if (sb.length() > 0) {
+						sb.append("、");
+					}
+					sb.append(String.format("%s-%s", partsEnum.getContext(), itemParts.getName()));
+				}
+			}
+			if (sb.length() > 0) {
+				sb.append(String.format("。。%s-%s沒有腹膜。。", name, realm));
+				return new TextMessage(sb.toString());
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	/**
 	 * generate 裝備資訊 postback action
 	 * 
 	 * @param name :角色名稱
@@ -277,6 +338,17 @@ public class NudoCCServiceImpl implements INudoCCService {
 		return new PostbackAction(WowEventEnum.ITEM.getContext(), command, String.format("我想知道<%s-%s>的裝等o.o", name, realm));
 	}
 	
+	/**
+	 * generate 檢查未附魔裝備資訊 postback action
+	 * 
+	 * @param name
+	 * @param realm
+	 * @return
+	 */
+	private PostbackAction genCheckEnchantsPostbackAction(String name, String realm) {
+		String command = "-wow -ec ".concat(name).concat(";").concat(realm);
+		return new PostbackAction(WowEventEnum.CHECK_ENCHANTS.getContext(), command, String.format("我想知道<%s-%s>有沒有沒附魔的莊o.o", name, realm));
+	}
 	
 
 	/**

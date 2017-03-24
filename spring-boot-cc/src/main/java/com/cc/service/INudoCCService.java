@@ -5,6 +5,7 @@ package com.cc.service;
 
 import com.cc.bean.WowCommandBean;
 import com.linecorp.bot.model.message.ImageMessage;
+import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 
@@ -63,4 +64,13 @@ public interface INudoCCService {
 	 * @return
 	 */
 	public TextMessage findWowCharacterItem(String name, String realm);
+
+	/**
+	 * 檢核裝備有無附魔
+	 * 
+	 * @param name :角色名稱
+	 * @param realm :伺服器名稱
+	 * @return
+	 */
+	public TextMessage checkCharacterEnchants(String name, String realm);
 }
