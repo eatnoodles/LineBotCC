@@ -141,6 +141,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 		}
 		if (!checkWowName(name)) {
 			bean.setErrorMsg(NudoCCUtil.WOW_NAME_ERROR_MSG);
+		} else {
+			bean.setName(name);
 		}
 		return bean;
 	}
