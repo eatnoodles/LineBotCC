@@ -259,7 +259,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 			}
 			sb.append("------------------------------");
 			
-			return new TextMessage(String.format(sb.toString(), resp.getItems().getAverageItemLevel(), resp.getItems().getAverageItemLevel()));
+			return new TextMessage(String.format(sb.toString(), resp.getItems().getAverageItemLevel(), resp.getItems().getAverageItemLevelEquipped()));
 		} catch (Exception e) {
 			return null;
 		}
