@@ -319,7 +319,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 				sb.append(String.format("。。%s-%s沒有腹膜。。", name, realm));
 				return new TextMessage(sb.toString());
 			} else {
-				return null;
+				return new TextMessage(String.format("%s-%s都有好好附魔~", name, realm));
 			}
 		} catch (Exception e) {
 			return null;
