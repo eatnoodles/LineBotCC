@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 
 import com.cc.bean.WowCharacterProfileItemResponse;
 import com.cc.bean.WowCharacterProfileItemResponse.ItemParts;
+import com.cc.bean.WowCharacterProfileItemResponse.ItemParts.Appearance;
 import com.cc.bean.WowCharacterProfileItemResponse.Items;
-import com.cc.bean.WowCharacterProfileItemResponse.Items.Appearance;
 import com.cc.bean.WowCharacterProfileParamBean;
 import com.cc.bean.WowCharacterProfileResponse;
 import com.cc.bean.WowCommandBean;
@@ -307,7 +307,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 				if (itemParts == null) {
 					continue;
 				}
-				Appearance appearance = items.getAppearance();
+				Appearance appearance = itemParts.getAppearance();
 				if (appearance == null || appearance.getEnchantDisplayInfoId() == null) {
 					if (sb.length() > 0) {
 						sb.append("、");

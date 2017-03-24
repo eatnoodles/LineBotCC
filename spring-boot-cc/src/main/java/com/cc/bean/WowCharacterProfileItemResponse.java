@@ -104,34 +104,6 @@ public class WowCharacterProfileItemResponse extends WowCharacterProfileResponse
 		 * 副手
 		 */
 		private ItemParts offHand;
-		
-		/**
-		 * 附魔
-		 */
-		private Appearance appearance;
-		
-		public static class Appearance {
-			
-			private Long enchantDisplayInfoId;
-
-			@JsonProperty("enchantDisplayInfoId")
-			public Long getEnchantDisplayInfoId() {
-				return enchantDisplayInfoId;
-			}
-
-			public void setEnchantDisplayInfoId(Long enchantDisplayInfoId) {
-				this.enchantDisplayInfoId = enchantDisplayInfoId;
-			}
-		}
-		
-		@JsonProperty("appearance")
-		public Appearance getAppearance() {
-			return appearance;
-		}
-
-		public void setAppearance(Appearance appearance) {
-			this.appearance = appearance;
-		}
 
 		@JsonProperty("averageItemLevel")
 		public Integer getAverageItemLevel() {
@@ -302,6 +274,34 @@ public class WowCharacterProfileItemResponse extends WowCharacterProfileResponse
 		private String name;
 		
 		private Integer itemLevel;
+		
+		/**
+		 * 附魔
+		 */
+		private Appearance appearance;
+		
+		public static class Appearance {
+			
+			private Long enchantDisplayInfoId;
+
+			@JsonProperty("enchantDisplayInfoId")
+			public Long getEnchantDisplayInfoId() {
+				return enchantDisplayInfoId;
+			}
+
+			public void setEnchantDisplayInfoId(Long enchantDisplayInfoId) {
+				this.enchantDisplayInfoId = enchantDisplayInfoId;
+			}
+		}
+		
+		@JsonProperty("appearance")
+		public Appearance getAppearance() {
+			return appearance;
+		}
+
+		public void setAppearance(Appearance appearance) {
+			this.appearance = appearance;
+		}
 
 		@JsonProperty("name")
 		public String getName() {
