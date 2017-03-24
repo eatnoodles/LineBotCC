@@ -4,6 +4,7 @@
 package com.cc.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,11 +13,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.cc.bean.WowCharacterProfileItemResponse;
 import com.cc.bean.WowCharacterProfileParamBean;
 import com.cc.bean.WowCharacterProfileResponse;
 import com.cc.bean.WowCommandBean;
 import com.cc.enums.WowClassEnum;
 import com.cc.enums.WowEventEnum;
+import com.cc.enums.WowProfileFieldEnum;
 import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
 import com.cc.service.IWowCharacterProfileService;
@@ -51,7 +54,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		paramBean.setCharacterName(name);
 		paramBean.setRealm(server);
 		try {
-			WowCharacterProfileResponse resp = wowCharacterProfileService.doSend(paramBean);
+			WowCharacterProfileResponse resp = wowCharacterProfileService.doSendProfile(paramBean);
 			if (StringUtils.isBlank(resp.getName())) {
 				return null;
 			}
@@ -78,7 +81,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		for (String realm : NudoCCUtil.REALMS) {
 			paramBean.setRealm(realm);
 			try {
-				WowCharacterProfileResponse resp = wowCharacterProfileService.doSend(paramBean);
+				WowCharacterProfileResponse resp = wowCharacterProfileService.doSendProfile(paramBean);
 				if (StringUtils.isBlank(resp.getName())) {
 					return null;
 				}
@@ -108,7 +111,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		for (String realm : NudoCCUtil.REALMS) {
 			paramBean.setRealm(realm);
 			try {
-				WowCharacterProfileResponse resp = wowCharacterProfileService.doSend(paramBean);
+				WowCharacterProfileResponse resp = wowCharacterProfileService.doSendProfile(paramBean);
 				if (StringUtils.isBlank(resp.getThumbnail())) {
 					return null;
 				}
@@ -141,6 +144,20 @@ public class NudoCCServiceImpl implements INudoCCService {
 		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_TEST)) {
 			bean.setEventEnum(WowEventEnum.TEST);
 			name = command.replaceAll(NudoCCUtil.WOW_COMMAND_TEST, StringUtils.EMPTY).trim();
+		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_ITEM)) {
+			bean.setEventEnum(WowEventEnum.ITEM);
+			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_ITEM, StringUtils.EMPTY).trim().split(";");
+			if (array.length != 2) {
+				bean.setErrorMsg(NudoCCUtil.WOW_ITEM_PARAM_ERROR_MSG);
+				return bean;
+			}
+			name = array[0];
+			String realm = array[1];
+			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
+				bean.setErrorMsg(NudoCCUtil.WOW_ITEM_PARAM_ERROR_MSG);
+				return bean;
+			}
+			bean.setRealm(realm);
 		} else {
 			bean.setEventEnum(WowEventEnum.PROFILE);
 			name = command;
@@ -166,18 +183,26 @@ public class NudoCCServiceImpl implements INudoCCService {
 		for (String realm : NudoCCUtil.REALMS) {
 			paramBean.setRealm(realm);
 			try {
-				WowCharacterProfileResponse resp = wowCharacterProfileService.doSend(paramBean);
+				WowCharacterProfileResponse resp = wowCharacterProfileService.doSendProfile(paramBean);
 				if (StringUtils.isBlank(resp.getName())) {
 					return null;
 				}
 				String race = WowRaceEnum.getEnumByValue(resp.getRace()).getContext();
 				String clz = WowClassEnum.getEnumByValue(resp.getClz()).getContext();
 				String imgPath = NudoCCUtil.WOW_IMG_BASE_PATH.concat(resp.getThumbnail());
-				MessageAction messageAction = new com.linecorp.bot.model.action.MessageAction("label", "-wow eatnoodles");
+				MessageAction messageAction = this.genItemMessageAction(resp.getName(), resp.getRealm());
 				List<Action> actions = new ArrayList<>();
 				actions.add(messageAction);
-				ButtonsTemplate buttonsTemplate = new ButtonsTemplate(imgPath, "title", "text", actions);
-				TemplateMessage result = new TemplateMessage("測試文字", buttonsTemplate);
+				String alt = String.format("群組: %s, 等級: %s級的<%s>是一隻%s%s，他殺了%s個人、有%s成就點數！",
+						resp.getBattlegroup(), resp.getLevel(), resp.getName(), race, clz, resp.getTotalHonorableKills(), resp.getAchievementPoints());
+				
+				String title = String.format("群組-%s %s-%s %s級%s%s", resp.getBattlegroup(), resp.getName(),
+						resp.getRealm(), resp.getLevel(), race, clz);
+				
+				String text = String.format("殺了%s個人、有%s成就點數！", resp.getTotalHonorableKills(), resp.getAchievementPoints());
+				
+				ButtonsTemplate buttonsTemplate = new ButtonsTemplate(imgPath, title, text, actions);
+				TemplateMessage result = new TemplateMessage(alt, buttonsTemplate);
 				return result;
 			} catch (Exception e) {
 				continue;
@@ -186,6 +211,50 @@ public class NudoCCServiceImpl implements INudoCCService {
 		return null;
 	}
 	
+	/**
+	 * 取得角色裝備資訊
+	 * 
+	 * @param name :角色名稱
+	 * @param realm :伺服器名稱
+	 * @return
+	 */
+	@Override
+	public TextMessage findWowCharacterItem(String name, String realm) {
+		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
+		paramBean.setCharacterName(name);
+		paramBean.setRealm(realm);
+		paramBean.setFields(WowProfileFieldEnum.ITEMS);
+		try {
+			WowCharacterProfileItemResponse resp = wowCharacterProfileService.doSendItem(paramBean);
+			if (StringUtils.isBlank(resp.getName())) {
+				return null;
+			}
+			String result = null;
+			if (resp.getItems().getAverageItemLevel() >= 900) {
+				result = "豪可怕!! 背包裝等%s, 穿在身上的裝等居然%s!!";
+			} else if (resp.getItems().getAverageItemLevel() <= 860){
+				result = "好費... 背包裝等%s, 穿在身上的裝等....%s...額";
+			} else {
+				result = "背包裝等%s, 穿在身上的裝等%s";
+			}
+			return new TextMessage(String.format(result, resp.getItems().getAverageItemLevel(), resp.getItems().getAverageItemLevel()));
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * generate 裝備資訊 message action
+	 * 
+	 * @param name :角色名稱
+	 * @param realm :伺服器
+	 * @return
+	 */
+	private MessageAction genItemMessageAction(String name, String realm) {
+		String command = "-wow -i ".concat(name).concat(";").concat(realm);
+		return new com.linecorp.bot.model.action.MessageAction(WowEventEnum.ITEM.getContext(), command);
+	}
+
 	/**
 	 * check wow name
 	 * 
@@ -199,4 +268,5 @@ public class NudoCCServiceImpl implements INudoCCService {
 	    Matcher matcherEn = patternEn.matcher(name);
 	    return (matcherCh.matches() && name.length() <= 6) || (matcherEn.matches() && name.length() <= 12);
 	}
+	
 }

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author Caleb.Cheng
  *
  */
-public class WowCharacterProfileResponse {
+public class WowCharacterProfileResponse extends BaseWOWResponse{
 	
 	/**
 	 * 最後更新時間

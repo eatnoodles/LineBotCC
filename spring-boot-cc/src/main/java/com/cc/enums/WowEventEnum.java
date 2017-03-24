@@ -13,6 +13,7 @@ public enum WowEventEnum {
 	
 	PROFILE(1, "取得角色基本資料"),
 	IMG(2, "取得角色大頭照"),
+	ITEM(3, "角色裝備資訊"),
 	TEST(99, "測試用"),
 	NULL(0, StringUtils.EMPTY);
 	

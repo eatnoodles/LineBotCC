@@ -54,4 +54,13 @@ public interface INudoCCService {
 	 * @return
 	 */
 	public TemplateMessage buildCharacterTemplate(String name);
+
+	/**
+	 * 取得角色裝備資訊
+	 * 
+	 * @param name :角色名稱
+	 * @param realm :伺服器名稱
+	 * @return
+	 */
+	public TextMessage findWowCharacterItem(String name, String realm);
 }

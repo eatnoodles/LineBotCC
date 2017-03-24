@@ -71,6 +71,8 @@ public class Application {
 						return nudoCCService.findWowCharacterProfileByName(commandBean.getName());
 					case IMG:
 						return nudoCCService.findWowCharacterImgPath(commandBean.getName());
+					case ITEM:
+						return nudoCCService.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
 					case TEST:
 						//TODO
 						return nudoCCService.buildCharacterTemplate(commandBean.getName());
