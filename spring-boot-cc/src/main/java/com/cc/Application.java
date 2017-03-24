@@ -73,7 +73,7 @@ public class Application {
 						return nudoCCService.findWowCharacterImgPath(commandBean.getName());
 					case TEST:
 						//TODO
-						return null;
+						return nudoCCService.buildCharacterTemplate(commandBean.getName());
 					default:
 						return null;
 				}

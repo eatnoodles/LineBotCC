@@ -5,6 +5,7 @@ package com.cc.service;
 
 import com.cc.bean.WowCommandBean;
 import com.linecorp.bot.model.message.ImageMessage;
+import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 
 /**
@@ -45,4 +46,12 @@ public interface INudoCCService {
 	 * @return
 	 */
 	public WowCommandBean processCommand(String command);
+
+	/**
+	 * 產生角色的template訊息
+	 * 
+	 * @param name :角色名稱
+	 * @return
+	 */
+	public TemplateMessage buildCharacterTemplate(String name);
 }

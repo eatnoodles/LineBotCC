@@ -3,6 +3,8 @@
  */
 package com.cc.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,8 +20,12 @@ import com.cc.enums.WowEventEnum;
 import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
 import com.cc.service.IWowCharacterProfileService;
+import com.linecorp.bot.model.action.Action;
+import com.linecorp.bot.model.action.MessageAction;
 import com.linecorp.bot.model.message.ImageMessage;
+import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
+import com.linecorp.bot.model.message.template.ButtonsTemplate;
 import com.utils.NudoCCUtil;
 
 /**
@@ -145,6 +151,39 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setName(name);
 		}
 		return bean;
+	}
+	
+	/**
+	 * 產生角色的template訊息
+	 * 
+	 * @param name :角色名稱
+	 * @return
+	 */
+	@Override
+	public TemplateMessage buildCharacterTemplate(String name) {
+		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
+		paramBean.setCharacterName(name);
+		for (String realm : NudoCCUtil.REALMS) {
+			paramBean.setRealm(realm);
+			try {
+				WowCharacterProfileResponse resp = wowCharacterProfileService.doSend(paramBean);
+				if (StringUtils.isBlank(resp.getName())) {
+					return null;
+				}
+				String race = WowRaceEnum.getEnumByValue(resp.getRace()).getContext();
+				String clz = WowClassEnum.getEnumByValue(resp.getClz()).getContext();
+				String imgPath = NudoCCUtil.WOW_IMG_BASE_PATH.concat(resp.getThumbnail());
+				MessageAction messageAction = new com.linecorp.bot.model.action.MessageAction("label", "-wow eatnoodles");
+				List<Action> actions = new ArrayList<>();
+				actions.add(messageAction);
+				ButtonsTemplate buttonsTemplate = new ButtonsTemplate(imgPath, "title", "text", actions);
+				TemplateMessage result = new TemplateMessage("測試文字", buttonsTemplate);
+				return result;
+			} catch (Exception e) {
+				continue;
+			}
+		}
+		return null;
 	}
 	
 	/**
