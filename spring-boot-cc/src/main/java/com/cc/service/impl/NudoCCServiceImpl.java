@@ -143,7 +143,11 @@ public class NudoCCServiceImpl implements INudoCCService {
 		command = command.replaceAll(NudoCCUtil.WOW_COMMAND, StringUtils.EMPTY).trim();
 		WowCommandBean bean = new WowCommandBean();
 		String name = null;
-		if (command.startsWith(NudoCCUtil.WOW_COMMAND_IMG)) {
+		
+		if (command.equalsIgnoreCase(NudoCCUtil.WOW_COMMAND_HELP)) {
+			bean.setEventEnum(WowEventEnum.HELP);
+			return bean;
+		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_IMG)) {
 			bean.setEventEnum(WowEventEnum.IMG);
 			name = command.replaceAll(NudoCCUtil.WOW_COMMAND_IMG, StringUtils.EMPTY).trim();
 		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_TEST)) {
@@ -363,6 +367,17 @@ public class NudoCCServiceImpl implements INudoCCService {
 	    Matcher matcherCh = patternCh.matcher(name);
 	    Matcher matcherEn = patternEn.matcher(name);
 	    return (matcherCh.matches() && name.length() <= 6) || (matcherEn.matches() && name.length() <= 12);
+	}
+
+	@Override
+	public TextMessage getHelp() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("995: -wow -help\r\n");
+		sb.append("查詢角色基本資訊: -wow 角色名稱\r\n");
+		sb.append("查詢角色大頭貼: -wow -img 角色名稱\r\n");
+		sb.append("查詢角色裝備: -wow -i 角色名稱;伺服器名稱\r\n");
+		sb.append("查詢角色裝備有無附魔: -wow -ec 角色名稱;伺服器名稱\r\n");
+		return new TextMessage(sb.toString());
 	}
 	
 }

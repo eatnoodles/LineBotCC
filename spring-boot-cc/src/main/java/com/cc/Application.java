@@ -67,6 +67,8 @@ public class Application {
         		return new TextMessage(commandBean.getErrorMsg());
         	} else {
         		switch (commandBean.getEventEnum()) {
+        			case HELP:
+        				return nudoCCService.getHelp();
 					case PROFILE:
 						return nudoCCService.buildCharacterTemplate(commandBean.getName());
 					case IMG:
@@ -100,17 +102,10 @@ public class Application {
         		return new TextMessage(commandBean.getErrorMsg());
         	} else {
         		switch (commandBean.getEventEnum()) {
-					case PROFILE:
-						return nudoCCService.findWowCharacterProfileByName(commandBean.getName());
-					case IMG:
-						return nudoCCService.findWowCharacterImgPath(commandBean.getName());
 					case ITEM:
 						return nudoCCService.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
 					case CHECK_ENCHANTS:
 						return nudoCCService.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
-					case TEST:
-						//TODO
-						return nudoCCService.buildCharacterTemplate(commandBean.getName());
 					default:
 						return null;
 				}

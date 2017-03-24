@@ -40,6 +40,8 @@ public class NudoCCUtil {
 	
 	public static final String WOW_COMMAND_CHECK_ENCHANTS = "-ec ";
 	
+	public static final String WOW_COMMAND_HELP = "-help";
+	
 	public static final String WOW_NAME_ERROR_MSG = "角色名稱的格式有誤哦~";
 	
 	public static final String WOW_ITEM_PARAM_ERROR_MSG = "取得裝備資訊參數有誤哦~";
