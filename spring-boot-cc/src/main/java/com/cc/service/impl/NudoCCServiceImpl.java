@@ -244,7 +244,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 			}
 			Items items = resp.getItems();
 			sb.append("\r\n\r\n");
-			sb.append("---<").append(name).append("-").append(realm).append(">的詳細資訊---\r\n");
+			sb.append("<").append(name).append("-").append(realm).append(">的詳細資訊→\r\n");
 			
 			for (WowItemPartsEnum partsEnum :WowItemPartsEnum.values()) {
 				if (partsEnum == WowItemPartsEnum.NULL) {

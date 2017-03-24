@@ -68,14 +68,13 @@ public class Application {
         	} else {
         		switch (commandBean.getEventEnum()) {
 					case PROFILE:
-						return nudoCCService.findWowCharacterProfileByName(commandBean.getName());
+						return nudoCCService.buildCharacterTemplate(commandBean.getName());
 					case IMG:
 						return nudoCCService.findWowCharacterImgPath(commandBean.getName());
 					case ITEM:
 						return nudoCCService.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
 					case TEST:
 						//TODO
-						return nudoCCService.buildCharacterTemplate(commandBean.getName());
 					default:
 						return null;
 				}
