@@ -243,10 +243,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 				sb.append("背包裝等%s, 穿在身上的裝等%s");
 			}
 			Items items = resp.getItems();
-			sb.append("\r\n");
+			sb.append("\r\n\r\n");
 			sb.append("---<").append(name).append("-").append(realm).append(">的詳細資訊---\r\n");
 			
-			int i = 0;
 			for (WowItemPartsEnum partsEnum :WowItemPartsEnum.values()) {
 				if (partsEnum == WowItemPartsEnum.NULL) {
 					continue;
@@ -256,16 +255,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 				if (itemParts == null) {
 					continue;
 				}
-				i++;
-				if (i % 3 == 1) {
-					sb.append("　");
-				}
-				sb.append(String.format("%s－%s %s", partsName, itemParts.getItemLevel(), itemParts.getName()));
-				if (i % 3 == 0) {
-					sb.append("\r\n");
-				}
+				sb.append(String.format("　%s－%s %s", partsName, itemParts.getItemLevel(), itemParts.getName())).append("\r\n");
 			}
-			sb.append("\r\n---------------------------------");
+			sb.append("------------------------------");
 			
 			return new TextMessage(String.format(sb.toString(), resp.getItems().getAverageItemLevel(), resp.getItems().getAverageItemLevel()));
 		} catch (Exception e) {
