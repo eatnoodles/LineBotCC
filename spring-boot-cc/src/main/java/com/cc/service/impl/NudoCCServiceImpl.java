@@ -139,7 +139,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(WowEventEnum.PROFILE);
 			name = command;
 		}
-		if (checkWowName(name)) {
+		if (!checkWowName(name)) {
 			bean.setErrorMsg(NudoCCUtil.WOW_NAME_ERROR_MSG);
 		}
 		return bean;
