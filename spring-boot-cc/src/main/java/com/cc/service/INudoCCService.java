@@ -46,7 +46,7 @@ public interface INudoCCService {
 	 * @param command :命令列
 	 * @return
 	 */
-	public WowCommandBean processCommand(String command);
+	public WowCommandBean processWowCommand(String command);
 
 	/**
 	 * 產生角色的template訊息

@@ -18,6 +18,8 @@ public class WowCommandBean {
 	private WowEventEnum eventEnum;
 	
 	private String errorMsg;
+	
+	private boolean isWowCommand = true;
 
 	public String getName() {
 		return name;
@@ -49,5 +51,13 @@ public class WowCommandBean {
 
 	public void setEventEnum(WowEventEnum eventEnum) {
 		this.eventEnum = eventEnum;
+	}
+
+	public boolean isWowCommand() {
+		return isWowCommand;
+	}
+
+	public void setWowCommand(boolean isWowCommand) {
+		this.isWowCommand = isWowCommand;
 	}
 }

@@ -136,12 +136,16 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @return
 	 */
 	@Override
-	public WowCommandBean processCommand(String command) {
-		if (StringUtils.isBlank(command) || !command.startsWith(NudoCCUtil.WOW_COMMAND)) {
+	public WowCommandBean processWowCommand(String command) {
+		if (StringUtils.isBlank(command)) {
 			return null;
 		}
-		command = command.replaceAll(NudoCCUtil.WOW_COMMAND, StringUtils.EMPTY).trim();
 		WowCommandBean bean = new WowCommandBean();
+		if (!command.startsWith(NudoCCUtil.WOW_COMMAND)) {
+			bean.setWowCommand(false);
+			return bean;
+		}
+		command = command.replaceAll(NudoCCUtil.WOW_COMMAND, StringUtils.EMPTY).trim();
 		String name = null;
 		
 		if (command.equalsIgnoreCase(NudoCCUtil.WOW_COMMAND_HELP)) {
@@ -171,7 +175,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(WowEventEnum.CHECK_ENCHANTS);
 			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_CHECK_ENCHANTS, StringUtils.EMPTY).trim().split(";");
 			if (array.length != 2) {
-				bean.setErrorMsg(NudoCCUtil.WOW_COMMAND_CHECK_ENCHANTS);
+				bean.setErrorMsg(NudoCCUtil.WOW_ENCHANTS_PARAM_ERROR_MSG);
 				return bean;
 			}
 			name = array[0];

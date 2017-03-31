@@ -46,6 +46,10 @@ public class NudoCCUtil {
 	
 	public static final String WOW_ITEM_PARAM_ERROR_MSG = "取得裝備資訊參數有誤哦~";
 	
+	public static final String WOW_ENCHANTS_PARAM_ERROR_MSG = "取得附魔資訊參數有誤哦~";
+	
+	public static final String ROLL_COMMAND = "/roll";
+	
 	public static final WowItemPartsEnum[] enchantsParts = {WowItemPartsEnum.NECK, WowItemPartsEnum.SHOULDER,
 															WowItemPartsEnum.FINGER1, WowItemPartsEnum.FINGER2,
 															WowItemPartsEnum.BACK

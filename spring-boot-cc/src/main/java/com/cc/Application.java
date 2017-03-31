@@ -31,6 +31,7 @@ import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
+import com.utils.NudoCCUtil;
 
 /**
  * 
@@ -62,27 +63,40 @@ public class Application {
     public Message handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
-        	WowCommandBean commandBean = nudoCCService.processCommand(mesg);
-        	if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
-        		return new TextMessage(commandBean.getErrorMsg());
+        	WowCommandBean commandBean = nudoCCService.processWowCommand(mesg);
+        	if (commandBean.isWowCommand()) {
+        		//wow command
+        		if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
+            		return new TextMessage(commandBean.getErrorMsg());
+            	} else {
+            		switch (commandBean.getEventEnum()) {
+            			case HELP:
+            				return nudoCCService.getHelp();
+    					case PROFILE:
+    						return nudoCCService.buildCharacterTemplate(commandBean.getName());
+    					case IMG:
+    						return nudoCCService.findWowCharacterImgPath(commandBean.getName());
+    					case ITEM:
+    						return nudoCCService.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
+    					case CHECK_ENCHANTS:
+    						return nudoCCService.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
+    					case TEST:
+    						//TODO
+    					default:
+    						return null;
+    				}
+            	}
         	} else {
-        		switch (commandBean.getEventEnum()) {
-        			case HELP:
-        				return nudoCCService.getHelp();
-					case PROFILE:
-						return nudoCCService.buildCharacterTemplate(commandBean.getName());
-					case IMG:
-						return nudoCCService.findWowCharacterImgPath(commandBean.getName());
-					case ITEM:
-						return nudoCCService.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
-					case CHECK_ENCHANTS:
-						return nudoCCService.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
-					case TEST:
-						//TODO
-					default:
-						return null;
-				}
+        		//other command
+//        		WowCommandBean commandBean = nudoCCService.processWowCommand(mesg);
+//        		ROLL_COMMAND
+        		if (mesg.startsWith(NudoCCUtil.ROLL_COMMAND)) {
+        			return new TextMessage(String.format("userId = %s, senderId= %s", event.getSource().getUserId(), event.getSource().getSenderId()));
+        		}
+//        		
+        		return null;
         	}
+        	
         } else {
             return null;
         }
