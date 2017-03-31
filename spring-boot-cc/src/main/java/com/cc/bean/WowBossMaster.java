@@ -15,7 +15,7 @@ public class WowBossMaster {
 
 	private List<WowBoss> bosses;
 	
-	public class WowBoss {
+	public static class WowBoss {
 		
 		private Long id;
 		
@@ -36,6 +36,8 @@ public class WowBossMaster {
 		private Integer level;
 		
 		private Integer heroicLevel;
+		
+		private Integer heroicHealth;
 		
 		private Long journalId;
 		
@@ -149,7 +151,16 @@ public class WowBossMaster {
 			this.npcs = npcs;
 		}
 		
-		public class WowNpc {
+		@JsonProperty("heroicHealth")
+		public Integer getHeroicHealth() {
+			return heroicHealth;
+		}
+
+		public void setHeroicHealth(Integer heroicHealth) {
+			this.heroicHealth = heroicHealth;
+		}
+
+		public static class WowNpc {
 			
 			private Long id;
 			
