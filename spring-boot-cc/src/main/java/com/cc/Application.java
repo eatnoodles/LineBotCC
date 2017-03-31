@@ -108,14 +108,38 @@ public class Application {
         	} else {
         		//other command
         		if (mesg.startsWith(NudoCCUtil.ROLL_COMMAND)) {
-        			int size = wowBossMaster.getBosses().size();
-        			Random rand = new Random();
-        			int point = rand.nextInt(100) + 1;
-        			
-        			Random randBoss = new Random();
-        			int index = randBoss.nextInt(size);
-        			String name = wowBossMaster.getBosses().get(index).getName();
-        			return new TextMessage(String.format("%s 擲出了%s (1-100)！", name, point));
+        			String scope = mesg.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY);
+        			if (StringUtils.isNotBlank(scope) && scope.indexOf(" ") == 0) {
+        				String[] scopes = scope.trim().split("-");
+        				if (scopes.length != 2) {
+        					return new TextMessage("指定範圍有誤！");
+        				} else {
+        					int start, end = 0;
+        					try {
+        						start = Integer.parseInt(scopes[0]);
+        						end = Integer.parseInt(scopes[1]);
+        					} catch (NumberFormatException e) {
+        						return new TextMessage("指定範圍有誤！");
+        					}
+        					int size = wowBossMaster.getBosses().size();
+                			Random rand = new Random();
+                			int point = rand.nextInt(end-start+1) + start;
+                			
+                			Random randBoss = new Random();
+                			int index = randBoss.nextInt(size);
+                			String name = wowBossMaster.getBosses().get(index).getName();
+                			return new TextMessage(String.format("%s 擲出了%s (%s-%s)！", name, point, start, end));
+        				}
+        			} else {
+        				int size = wowBossMaster.getBosses().size();
+            			Random rand = new Random();
+            			int point = rand.nextInt(100) + 1;
+            			
+            			Random randBoss = new Random();
+            			int index = randBoss.nextInt(size);
+            			String name = wowBossMaster.getBosses().get(index).getName();
+            			return new TextMessage(String.format("%s 擲出了%s (1-100)！", name, point));
+        			}
         		}
         		return null;
         	}
