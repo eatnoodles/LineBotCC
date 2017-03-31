@@ -16,14 +16,20 @@
 
 package com.cc;
 
+import java.io.IOException;
+import java.util.Random;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
+import com.cc.bean.WowBossMaster;
 import com.cc.bean.WowCommandBean;
 import com.cc.service.INudoCCService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.PostbackEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
@@ -45,6 +51,17 @@ public class Application {
 	
 	@Autowired
 	private INudoCCService nudoCCService;
+	
+	private static WowBossMaster wowBossMaster;
+	
+	static {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			wowBossMaster = mapper.readValue(Application.class.getResourceAsStream("/wowBoss.json"), new TypeReference<WowBossMaster>(){});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * 
@@ -88,12 +105,16 @@ public class Application {
             	}
         	} else {
         		//other command
-//        		WowCommandBean commandBean = nudoCCService.processWowCommand(mesg);
-//        		ROLL_COMMAND
         		if (mesg.startsWith(NudoCCUtil.ROLL_COMMAND)) {
-        			return new TextMessage(String.format("userId = %s, senderId= %s", event.getSource().getUserId(), event.getSource().getSenderId()));
+        			int size = wowBossMaster.getBosses().size();
+        			Random rand = new Random();
+        			int point = rand.nextInt(100) + 1;
+        			
+        			Random randBoss = new Random();
+        			int index = randBoss.nextInt(size);
+        			String name = wowBossMaster.getBosses().get(index).getName();
+        			return new TextMessage(String.format("%s 擲出了%s (1-100)!", name, point));
         		}
-//        		
         		return null;
         	}
         	
