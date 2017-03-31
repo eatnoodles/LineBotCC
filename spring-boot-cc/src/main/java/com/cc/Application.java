@@ -113,7 +113,7 @@ public class Application {
         			Random randBoss = new Random();
         			int index = randBoss.nextInt(size);
         			String name = wowBossMaster.getBosses().get(index).getName();
-        			return new TextMessage(String.format("%s 擲出了%s (1-100)!", name, point));
+        			return new TextMessage(String.format("%s 擲出了%s (1-100)！", name, point));
         		}
         		return null;
         	}
