@@ -111,7 +111,7 @@ public class Application {
     public Message handleDefaultMessageEvent(PostbackEvent event) {
     	String data = event.getPostbackContent().getData();
     	if (StringUtils.isNotBlank(data)) {
-        	WowCommandBean commandBean = nudoCCService.processCommand(data);
+        	WowCommandBean commandBean = nudoCCService.processWowCommand(data);
         	if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
         		return new TextMessage(commandBean.getErrorMsg());
         	} else {
