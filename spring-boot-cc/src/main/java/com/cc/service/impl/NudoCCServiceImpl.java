@@ -3,9 +3,11 @@
  */
 package com.cc.service.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,6 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.cc.Application;
+import com.cc.bean.WowBossMaster;
 import com.cc.bean.WowCharacterProfileItemResponse;
 import com.cc.bean.WowCharacterProfileItemResponse.ItemParts;
 import com.cc.bean.WowCharacterProfileItemResponse.ItemParts.Appearance;
@@ -28,16 +32,20 @@ import com.cc.enums.WowProfileFieldEnum;
 import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
 import com.cc.service.IWowCharacterProfileService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.message.ImageMessage;
+import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
 import com.utils.NudoCCUtil;
 
 /**
- * @author Caleb-2109
+ * @author Caleb.Cheng
  *
  */
 @Component
@@ -45,6 +53,18 @@ public class NudoCCServiceImpl implements INudoCCService {
 
 	@Autowired
 	private IWowCharacterProfileService wowCharacterProfileService;
+	
+	private static WowBossMaster wowBossMaster;
+	
+	static {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		try {
+			wowBossMaster = mapper.readValue(Application.class.getResourceAsStream("/wowBoss.json"), new TypeReference<WowBossMaster>(){});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * 以name、server搜尋角色基本資料
@@ -372,7 +392,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 	    Matcher matcherEn = patternEn.matcher(name);
 	    return (matcherCh.matches() && name.length() <= 6) || (matcherEn.matches() && name.length() <= 12);
 	}
-
+	
+	/**
+	 * 取得協助
+	 * 
+	 * @return
+	 */
 	@Override
 	public TextMessage getHelp() {
 		StringBuilder sb = new StringBuilder();
@@ -382,6 +407,92 @@ public class NudoCCServiceImpl implements INudoCCService {
 		sb.append("查詢角色裝備: -wow -i 角色名稱;伺服器名稱\r\n");
 		sb.append("查詢角色裝備有無附魔: -wow -ec 角色名稱;伺服器名稱\r\n");
 		return new TextMessage(sb.toString());
+	}
+	
+	/**
+	 * 根據request傳來的command回傳message
+	 * 
+	 * @param command
+	 * @return
+	 */
+	@Override
+	public Message processCommand(String mesg) {
+		WowCommandBean commandBean = this.processWowCommand(mesg);
+    	if (commandBean.isWowCommand()) {
+    		//wow command
+    		if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
+        		return new TextMessage(commandBean.getErrorMsg());
+        	} else {
+        		switch (commandBean.getEventEnum()) {
+        			case HELP:
+        				return this.getHelp();
+					case PROFILE:
+						return this.buildCharacterTemplate(commandBean.getName());
+					case IMG:
+						return this.findWowCharacterImgPath(commandBean.getName());
+					case ITEM:
+						return this.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
+					case CHECK_ENCHANTS:
+						return this.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
+					case TEST:
+						//TODO
+					default:
+						return null;
+				}
+        	}
+    	} else {
+    		//other command
+    		if (mesg.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
+    			return this.getRollNumber(mesg.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
+    		}
+    		return null;
+    	}
+	}
+
+	private TextMessage getRollNumber(String command) {
+		if (StringUtils.isNotBlank(command) && command.indexOf(" ") == 0) {
+			String[] scopes = command.trim().split("-");
+			if (scopes.length != 2) {
+				return new TextMessage("指定範圍有誤！");
+			} else {
+				int start, end = 0;
+				try {
+					start = Integer.parseInt(scopes[0]);
+					end = Integer.parseInt(scopes[1]);
+				} catch (NumberFormatException e) {
+					return new TextMessage("指定範圍有誤！");
+				}
+				int size = wowBossMaster.getBosses().size();
+//    			Random rand = new Random();
+//    			int point = rand.nextInt(end-start+1) + start;
+    			int point = this.probabilityControl(start, end);
+    					
+    			Random randBoss = new Random();
+    			int index = randBoss.nextInt(size);
+    			String name = wowBossMaster.getBosses().get(index).getName();
+    			return new TextMessage(String.format("%s 擲出了%s (%s-%s)！", name, point, start, end));
+			}
+		} else {
+			int size = wowBossMaster.getBosses().size();
+//			Random rand = new Random();
+//			int point = rand.nextInt(100) + 1;
+			int point = this.probabilityControl(1, 100);
+			Random randBoss = new Random();
+			int index = randBoss.nextInt(size);
+			String name = wowBossMaster.getBosses().get(index).getName();
+			return new TextMessage(String.format("%s 擲出了%s (1-100)！", name, point));
+		}
+	}
+
+	private int probabilityControl(int start, int end) {
+		List<Integer> nums = new ArrayList<>();
+		for (int i = start; i <= end; i++) {
+			nums.add(i);
+		}
+		int[] numsToGenerate = nums.stream().mapToInt(i->i).toArray();
+		double[] discreteProbabilities = NudoCCUtil.zipfDistribution(end-start+1);
+		int[] result = NudoCCUtil.getIntegerDistribution(numsToGenerate, discreteProbabilities, 1);
+		return result[0];
 	}
 	
 }

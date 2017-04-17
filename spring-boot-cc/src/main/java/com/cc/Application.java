@@ -16,21 +16,14 @@
 
 package com.cc;
 
-import java.io.IOException;
-import java.util.Random;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
-import com.cc.bean.WowBossMaster;
 import com.cc.bean.WowCommandBean;
 import com.cc.service.INudoCCService;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.PostbackEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
@@ -38,7 +31,6 @@ import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
-import com.utils.NudoCCUtil;
 
 /**
  * 
@@ -52,18 +44,6 @@ public class Application {
 	
 	@Autowired
 	private INudoCCService nudoCCService;
-	
-	private static WowBossMaster wowBossMaster;
-	
-	static {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		try {
-			wowBossMaster = mapper.readValue(Application.class.getResourceAsStream("/wowBoss.json"), new TypeReference<WowBossMaster>(){});
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	/**
 	 * 
@@ -82,72 +62,10 @@ public class Application {
     public Message handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
         String mesg = event.getMessage().getText();
         if (StringUtils.isNotBlank(mesg)) {
-        	WowCommandBean commandBean = nudoCCService.processWowCommand(mesg);
-        	if (commandBean.isWowCommand()) {
-        		//wow command
-        		if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
-            		return new TextMessage(commandBean.getErrorMsg());
-            	} else {
-            		switch (commandBean.getEventEnum()) {
-            			case HELP:
-            				return nudoCCService.getHelp();
-    					case PROFILE:
-    						return nudoCCService.buildCharacterTemplate(commandBean.getName());
-    					case IMG:
-    						return nudoCCService.findWowCharacterImgPath(commandBean.getName());
-    					case ITEM:
-    						return nudoCCService.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
-    					case CHECK_ENCHANTS:
-    						return nudoCCService.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
-    					case TEST:
-    						//TODO
-    					default:
-    						return null;
-    				}
-            	}
-        	} else {
-        		//other command
-        		if (mesg.startsWith(NudoCCUtil.ROLL_COMMAND)) {
-        			String scope = mesg.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY);
-        			if (StringUtils.isNotBlank(scope) && scope.indexOf(" ") == 0) {
-        				String[] scopes = scope.trim().split("-");
-        				if (scopes.length != 2) {
-        					return new TextMessage("指定範圍有誤！");
-        				} else {
-        					int start, end = 0;
-        					try {
-        						start = Integer.parseInt(scopes[0]);
-        						end = Integer.parseInt(scopes[1]);
-        					} catch (NumberFormatException e) {
-        						return new TextMessage("指定範圍有誤！");
-        					}
-        					int size = wowBossMaster.getBosses().size();
-                			Random rand = new Random();
-                			int point = rand.nextInt(end-start+1) + start;
-                			
-                			Random randBoss = new Random();
-                			int index = randBoss.nextInt(size);
-                			String name = wowBossMaster.getBosses().get(index).getName();
-                			return new TextMessage(String.format("%s 擲出了%s (%s-%s)！", name, point, start, end));
-        				}
-        			} else {
-        				int size = wowBossMaster.getBosses().size();
-            			Random rand = new Random();
-            			int point = rand.nextInt(100) + 1;
-            			
-            			Random randBoss = new Random();
-            			int index = randBoss.nextInt(size);
-            			String name = wowBossMaster.getBosses().get(index).getName();
-            			return new TextMessage(String.format("%s 擲出了%s (1-100)！", name, point));
-        			}
-        		}
-        		return null;
-        	}
-        	
+        	return nudoCCService.processCommand(mesg);
         } else {
             return null;
         }
-
     }
     
     /**

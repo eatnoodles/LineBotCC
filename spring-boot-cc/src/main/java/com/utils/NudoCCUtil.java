@@ -3,6 +3,8 @@
  */
 package com.utils;
 
+import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
+
 import com.cc.enums.WowItemPartsEnum;
 
 /**
@@ -50,8 +52,44 @@ public class NudoCCUtil {
 	
 	public static final String ROLL_COMMAND = "/roll";
 	
+	public static final String ROLL_SUB_COMMAND_A = "-a";
+	
 	public static final WowItemPartsEnum[] enchantsParts = {WowItemPartsEnum.NECK, WowItemPartsEnum.SHOULDER,
 															WowItemPartsEnum.FINGER1, WowItemPartsEnum.FINGER2,
 															WowItemPartsEnum.BACK
 															};
+	
+	/**
+	 * 根據sie zip 機率 (y = 1/x^2)
+	 * 
+	 * @param populationSize
+	 * @return
+	 */
+	public static double[] zipfDistribution(int populationSize) {
+		double[] ratio = new double[populationSize];
+		for (int i = 1; i < populationSize; ++i){
+			ratio[i-1] = 1.0 / (double) i;
+		}
+		double sum = 0.0;
+		for (int i = 0; i < ratio.length; ++i)
+			sum += ratio[i];
+		for (int i = 0; i < ratio.length; ++i)
+			ratio[i] /= sum;
+		return ratio;
+	}
+	
+	/**
+	 * 根據機率取得int array
+	 * 
+	 * @param numsToGenerate :產生的int基底
+	 * @param discreteProbabilities :權重array
+	 * @param numSamples :產生筆數
+	 * @return
+	 */
+	public static int[] getIntegerDistribution(int[] numsToGenerate, double[] discreteProbabilities, int numSamples) {
+		EnumeratedIntegerDistribution distribution = 
+				new EnumeratedIntegerDistribution(numsToGenerate, discreteProbabilities);
+
+		return distribution.sample(numSamples);
+	}
 }

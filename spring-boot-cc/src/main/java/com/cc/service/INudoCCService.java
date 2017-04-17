@@ -74,5 +74,18 @@ public interface INudoCCService {
 	 */
 	public TextMessage checkCharacterEnchants(String name, String realm);
 
+	/**
+	 * 取得協助
+	 * 
+	 * @return
+	 */
 	public TextMessage getHelp();
+
+	/**
+	 * 根據request傳來的command回傳message
+	 * 
+	 * @param command
+	 * @return
+	 */
+	public Message processCommand(String command);
 }
