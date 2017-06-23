@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +32,7 @@ import com.cc.enums.WowItemPartsEnum;
 import com.cc.enums.WowProfileFieldEnum;
 import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
+import com.cc.service.IRemoteService;
 import com.cc.service.IWowCharacterProfileService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -53,6 +55,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 
 	@Autowired
 	private IWowCharacterProfileService wowCharacterProfileService;
+	
+	@Autowired
+	private IRemoteService remoteService;
 	
 	private static WowBossMaster wowBossMaster;
 	
@@ -444,9 +449,27 @@ public class NudoCCServiceImpl implements INudoCCService {
     		//other command
     		if (mesg.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
     			return this.getRollNumber(mesg.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
+    		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.NS_COMMAND)) {
+    			return this.getNintendoStoreResult();
     		}
     		return null;
     	}
+	}
+
+	private Message getNintendoStoreResult() {
+		boolean soldOut = true;
+		while (soldOut) {
+			try {
+				TimeUnit.MINUTES.sleep(2);
+				String response = remoteService.call("https://store.nintendo.co.jp/customize.html");
+				if (response.indexOf("SOLD OUT") != -1) {
+					soldOut = false;
+				}
+			} catch (InterruptedException e) {
+				return new TextMessage("server error! error code: e04");
+			}
+		}
+		return new TextMessage("switch官網現在有貨!");
 	}
 
 	private TextMessage getRollNumber(String command) {

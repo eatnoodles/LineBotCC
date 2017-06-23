@@ -52,6 +52,8 @@ public class NudoCCUtil {
 	
 	public static final String ROLL_COMMAND = "/roll";
 	
+	public static final String NS_COMMAND = "/ns";
+	
 	public static final String ROLL_SUB_COMMAND_A = "-a";
 	
 	public static final WowItemPartsEnum[] enchantsParts = {WowItemPartsEnum.NECK, WowItemPartsEnum.SHOULDER,
