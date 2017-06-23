@@ -457,19 +457,22 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 
 	private Message getNintendoStoreResult() {
-		boolean soldOut = true;
-		while (soldOut) {
-			try {
-				TimeUnit.MINUTES.sleep(2);
-				String response = remoteService.call("https://store.nintendo.co.jp/customize.html");
-				if (response.indexOf("SOLD OUT") != -1) {
-					soldOut = false;
-				}
-			} catch (InterruptedException e) {
-				return new TextMessage("server error! error code: e04");
-			}
-		}
-		return new TextMessage("switch官網現在有貨!");
+		String response = remoteService.call("https://store.nintendo.co.jp/customize.html");
+		if (response.indexOf("SOLD OUT") != -1) return new TextMessage("switch官網現在有貨!");
+		else return new TextMessage("switch官網現在沒貨!");
+			
+//		while (soldOut) {
+//			try {
+//				TimeUnit.MINUTES.sleep(2);
+//				String response = remoteService.call("https://store.nintendo.co.jp/customize.html");
+//				if (response.indexOf("SOLD OUT") != -1) {
+//					soldOut = false;
+//				}
+//			} catch (InterruptedException e) {
+//				return new TextMessage("server error! error code: e04");
+//			}
+//		}
+//		return new TextMessage("switch官網現在有貨!");
 	}
 
 	private TextMessage getRollNumber(String command) {
