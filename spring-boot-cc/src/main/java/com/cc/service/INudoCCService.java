@@ -87,5 +87,5 @@ public interface INudoCCService {
 	 * @param command
 	 * @return
 	 */
-	public Message processCommand(String command);
+	public Message processCommand(String command, String userId);
 }

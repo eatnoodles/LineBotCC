@@ -421,7 +421,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @return
 	 */
 	@Override
-	public Message processCommand(String mesg) {
+	public Message processCommand(String mesg, String userId) {
 		WowCommandBean commandBean = this.processWowCommand(mesg);
     	if (commandBean.isWowCommand()) {
     		//wow command
@@ -451,6 +451,8 @@ public class NudoCCServiceImpl implements INudoCCService {
     			return this.getRollNumber(mesg.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
     		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.NS_COMMAND)) {
     			return this.getNintendoStoreResult();
+    		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.GET_USER_ID_COMMAND)) {
+    			return new TextMessage(String.format("你的userId=[%s]", userId));
     		}
     		return null;
     	}

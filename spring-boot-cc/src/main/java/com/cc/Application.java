@@ -16,6 +16,8 @@
 
 package com.cc;
 
+import java.util.Timer;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -31,6 +33,7 @@ import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
+import com.utils.CCTask;
 
 /**
  * 
@@ -50,6 +53,11 @@ public class Application {
 	 * @param args
 	 */
     public static void main(String[] args) {
+    	
+//    	retrofitImpl.pushMessage(pushMessage)
+    	Timer timer = new Timer();
+		timer.schedule(new CCTask(), 5000, 10000);
+		
         SpringApplication.run(Application.class, args);
     }
 
@@ -61,8 +69,10 @@ public class Application {
     @EventMapping
     public Message handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
         String mesg = event.getMessage().getText();
+        String userId = event.getSource().getUserId();
+        
         if (StringUtils.isNotBlank(mesg)) {
-        	return nudoCCService.processCommand(mesg);
+        	return nudoCCService.processCommand(mesg, userId);
         } else {
             return null;
         }
