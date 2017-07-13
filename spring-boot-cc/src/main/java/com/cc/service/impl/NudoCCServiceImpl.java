@@ -470,7 +470,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		CCTask task = CCTask.getInstance(retrofitImpl);
 		Timer timer = new Timer();
 		timer.schedule(task, 5000, 10000);
-		return new TextMessage(String.format("開始timer userId=[%s]", userId));
+		return new TextMessage(String.format("開始timer userId=[%s]", retrofitImpl));
 	}
 
 	private Message getNintendoStoreResult() {
