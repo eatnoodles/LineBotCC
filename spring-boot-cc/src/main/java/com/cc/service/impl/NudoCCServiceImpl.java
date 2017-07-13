@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.Timer;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +37,7 @@ import com.cc.service.IWowCharacterProfileService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.linecorp.bot.client.LineMessagingClientImpl;
 import com.linecorp.bot.client.LineMessagingService;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.PostbackAction;
@@ -467,10 +467,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 	
 	private Message runTimer(String userId) {
-		CCTask task = CCTask.getInstance(retrofitImpl);
+		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
+        
+		CCTask task = CCTask.getInstance(client);
 		Timer timer = new Timer();
 		timer.schedule(task, 5000, 10000);
-		return new TextMessage(String.format("開始timer userId=[%s]", retrofitImpl));
+		return new TextMessage(String.format("開始timer userId=[%s]", client));
 	}
 
 	private Message getNintendoStoreResult() {
