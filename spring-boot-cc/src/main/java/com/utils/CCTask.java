@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.linecorp.bot.client.LineMessagingService;
 import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.message.Message;
@@ -15,7 +13,28 @@ public class CCTask extends TimerTask {
 	
 	private int i = 0;
 	
-	@Autowired
+	private static CCTask instance = null;
+
+	
+	private CCTask() {
+		
+	}
+	
+	public static CCTask getInstance(LineMessagingService retrofitImpl) {
+		if (instance == null) {
+			synchronized (CCTask.class) {
+				if (instance == null) {
+					instance = new CCTask(retrofitImpl);
+				}
+			}
+		}
+		return instance;
+	}
+	
+	private CCTask(LineMessagingService retrofitImpl){
+		this.retrofitImpl = retrofitImpl;
+	}
+	
 	private LineMessagingService retrofitImpl;
 	
 	public void run() {

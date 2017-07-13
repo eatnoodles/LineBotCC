@@ -53,11 +53,6 @@ public class Application {
 	 * @param args
 	 */
     public static void main(String[] args) {
-    	
-//    	retrofitImpl.pushMessage(pushMessage)
-    	Timer timer = new Timer();
-		timer.schedule(new CCTask(), 5000, 10000);
-		
         SpringApplication.run(Application.class, args);
     }
 

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,6 +38,7 @@ import com.cc.service.IWowCharacterProfileService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.linecorp.bot.client.LineMessagingService;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.message.ImageMessage;
@@ -44,6 +46,7 @@ import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
+import com.utils.CCTask;
 import com.utils.NudoCCUtil;
 
 /**
@@ -60,6 +63,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 	private IRemoteService remoteService;
 	
 	private static WowBossMaster wowBossMaster;
+	
+	@Autowired
+	private LineMessagingService retrofitImpl;
 	
 	static {
 		ObjectMapper mapper = new ObjectMapper();
@@ -453,9 +459,18 @@ public class NudoCCServiceImpl implements INudoCCService {
     			return this.getNintendoStoreResult();
     		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.GET_USER_ID_COMMAND)) {
     			return new TextMessage(String.format("你的userId=[%s]", userId));
+    		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.RUN_TIMER_COMMAND)) {
+    			return runTimer(userId);
     		}
     		return null;
     	}
+	}
+	
+	private Message runTimer(String userId) {
+		CCTask task = CCTask.getInstance(retrofitImpl);
+		Timer timer = new Timer();
+		timer.schedule(task, 5000, 10000);
+		return new TextMessage(String.format("開始timer userId=[%s]", userId));
 	}
 
 	private Message getNintendoStoreResult() {
