@@ -86,7 +86,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	private static Map<String, WowItemResponse> legendMap = new ConcurrentHashMap<>();
 	
-	private LineMessagingService retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
+	private LineMessagingService retrofitImpl;
 	
 	static {
 		ObjectMapper mapper = new ObjectMapper();
@@ -547,6 +547,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 
 	private Message runTimer(String userId) {
+		retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
 		Timer timer = new Timer();
 		timer.schedule(wowNewsTask, 5000, 60000);
