@@ -477,9 +477,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 		PushMessage pushMessage = new PushMessage("U220c4d64ae3d59601364677943517c91", messages);
 		client.pushMessage(pushMessage);
 		
-		CCTask task = CCTask.getInstance(client);
-		Timer timer = new Timer();
-		timer.schedule(task, 5000, 10000);
+//		CCTask task = CCTask.getInstance(client);
+//		Timer timer = new Timer();
+//		timer.schedule(task, 5000, 10000);
 		return new TextMessage(String.format("開始timer userId=[%s]", client));
 	}
 
