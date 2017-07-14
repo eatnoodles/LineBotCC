@@ -498,6 +498,8 @@ public class NudoCCServiceImpl implements INudoCCService {
     			return stopTimer();
     		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.REG_TIMER_COMMAND)) {
     			return regTimer(userId);
+    		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.UNREG_TIMER_COMMAND)) {
+    			return unregTimer(userId);
     		}
     		return null;
     	}
@@ -506,6 +508,11 @@ public class NudoCCServiceImpl implements INudoCCService {
 	private Message regTimer(String userId) {
 		newsUserIds.add(userId);
 		return new TextMessage(String.format("開始使用老爹新聞"));
+	}
+	
+	private Message unregTimer(String userId) {
+		newsUserIds.remove(userId);
+		return new TextMessage(String.format("停止使用老爹新聞"));
 	}
 
 	private Message stopTimer() {
