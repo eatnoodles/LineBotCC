@@ -493,12 +493,19 @@ public class NudoCCServiceImpl implements INudoCCService {
     		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.GET_USER_ID_COMMAND)) {
     			return new TextMessage(String.format("你的userId=[%s]", userId));
     		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.RUN_TIMER_COMMAND)) {
-    			return runTimer(userId);
+    			return runTimer();
     		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.STOP_TIMER_COMMAND)) {
     			return stopTimer();
+    		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.REG_TIMER_COMMAND)) {
+    			return regTimer(userId);
     		}
     		return null;
     	}
+	}
+
+	private Message regTimer(String userId) {
+		newsUserIds.add(userId);
+		return new TextMessage(String.format("開始使用老爹新聞"));
 	}
 
 	private Message stopTimer() {
@@ -509,10 +516,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 		return new TextMessage(String.format("停止timer失敗!"));
 	}
 
-	private Message runTimer(String userId) {
-		newsUserIds.add(userId);
+	private Message runTimer() {
+		buildGuildNew();
+		
 		Timer timer = new Timer();
 		timer.schedule(wowNewsTask, 5000, 60000);
+		
 		return new TextMessage(String.format("開始timer!"));
 	}
 
@@ -568,6 +577,29 @@ public class NudoCCServiceImpl implements INudoCCService {
 		return result[0];
 	}
 	
+	public void buildGuildNew() {
+		LOG.info("buildGuildNew BEGIN");
+		List<New> news = getNews();
+		Date now = new Date();
+		if (news != null && !news.isEmpty()) {
+			for (New guildNew :news) {
+				if ((now.getTime() - guildNew.getTimestamp()) > TIMER_MAX
+					|| !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
+					continue;
+				}
+				String character = guildNew.getCharacter();
+				String key = character + guildNew.getTimestamp();
+				
+				if (legendMap.containsKey(key)) {
+					continue;
+				}
+				WowItemResponse item = getItemById(guildNew.getItemId());
+				legendMap.put(key, item);
+			}
+		}
+		LOG.info("buildGuildNew END");
+	}
+	
 	public void processGuildNew() {
 		LOG.info("processGuildNew BEGIN");
 		List<New> news = getNews();
@@ -582,15 +614,17 @@ public class NudoCCServiceImpl implements INudoCCService {
 				if ( messages.size() == MAX_PUSH_COUNT ) {
 					break;
 				}
-				WowItemResponse item = getItemById(guildNew.getItemId());
-				
 				String character = guildNew.getCharacter();
-				String itemName = item.getName();
 				String key = character + guildNew.getTimestamp();
-				if (!legendMap.containsKey(key)) {
-					messages.add(new TextMessage(String.format("[%s]取得一件[%s]-[%s]", character, item.getItemLevel(), itemName)));
-					legendMap.put(key, item);
+				
+				if (legendMap.containsKey(key)) {
+					continue;
 				}
+				WowItemResponse item = getItemById(guildNew.getItemId());
+				String itemName = item.getName();
+				
+				messages.add(new TextMessage(String.format("[%s]取得一件[%s]-[%s]", character, item.getItemLevel(), itemName)));
+				legendMap.put(key, item);
 			}
 		}
 		if (!messages.isEmpty()) {
