@@ -549,7 +549,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	private Message runTimer(String userId) {
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
 		Timer timer = new Timer();
-		timer.schedule(wowNewsTask, 5000, 600000);
+		timer.schedule(wowNewsTask, 5000, 60000);
 		return new TextMessage(String.format("開始timer userId=[%s]", client));
 	}
 
