@@ -513,7 +513,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	private void sendMessageToUser(TextMessage textMessage) {
 //		"Cb5dbe73a17f36fda9b3bb23f4eea8fa5"
+		retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
+		
 		List<Message> messages = new ArrayList<>();
 		messages.add(textMessage);
 		PushMessage pushMessage = new PushMessage("U220c4d64ae3d59601364677943517c91", messages);
@@ -547,11 +549,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 
 	private Message runTimer(String userId) {
-		retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
-		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
 		Timer timer = new Timer();
 		timer.schedule(wowNewsTask, 5000, 60000);
-		return new TextMessage(String.format("開始timer userId=[%s]", client));
+		return new TextMessage(String.format("開始timer!"));
 	}
 
 	private Message getNintendoStoreResult() {
