@@ -83,7 +83,7 @@ public class Application {
         		return new TextMessage(commandBean.getErrorMsg());
         	} else {
         		switch (commandBean.getEventEnum()) {
-					case ITEM:
+					case CHARACTER_ITEM:
 						return nudoCCService.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
 					case CHECK_ENCHANTS:
 						return nudoCCService.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());

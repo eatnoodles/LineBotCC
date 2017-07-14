@@ -26,6 +26,8 @@ import com.cc.bean.WowCharacterProfileItemResponse.Items;
 import com.cc.bean.WowCharacterProfileParamBean;
 import com.cc.bean.WowCharacterProfileResponse;
 import com.cc.bean.WowCommandBean;
+import com.cc.bean.WowGuildParamBean;
+import com.cc.bean.WowGuildResponse;
 import com.cc.enums.WowClassEnum;
 import com.cc.enums.WowEventEnum;
 import com.cc.enums.WowItemPartsEnum;
@@ -34,13 +36,14 @@ import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
 import com.cc.service.IRemoteService;
 import com.cc.service.IWowCharacterProfileService;
+import com.cc.service.IWowGuildService;
+import com.cc.service.IWowItemService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linecorp.bot.client.LineMessagingClientImpl;
 import com.linecorp.bot.client.LineMessagingService;
 import com.linecorp.bot.client.LineMessagingServiceBuilder;
-import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.message.ImageMessage;
@@ -60,6 +63,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 
 	@Autowired
 	private IWowCharacterProfileService wowCharacterProfileService;
+	
+	@Autowired
+	private IWowItemService wowItemService;
+	
+	@Autowired
+	private IWowGuildService wowGuildService;
 	
 	@Autowired
 	private IRemoteService remoteService;
@@ -190,7 +199,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(WowEventEnum.TEST);
 			name = command.replaceAll(NudoCCUtil.WOW_COMMAND_TEST, StringUtils.EMPTY).trim();
 		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_ITEM)) {
-			bean.setEventEnum(WowEventEnum.ITEM);
+			bean.setEventEnum(WowEventEnum.CHARACTER_ITEM);
 			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_ITEM, StringUtils.EMPTY).trim().split(";");
 			if (array.length != 2) {
 				bean.setErrorMsg(NudoCCUtil.WOW_ITEM_PARAM_ERROR_MSG);
@@ -375,7 +384,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 */
 	private PostbackAction genItemPostbackAction(String name, String realm) {
 		String command = "-wow -i ".concat(name).concat(";").concat(realm);
-		return new PostbackAction(WowEventEnum.ITEM.getContext(), command, String.format("我想知道<%s-%s>的裝等o.o", name, realm));
+		return new PostbackAction(WowEventEnum.CHARACTER_ITEM.getContext(), command, String.format("我想知道<%s-%s>的裝等o.o", name, realm));
 	}
 	
 	/**
@@ -442,12 +451,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 						return this.buildCharacterTemplate(commandBean.getName());
 					case IMG:
 						return this.findWowCharacterImgPath(commandBean.getName());
-					case ITEM:
+					case CHARACTER_ITEM:
 						return this.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
 					case CHECK_ENCHANTS:
 						return this.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
 					case TEST:
-						//TODO
+						return this.getNews();
 					default:
 						return null;
 				}
@@ -467,6 +476,21 @@ public class NudoCCServiceImpl implements INudoCCService {
     	}
 	}
 	
+	private Message getNews() {
+		WowGuildParamBean paramBean = new WowGuildParamBean();
+		paramBean.setGuild("Who is Ur Daddy");
+		paramBean.setRealm(NudoCCUtil.DEFAULT_SERVER);
+		try {
+			WowGuildResponse resp = wowGuildService.doSendNews(paramBean);
+			if (resp.getNews() != null && resp.getNews().isEmpty()) {
+				return new TextMessage(resp.getNews().get(0).getCharacter());
+			}
+			return null;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	private Message runTimer(String userId) {
 		
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);

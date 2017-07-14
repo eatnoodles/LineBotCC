@@ -13,7 +13,7 @@ public enum WowEventEnum {
 	
 	PROFILE(1, "取得角色基本資料"),
 	IMG(2, "取得角色大頭照"),
-	ITEM(3, "角色裝備資訊"),
+	CHARACTER_ITEM(3, "角色裝備資訊"),
 	CHECK_ENCHANTS(4, "看看這個傢伙有沒附魔的裝"),
 	HELP(995, "幫助"),
 	TEST(99, "測試用"),
