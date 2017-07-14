@@ -60,7 +60,7 @@ public class WowNewsTask extends TimerTask {
 		LOG.info("processGuildNew BEGIN");
 		List<New> news = getNews();
 		Date now = new Date();
-		if (news != null && news.isEmpty()) {
+		if (news != null && !news.isEmpty()) {
 			LOG.info("news is not empty!");
 			for (New guildNew :news) {
 				//15hr
@@ -107,20 +107,16 @@ public class WowNewsTask extends TimerTask {
 	}
 
 	private List<New> getNews() {
-		LOG.error("getNews BEGIN");
 		WowGuildParamBean paramBean = new WowGuildParamBean();
 		paramBean.setGuild("Who is Ur Daddy");
 		paramBean.setRealm(NudoCCUtil.DEFAULT_SERVER);
 		try {
 			WowGuildResponse resp = wowGuildService.doSendNews(paramBean);
-			LOG.error("getNews resp=" + resp);
 			if (resp.getNews() != null && !resp.getNews().isEmpty()) {
 				return resp.getNews();
 			}
-			LOG.error("getNews NULL");
 			return null;
 		} catch (Exception e) {
-			
 			LOG.error("getNews error!", e);
 			return null;
 		}
