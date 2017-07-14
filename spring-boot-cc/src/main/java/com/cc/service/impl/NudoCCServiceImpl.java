@@ -6,9 +6,12 @@ package com.cc.service.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Timer;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,6 +31,9 @@ import com.cc.bean.WowCharacterProfileResponse;
 import com.cc.bean.WowCommandBean;
 import com.cc.bean.WowGuildParamBean;
 import com.cc.bean.WowGuildResponse;
+import com.cc.bean.WowGuildResponse.New;
+import com.cc.bean.WowItemParamBean;
+import com.cc.bean.WowItemResponse;
 import com.cc.enums.WowClassEnum;
 import com.cc.enums.WowEventEnum;
 import com.cc.enums.WowItemPartsEnum;
@@ -44,6 +50,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linecorp.bot.client.LineMessagingClientImpl;
 import com.linecorp.bot.client.LineMessagingService;
 import com.linecorp.bot.client.LineMessagingServiceBuilder;
+import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.message.ImageMessage;
@@ -74,6 +81,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 	private IRemoteService remoteService;
 	
 	private static WowBossMaster wowBossMaster;
+	
+	private static Map<String, WowItemResponse> legendMap = new ConcurrentHashMap<>();
 	
 	private LineMessagingService retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
 	
@@ -456,7 +465,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 					case CHECK_ENCHANTS:
 						return this.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
 					case TEST:
-						return this.getNews();
+//						return this.getNews();
 					default:
 						return null;
 				}
@@ -476,14 +485,58 @@ public class NudoCCServiceImpl implements INudoCCService {
     	}
 	}
 	
-	private Message getNews() {
+	public void processGuildNew() {
+		List<New> news = getNews();
+		Date now = new Date();
+		if (news != null && news.isEmpty()) {
+			for (New guildNew :news) {
+				//12hr
+				if ((now.getTime() - guildNew.getTimestamp()) > 4320000 || !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
+					continue;
+				}
+				WowItemResponse item = getItemById(guildNew.getItemId());
+				
+				if ("970".equals(item.getItemLevel())) {
+					String character = guildNew.getCharacter();
+					String itemName = item.getName();
+					String key = character + guildNew.getTimestamp();
+					if (!legendMap.containsKey(key)) {
+						sendMessageToUser(new TextMessage(String.format("[%s]取得一件傳說級裝備[%s]", character, itemName)));
+						legendMap.put(key, item);
+					}
+				}
+			}
+		}
+	}
+	
+	private void sendMessageToUser(TextMessage textMessage) {
+//		"Cb5dbe73a17f36fda9b3bb23f4eea8fa5"
+		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
+		List<Message> messages = new ArrayList<>();
+		messages.add(textMessage);
+		PushMessage pushMessage = new PushMessage("U220c4d64ae3d59601364677943517c91", messages);
+		client.pushMessage(pushMessage);
+	}
+
+	private WowItemResponse getItemById(String itemId) {
+		WowItemParamBean paramBean = new WowItemParamBean();
+		paramBean.setItemId(itemId);
+		try {
+			WowItemResponse resp = wowItemService.doSend(paramBean);
+			return resp;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private List<New> getNews() {
 		WowGuildParamBean paramBean = new WowGuildParamBean();
 		paramBean.setGuild("Who is Ur Daddy");
 		paramBean.setRealm(NudoCCUtil.DEFAULT_SERVER);
 		try {
 			WowGuildResponse resp = wowGuildService.doSendNews(paramBean);
-			if (resp.getNews() != null && resp.getNews().isEmpty()) {
-				return new TextMessage(resp.getNews().get(0).getCharacter());
+			if (resp.getNews() != null && !resp.getNews().isEmpty()) {
+				return resp.getNews();
 			}
 			return null;
 		} catch (Exception e) {
@@ -495,9 +548,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 		
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
 		
-		CCTask task = CCTask.getInstance(client);
+		CCTask task = CCTask.getInstance();
 		Timer timer = new Timer();
-		timer.schedule(task, 5000, 10000);
+		timer.schedule(task, 5000, 600000);
 		return new TextMessage(String.format("開始timer userId=[%s]", client));
 	}
 

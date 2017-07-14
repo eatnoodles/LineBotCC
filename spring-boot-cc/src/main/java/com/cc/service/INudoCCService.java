@@ -88,4 +88,6 @@ public interface INudoCCService {
 	 * @return
 	 */
 	public Message processCommand(String command, String userId);
+
+	public void processGuildNew();
 }

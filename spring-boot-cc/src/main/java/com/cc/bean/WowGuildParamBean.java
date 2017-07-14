@@ -46,7 +46,11 @@ public class WowGuildParamBean extends BaseWOWParamBean {
 	}
 
 	public void setGuild(String guild) {
-		this.guild = guild;
+		if (guild != null) {
+			this.guild = guild.replaceAll(" ", "%20");
+		} else {
+			this.guild = guild;
+		}
 	}
 
 	public WowGuildEnum getFields() {

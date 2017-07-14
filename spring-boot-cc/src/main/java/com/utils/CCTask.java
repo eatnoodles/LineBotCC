@@ -1,17 +1,15 @@
 package com.utils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.TimerTask;
 
-import com.linecorp.bot.client.LineMessagingClientImpl;
-import com.linecorp.bot.model.PushMessage;
-import com.linecorp.bot.model.message.Message;
-import com.linecorp.bot.model.message.TextMessage;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.cc.service.INudoCCService;
 
 public class CCTask extends TimerTask {
 	
-	private int i = 0;
+	@Autowired
+	private INudoCCService nudoCCService;
 	
 	private static CCTask instance = null;
 
@@ -20,27 +18,18 @@ public class CCTask extends TimerTask {
 		
 	}
 	
-	public static CCTask getInstance(LineMessagingClientImpl client) {
+	public static CCTask getInstance() {
 		if (instance == null) {
 			synchronized (CCTask.class) {
 				if (instance == null) {
-					instance = new CCTask(client);
+					instance = new CCTask();
 				}
 			}
 		}
 		return instance;
 	}
 	
-	private CCTask(LineMessagingClientImpl client){
-		this.client = client;
-	}
-	
-	private LineMessagingClientImpl client;
-	
 	public void run() {
-		List<Message> messages = new ArrayList<>();
-		messages.add(new TextMessage("測試" + i+1));
-		PushMessage pushMessage = new PushMessage("U220c4d64ae3d59601364677943517c91", messages);
-		client.pushMessage(pushMessage);
+		nudoCCService.processGuildNew();
 	}
 }

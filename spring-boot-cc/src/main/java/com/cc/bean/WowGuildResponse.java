@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class WowGuildResponse extends BaseWOWResponse {
 	
-	public class New {
+	public static class New {
 		private String type;
 		
 		private String character;
