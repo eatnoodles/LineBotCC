@@ -556,7 +556,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		if (news != null && !news.isEmpty()) {
 			LOG.info("news is not empty!");
 			for (New guildNew :news) {
-				if ((now.getTime() - guildNew.getTimestamp()) > 60000000 || !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
+				if ((now.getTime() - guildNew.getTimestamp()) > 70000000 || !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
 					continue;
 				}
 				LOG.info("process item!");
