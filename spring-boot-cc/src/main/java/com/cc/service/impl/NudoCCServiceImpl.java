@@ -493,7 +493,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		if (news != null && news.isEmpty()) {
 			for (New guildNew :news) {
 				//15hr
-				if ((now.getTime() - guildNew.getTimestamp()) > 54000000 || !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
+				if ((now.getTime() - guildNew.getTimestamp()) > 57600000 || !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
 					continue;
 				}
 				WowItemResponse item = getItemById(guildNew.getItemId());
