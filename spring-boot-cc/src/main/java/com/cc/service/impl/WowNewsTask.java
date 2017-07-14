@@ -107,16 +107,21 @@ public class WowNewsTask extends TimerTask {
 	}
 
 	private List<New> getNews() {
+		LOG.error("getNews BEGIN");
 		WowGuildParamBean paramBean = new WowGuildParamBean();
 		paramBean.setGuild("Who is Ur Daddy");
 		paramBean.setRealm(NudoCCUtil.DEFAULT_SERVER);
 		try {
 			WowGuildResponse resp = wowGuildService.doSendNews(paramBean);
+			LOG.error("getNews resp=" + resp);
 			if (resp.getNews() != null && !resp.getNews().isEmpty()) {
 				return resp.getNews();
 			}
+			LOG.error("getNews NULL");
 			return null;
 		} catch (Exception e) {
+			
+			LOG.error("getNews error!", e);
 			return null;
 		}
 	}
