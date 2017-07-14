@@ -98,6 +98,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	private static final Long TIMER_MAX = 80000000L;
 	
+	private static final int MAX_PUSH_COUNT = 5;
+	
 	static {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -563,10 +565,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 		List<Message> messages = new ArrayList<>();
 		if (news != null && !news.isEmpty()) {
 			for (New guildNew :news) {
-				if ((now.getTime() - guildNew.getTimestamp()) > TIMER_MAX || !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
+				if ((now.getTime() - guildNew.getTimestamp()) > TIMER_MAX
+					|| !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
 					continue;
 				}
-				LOG.info("process item!");
+				if ( messages.size() == MAX_PUSH_COUNT ) {
+					break;
+				}
 				WowItemResponse item = getItemById(guildNew.getItemId());
 				
 				String character = guildNew.getCharacter();
