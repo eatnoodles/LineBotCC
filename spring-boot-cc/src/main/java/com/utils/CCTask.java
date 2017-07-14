@@ -3,9 +3,10 @@ package com.utils;
 import java.util.TimerTask;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.cc.service.INudoCCService;
-
+@Component
 public class CCTask extends TimerTask {
 	
 	@Autowired
