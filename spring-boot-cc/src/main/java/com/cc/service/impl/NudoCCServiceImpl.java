@@ -492,21 +492,21 @@ public class NudoCCServiceImpl implements INudoCCService {
 		Date now = new Date();
 		if (news != null && news.isEmpty()) {
 			for (New guildNew :news) {
-				//12hr
-				if ((now.getTime() - guildNew.getTimestamp()) > 4320000 || !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
+				//15hr
+				if ((now.getTime() - guildNew.getTimestamp()) > 54000000 || !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
 					continue;
 				}
 				WowItemResponse item = getItemById(guildNew.getItemId());
 				
-				if ("970".equals(item.getItemLevel())) {
+//				if ("970".equals(item.getItemLevel())) {
 					String character = guildNew.getCharacter();
 					String itemName = item.getName();
 					String key = character + guildNew.getTimestamp();
 					if (!legendMap.containsKey(key)) {
-						sendMessageToUser(new TextMessage(String.format("[%s]取得一件傳說級裝備[%s]", character, itemName)));
+						sendMessageToUser(new TextMessage(String.format("[%s]取得一件[%s]-[%s]", character, item.getItemLevel(), itemName)));
 						legendMap.put(key, item);
 					}
-				}
+//				}
 			}
 		}
 	}
