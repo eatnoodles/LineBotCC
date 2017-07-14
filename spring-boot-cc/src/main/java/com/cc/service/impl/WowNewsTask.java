@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,9 +39,12 @@ public class WowNewsTask extends TimerTask {
 
 	private static Map<String, WowItemResponse> legendMap = new ConcurrentHashMap<>();
 	
+	private static final Logger LOG = LoggerFactory.getLogger(WowNewsTask.class);
+	
 	private LineMessagingService retrofitImpl;
 	
 	public void run() {
+		LOG.info("WowNewsTask BEGIN");
 //		retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
 //		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
 //		
@@ -48,17 +53,21 @@ public class WowNewsTask extends TimerTask {
 //		PushMessage pushMessage = new PushMessage("U220c4d64ae3d59601364677943517c91", messages);
 //		client.pushMessage(pushMessage);
 		processGuildNew();
+		LOG.info("WowNewsTask END");
 	}
 	
 	public void processGuildNew() {
+		LOG.info("processGuildNew BEGIN");
 		List<New> news = getNews();
 		Date now = new Date();
 		if (news != null && news.isEmpty()) {
+			LOG.info("news is not empty!");
 			for (New guildNew :news) {
 				//15hr
 				if ((now.getTime() - guildNew.getTimestamp()) > 57600000 || !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
 					continue;
 				}
+				LOG.info("process item!");
 				WowItemResponse item = getItemById(guildNew.getItemId());
 				
 //				if ("970".equals(item.getItemLevel())) {
@@ -72,6 +81,7 @@ public class WowNewsTask extends TimerTask {
 //				}
 			}
 		}
+		LOG.info("processGuildNew END");
 	}
 	
 	private void sendMessageToUser(TextMessage textMessage) {
