@@ -88,6 +88,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	private static Map<String, WowItemResponse> legendMap = new ConcurrentHashMap<>();
 	
+//	private static Set<String> NewsUserIds = new ConcurrentSet<>();
+	
 	private static final Logger LOG = LoggerFactory.getLogger(NudoCCServiceImpl.class);
 	
 	private LineMessagingService retrofitImpl;
@@ -553,8 +555,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 		LOG.info("processGuildNew BEGIN");
 		List<New> news = getNews();
 		Date now = new Date();
+		List<Message> messages = new ArrayList<>();
 		if (news != null && !news.isEmpty()) {
-			LOG.info("news is not empty!");
 			for (New guildNew :news) {
 				if ((now.getTime() - guildNew.getTimestamp()) > 70000000 || !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
 					continue;
@@ -562,27 +564,26 @@ public class NudoCCServiceImpl implements INudoCCService {
 				LOG.info("process item!");
 				WowItemResponse item = getItemById(guildNew.getItemId());
 				
-//				if ("970".equals(item.getItemLevel())) {
-					String character = guildNew.getCharacter();
-					String itemName = item.getName();
-					String key = character + guildNew.getTimestamp();
-					if (!legendMap.containsKey(key)) {
-						sendMessageToUser(new TextMessage(String.format("[%s]取得一件[%s]-[%s]", character, item.getItemLevel(), itemName)));
-						legendMap.put(key, item);
-					}
-//				}
+				String character = guildNew.getCharacter();
+				String itemName = item.getName();
+				String key = character + guildNew.getTimestamp();
+				if (!legendMap.containsKey(key)) {
+					messages.add(new TextMessage(String.format("[%s]取得一件[%s]-[%s]", character, item.getItemLevel(), itemName)));
+					legendMap.put(key, item);
+				}
 			}
+		}
+		if (!messages.isEmpty()) {
+			sendMessageToUser(messages);
 		}
 		LOG.info("processGuildNew END");
 	}
 	
-	private void sendMessageToUser(TextMessage textMessage) {
+	private void sendMessageToUser(List<Message> messages) {
 //		"Cb5dbe73a17f36fda9b3bb23f4eea8fa5"
 		retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
 		
-		List<Message> messages = new ArrayList<>();
-		messages.add(textMessage);
 		PushMessage pushMessage = new PushMessage("U220c4d64ae3d59601364677943517c91", messages);
 		client.pushMessage(pushMessage);
 	}
