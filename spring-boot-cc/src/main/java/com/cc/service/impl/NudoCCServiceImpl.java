@@ -66,7 +66,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	private static WowBossMaster wowBossMaster;
 	
-	private LineMessagingService retrofitImpl;
+	private LineMessagingService retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
 	
 	static {
 		ObjectMapper mapper = new ObjectMapper();
@@ -469,17 +469,11 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	private Message runTimer(String userId) {
 		
-		retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
 		
-		List<Message> messages = new ArrayList<>();
-		messages.add(new TextMessage("測試"));
-		PushMessage pushMessage = new PushMessage("U220c4d64ae3d59601364677943517c91", messages);
-		client.pushMessage(pushMessage);
-		
-//		CCTask task = CCTask.getInstance(client);
-//		Timer timer = new Timer();
-//		timer.schedule(task, 5000, 10000);
+		CCTask task = CCTask.getInstance(client);
+		Timer timer = new Timer();
+		timer.schedule(task, 5000, 10000);
 		return new TextMessage(String.format("開始timer userId=[%s]", client));
 	}
 
