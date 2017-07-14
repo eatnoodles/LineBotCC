@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linecorp.bot.client.LineMessagingClientImpl;
 import com.linecorp.bot.client.LineMessagingService;
 import com.linecorp.bot.client.LineMessagingServiceBuilder;
+import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.message.ImageMessage;
@@ -65,7 +66,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	private static WowBossMaster wowBossMaster;
 	
-	private LineMessagingService retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();;
+	private LineMessagingService retrofitImpl;
 	
 	static {
 		ObjectMapper mapper = new ObjectMapper();
@@ -467,8 +468,15 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 	
 	private Message runTimer(String userId) {
+		
+		retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
-        
+		
+		List<Message> messages = new ArrayList<>();
+		messages.add(new TextMessage("測試"));
+		PushMessage pushMessage = new PushMessage("U220c4d64ae3d59601364677943517c91", messages);
+		client.pushMessage(pushMessage);
+		
 		CCTask task = CCTask.getInstance(client);
 		Timer timer = new Timer();
 		timer.schedule(task, 5000, 10000);
