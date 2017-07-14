@@ -14,7 +14,7 @@ public class WowItemParamBean extends BaseWOWParamBean {
 	@Override
 	public String getUrl() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(getWowServer()).append(SERVICE).append(NudoCCUtil.QUESTION_MARK).append(itemId).append("&");
+		sb.append(getWowServer()).append(SERVICE).append(NudoCCUtil.SLASH).append(itemId).append(NudoCCUtil.QUESTION_MARK);
 		sb.append("locale=").append(getLocale()).append("&apikey=").append(getApikey());
 		return sb.toString();
 	}
