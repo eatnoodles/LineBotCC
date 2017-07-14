@@ -39,6 +39,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linecorp.bot.client.LineMessagingClientImpl;
 import com.linecorp.bot.client.LineMessagingService;
+import com.linecorp.bot.client.LineMessagingServiceBuilder;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.message.ImageMessage;
@@ -64,8 +65,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	private static WowBossMaster wowBossMaster;
 	
-	@Autowired
-	private LineMessagingService retrofitImpl;
+	private LineMessagingService retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();;
 	
 	static {
 		ObjectMapper mapper = new ObjectMapper();
