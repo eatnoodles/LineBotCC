@@ -494,9 +494,19 @@ public class NudoCCServiceImpl implements INudoCCService {
     			return new TextMessage(String.format("你的userId=[%s]", userId));
     		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.RUN_TIMER_COMMAND)) {
     			return runTimer(userId);
+    		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.STOP_TIMER_COMMAND)) {
+    			return stopTimer();
     		}
     		return null;
     	}
+	}
+
+	private Message stopTimer() {
+		boolean isCancel = wowNewsTask.cancel();
+		if (isCancel) {
+			return new TextMessage(String.format("停止timer!"));
+		}
+		return new TextMessage(String.format("停止timer失敗!"));
 	}
 
 	private Message runTimer(String userId) {

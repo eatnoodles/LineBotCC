@@ -58,6 +58,8 @@ public class NudoCCUtil {
 	
 	public static final String RUN_TIMER_COMMAND = "/timer";
 	
+	public static final String STOP_TIMER_COMMAND = "/stoptimer";
+	
 	public static final String ROLL_SUB_COMMAND_A = "-a";
 	
 	public static final WowItemPartsEnum[] enchantsParts = {WowItemPartsEnum.NECK, WowItemPartsEnum.SHOULDER,
