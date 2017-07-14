@@ -58,7 +58,6 @@ import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
-import com.utils.CCTask;
 import com.utils.NudoCCUtil;
 
 /**
@@ -79,6 +78,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	@Autowired
 	private IRemoteService remoteService;
+	
+	@Autowired
+	private WowNewsTask wowNewsTask;
 	
 	private static WowBossMaster wowBossMaster;
 	
@@ -545,12 +547,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 
 	private Message runTimer(String userId) {
-		
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
-		
-		CCTask task = CCTask.getInstance();
 		Timer timer = new Timer();
-		timer.schedule(task, 5000, 600000);
+		timer.schedule(wowNewsTask, 5000, 600000);
 		return new TextMessage(String.format("開始timer userId=[%s]", client));
 	}
 

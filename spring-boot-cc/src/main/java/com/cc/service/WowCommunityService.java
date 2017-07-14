@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.cc.bean.BaseWOWParamBean;
 import com.cc.bean.BaseWOWResponse;
-import com.cc.service.impl.RemoteServiceImpl;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -18,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public abstract class WowCommunityService < TResponseDataBean extends BaseWOWResponse, TParamBean extends BaseWOWParamBean > {
 
 	@Autowired
-	private IRemoteService remoteService = new RemoteServiceImpl();
+	private IRemoteService remoteService;
 	
 	protected TResponseDataBean send (TParamBean paramBean) throws Exception {
 		String response = remoteService.call(paramBean.getUrl());
