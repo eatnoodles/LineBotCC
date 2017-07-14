@@ -10,8 +10,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -88,11 +90,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	private static Map<String, WowItemResponse> legendMap = new ConcurrentHashMap<>();
 	
-//	private static Set<String> NewsUserIds = new ConcurrentSet<>();
+	private static Set<String> newsUserIds = new ConcurrentSkipListSet<>();
 	
 	private static final Logger LOG = LoggerFactory.getLogger(NudoCCServiceImpl.class);
 	
 	private LineMessagingService retrofitImpl;
+	
+	private static final Long TIMER_MAX = 80000000L;
 	
 	static {
 		ObjectMapper mapper = new ObjectMapper();
@@ -494,6 +498,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 
 	private Message runTimer(String userId) {
+		newsUserIds.add(userId);
 		Timer timer = new Timer();
 		timer.schedule(wowNewsTask, 5000, 60000);
 		return new TextMessage(String.format("開始timer!"));
@@ -558,7 +563,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		List<Message> messages = new ArrayList<>();
 		if (news != null && !news.isEmpty()) {
 			for (New guildNew :news) {
-				if ((now.getTime() - guildNew.getTimestamp()) > 70000000 || !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
+				if ((now.getTime() - guildNew.getTimestamp()) > TIMER_MAX || !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
 					continue;
 				}
 				LOG.info("process item!");
@@ -580,12 +585,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 	
 	private void sendMessageToUser(List<Message> messages) {
-//		"Cb5dbe73a17f36fda9b3bb23f4eea8fa5"
 		retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
 		
-		PushMessage pushMessage = new PushMessage("U220c4d64ae3d59601364677943517c91", messages);
-		client.pushMessage(pushMessage);
+		for (String userId :newsUserIds) {
+			PushMessage pushMessage = new PushMessage(userId, messages);
+			client.pushMessage(pushMessage);
+		}
 	}
 
 	private WowItemResponse getItemById(String itemId) {
