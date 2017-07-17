@@ -4,6 +4,8 @@
 package com.cc.service;
 
 import com.cc.bean.WowCommandBean;
+import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.ImageMessage;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
@@ -84,10 +86,10 @@ public interface INudoCCService {
 	/**
 	 * 根據request傳來的command回傳message
 	 * 
-	 * @param command
+	 * @param event
 	 * @return
 	 */
-	public Message processCommand(String command, String userId);
+	public Message processCommand(MessageEvent<TextMessageContent> event);
 
 	public void processGuildNew();
 }

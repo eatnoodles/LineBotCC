@@ -60,14 +60,7 @@ public class Application {
      */
     @EventMapping
     public Message handleTextMessageEvent(MessageEvent<TextMessageContent> event) {
-        String mesg = event.getMessage().getText();
-        String userId = event.getSource().getSenderId();
-        
-        if (StringUtils.isNotBlank(mesg)) {
-        	return nudoCCService.processCommand(mesg, userId);
-        } else {
-            return null;
-        }
+    	return nudoCCService.processCommand(event);
     }
     
     /**

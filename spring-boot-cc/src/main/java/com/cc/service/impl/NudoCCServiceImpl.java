@@ -56,6 +56,8 @@ import com.linecorp.bot.client.LineMessagingServiceBuilder;
 import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.PostbackAction;
+import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.ImageMessage;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
@@ -452,11 +454,20 @@ public class NudoCCServiceImpl implements INudoCCService {
 	/**
 	 * 根據request傳來的command回傳message
 	 * 
-	 * @param command
+	 * @param event
 	 * @return
 	 */
 	@Override
-	public Message processCommand(String mesg, String userId) {
+	public Message processCommand(MessageEvent<TextMessageContent> event) {
+		
+		String mesg = event.getMessage().getText();
+        String senderId = event.getSource().getSenderId();
+        String userId = event.getSource().getUserId();
+        
+        if (StringUtils.isBlank(mesg)) {
+        	return null;
+        }
+        
 		WowCommandBean commandBean = this.processWowCommand(mesg);
     	if (commandBean.isWowCommand()) {
     		//wow command
@@ -484,13 +495,24 @@ public class NudoCCServiceImpl implements INudoCCService {
     		//other command
     		if (mesg.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
     			return this.getRollNumber(mesg.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
-    		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.NS_COMMAND)) {
+    		} else if (mesg.equalsIgnoreCase(NudoCCUtil.NS_COMMAND)) {
     			return this.getNintendoStoreResult();
-    		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.GET_USER_ID_COMMAND)) {
-    			return new TextMessage(String.format("你的userId=[%s]", userId));
+    		} else if (mesg.equalsIgnoreCase(NudoCCUtil.GET_USER_ID_COMMAND)) {
+    			return new TextMessage(String.format("senderId=[%s], userId=[%s]", senderId, userId));
+    		} else if (mesg.equals(NudoCCUtil.LEAVE_COMMAND)) {
+    			leave(userId);
+    			return null; 
     		}
     		return null;
     	}
+	}
+
+	private void leave(String userId) {
+		LOG.info("leaveGroup BEGIN");
+		retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
+		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
+		client.leaveGroup(userId);
+		LOG.info("leaveGroup END");
 	}
 
 	private Message getNintendoStoreResult() {
