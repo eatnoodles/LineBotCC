@@ -556,6 +556,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 				try {
 					start = Integer.parseInt(scopes[0]);
 					end = Integer.parseInt(scopes[1]);
+					if (start > end) {
+						return new TextMessage("你的數學老師在哭！");
+					}
 					if (end > 99999) {
 						return new TextMessage("骰子那麼大去拉斯維加斯阿！");
 					}
