@@ -500,18 +500,18 @@ public class NudoCCServiceImpl implements INudoCCService {
     		} else if (mesg.equalsIgnoreCase(NudoCCUtil.GET_USER_ID_COMMAND)) {
     			return new TextMessage(String.format("senderId=[%s], userId=[%s]", senderId, userId));
     		} else if (mesg.equals(NudoCCUtil.LEAVE_COMMAND)) {
-    			leave(userId);
+    			leave(senderId);
     			return null; 
     		}
     		return null;
     	}
 	}
 
-	private void leave(String userId) {
+	private void leave(String groupId) {
 		LOG.info("leaveGroup BEGIN");
 		retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
-		client.leaveGroup(userId);
+		client.leaveGroup(groupId);
 		LOG.info("leaveGroup END");
 	}
 
