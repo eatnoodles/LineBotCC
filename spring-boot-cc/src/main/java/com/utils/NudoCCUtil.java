@@ -76,7 +76,7 @@ public class NudoCCUtil {
 															};
 	
 	/**
-	 * 根據sie zip 機率 (權重  y = 1/(x+1) )
+	 * 根據sie zip 機率 (權重  y = 1/(x+1)^2 )
 	 * 
 	 * @param populationSize
 	 * @return
@@ -84,7 +84,7 @@ public class NudoCCUtil {
 	public static double[] zipfDistribution(int populationSize) {
 		double[] ratio = new double[populationSize];
 		for (int x = 0; x < populationSize; ++x){
-			ratio[x] = 1.0 / (double) (x + 2);
+			ratio[x] = 1.0 / Math.pow((x + 2), 2);
 		}
 		double sum = 0.0;
 		for (int i = 0; i < ratio.length; ++i)
