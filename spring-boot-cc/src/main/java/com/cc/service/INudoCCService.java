@@ -4,6 +4,8 @@
 package com.cc.service;
 
 import com.cc.bean.WowCommandBean;
+import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.ImageMessage;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
@@ -74,5 +76,20 @@ public interface INudoCCService {
 	 */
 	public TextMessage checkCharacterEnchants(String name, String realm);
 
+	/**
+	 * 取得協助
+	 * 
+	 * @return
+	 */
 	public TextMessage getHelp();
+
+	/**
+	 * 根據request傳來的command回傳message
+	 * 
+	 * @param event
+	 * @return
+	 */
+	public Message processCommand(MessageEvent<TextMessageContent> event);
+
+	public void processGuildNew();
 }

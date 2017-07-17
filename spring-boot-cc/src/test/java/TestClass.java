@@ -1,3 +1,5 @@
+import java.util.Date;
+
 /**
  * 
  */
@@ -7,5 +9,10 @@
  *
  */
 public class TestClass {
-	
+	public static void main(String[] args) throws Exception{
+		Date now = new Date();
+		
+		System.out.println(now.getTime());
+		System.out.println(now.getTime() - 1499963640000L);
+	}
 }

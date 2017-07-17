@@ -3,17 +3,29 @@
  */
 package com.cc.service.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.cc.Application;
+import com.cc.bean.WowBossMaster;
 import com.cc.bean.WowCharacterProfileItemResponse;
 import com.cc.bean.WowCharacterProfileItemResponse.ItemParts;
 import com.cc.bean.WowCharacterProfileItemResponse.ItemParts.Appearance;
@@ -21,23 +33,42 @@ import com.cc.bean.WowCharacterProfileItemResponse.Items;
 import com.cc.bean.WowCharacterProfileParamBean;
 import com.cc.bean.WowCharacterProfileResponse;
 import com.cc.bean.WowCommandBean;
+import com.cc.bean.WowGuildParamBean;
+import com.cc.bean.WowGuildResponse;
+import com.cc.bean.WowGuildResponse.New;
+import com.cc.bean.WowItemParamBean;
+import com.cc.bean.WowItemResponse;
 import com.cc.enums.WowClassEnum;
 import com.cc.enums.WowEventEnum;
 import com.cc.enums.WowItemPartsEnum;
 import com.cc.enums.WowProfileFieldEnum;
 import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
+import com.cc.service.IRemoteService;
 import com.cc.service.IWowCharacterProfileService;
+import com.cc.service.IWowGuildService;
+import com.cc.service.IWowItemService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.linecorp.bot.client.LineMessagingClientImpl;
+import com.linecorp.bot.client.LineMessagingService;
+import com.linecorp.bot.client.LineMessagingServiceBuilder;
+import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.PostbackAction;
+import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.ImageMessage;
+import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
+import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.utils.NudoCCUtil;
 
 /**
- * @author Caleb-2109
+ * @author Caleb.Cheng
  *
  */
 @Component
@@ -45,6 +76,39 @@ public class NudoCCServiceImpl implements INudoCCService {
 
 	@Autowired
 	private IWowCharacterProfileService wowCharacterProfileService;
+	
+	@Autowired
+	private IRemoteService remoteService;
+	
+	@Autowired
+	private IWowItemService wowItemService;
+	
+	@Autowired
+	private IWowGuildService wowGuildService;
+	
+	private static WowBossMaster wowBossMaster;
+	
+	private static Map<String, WowItemResponse> legendMap = new ConcurrentHashMap<>();
+	
+	private static Set<String> newsUserIds = new ConcurrentSkipListSet<>();
+	
+	private static final Logger LOG = LoggerFactory.getLogger(NudoCCServiceImpl.class);
+	
+	private LineMessagingService retrofitImpl;
+	
+	private static final Long TIMER_MAX = 80000000L;
+	
+	private static final int MAX_PUSH_COUNT = 5;
+	
+	static {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		try {
+			wowBossMaster = mapper.readValue(Application.class.getResourceAsStream("/wowBoss.json"), new TypeReference<WowBossMaster>(){});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * 以name、server搜尋角色基本資料
@@ -158,7 +222,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(WowEventEnum.TEST);
 			name = command.replaceAll(NudoCCUtil.WOW_COMMAND_TEST, StringUtils.EMPTY).trim();
 		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_ITEM)) {
-			bean.setEventEnum(WowEventEnum.ITEM);
+			bean.setEventEnum(WowEventEnum.CHARACTER_ITEM);
 			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_ITEM, StringUtils.EMPTY).trim().split(";");
 			if (array.length != 2) {
 				bean.setErrorMsg(NudoCCUtil.WOW_ITEM_PARAM_ERROR_MSG);
@@ -343,7 +407,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 */
 	private PostbackAction genItemPostbackAction(String name, String realm) {
 		String command = "-wow -i ".concat(name).concat(";").concat(realm);
-		return new PostbackAction(WowEventEnum.ITEM.getContext(), command, String.format("我想知道<%s-%s>的裝等o.o", name, realm));
+		return new PostbackAction(WowEventEnum.CHARACTER_ITEM.getContext(), command, String.format("我想知道<%s-%s>的裝等o.o", name, realm));
 	}
 	
 	/**
@@ -372,7 +436,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 	    Matcher matcherEn = patternEn.matcher(name);
 	    return (matcherCh.matches() && name.length() <= 6) || (matcherEn.matches() && name.length() <= 12);
 	}
-
+	
+	/**
+	 * 取得協助
+	 * 
+	 * @return
+	 */
 	@Override
 	public TextMessage getHelp() {
 		StringBuilder sb = new StringBuilder();
@@ -382,6 +451,244 @@ public class NudoCCServiceImpl implements INudoCCService {
 		sb.append("查詢角色裝備: -wow -i 角色名稱;伺服器名稱\r\n");
 		sb.append("查詢角色裝備有無附魔: -wow -ec 角色名稱;伺服器名稱\r\n");
 		return new TextMessage(sb.toString());
+	}
+	
+	/**
+	 * 根據request傳來的command回傳message
+	 * 
+	 * @param event
+	 * @return
+	 */
+	@Override
+	public Message processCommand(MessageEvent<TextMessageContent> event) {
+		
+		String mesg = event.getMessage().getText();
+        String senderId = event.getSource().getSenderId();
+        String userId = event.getSource().getUserId();
+        
+        if (StringUtils.isBlank(mesg)) {
+        	return null;
+        }
+        
+		WowCommandBean commandBean = this.processWowCommand(mesg);
+    	if (commandBean.isWowCommand()) {
+    		//wow command
+    		if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
+        		return new TextMessage(commandBean.getErrorMsg());
+        	} else {
+        		switch (commandBean.getEventEnum()) {
+        			case HELP:
+        				return this.getHelp();
+					case PROFILE:
+						return this.buildCharacterTemplate(commandBean.getName());
+					case IMG:
+						return this.findWowCharacterImgPath(commandBean.getName());
+					case CHARACTER_ITEM:
+						return this.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
+					case CHECK_ENCHANTS:
+						return this.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
+					case TEST:
+//						return this.getNews();
+					default:
+						return null;
+				}
+        	}
+    	} else {
+    		//other command
+    		if (mesg.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
+    			return this.getRollNumber(mesg.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
+    		} else if (mesg.equalsIgnoreCase(NudoCCUtil.NS_COMMAND)) {
+    			return this.getNintendoStoreResult();
+    		} else if (mesg.equalsIgnoreCase(NudoCCUtil.GET_USER_ID_COMMAND)) {
+    			return new TextMessage(String.format("senderId=[%s], userId=[%s]", senderId, userId));
+    		} else if (mesg.equals(NudoCCUtil.LEAVE_COMMAND)) {
+    			leave(senderId);
+    			return null; 
+    		} else if (mesg.equals(NudoCCUtil.SAD_COMMAND)) {
+    			return dauYaTalking(userId);
+    		}
+    		return null;
+    	}
+	}
+
+	private Message dauYaTalking(String userId) {
+		retrofitImpl = getLineMessageClient();
+		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
+		try {
+			UserProfileResponse resp = client.getProfile(userId).get();
+			String displayName = resp.getDisplayName();
+			
+			return new TextMessage(String.format("%s這廢物  抱歉錯頻", displayName));
+		} catch (InterruptedException | ExecutionException e) {
+			LOG.error("getProfile error", e);
+			return null;
+		}
+	}
+
+	private LineMessagingService getLineMessageClient() {
+		if (retrofitImpl == null) {
+			retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
+		}
+		return retrofitImpl;
+	}
+
+	private void leave(String groupId) {
+		LOG.info("leaveGroup BEGIN");
+		retrofitImpl = getLineMessageClient();
+		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
+		client.leaveGroup(groupId);
+		LOG.info("leaveGroup END");
+	}
+
+	private Message getNintendoStoreResult() {
+		String response = remoteService.call("https://store.nintendo.co.jp/customize.html");
+		if (response.indexOf("SOLD OUT") != -1) return new TextMessage("switch官網現在沒貨!");
+		else return new TextMessage("switch官網現在有貨!");
+	}
+
+	private TextMessage getRollNumber(String command) {
+		if (StringUtils.isNotBlank(command) && command.indexOf(" ") == 0) {
+			String[] scopes = command.trim().split("-");
+			if (scopes.length != 2) {
+				return new TextMessage("指定範圍有誤！");
+			} else {
+				int start, end = 0;
+				try {
+					start = Integer.parseInt(scopes[0]);
+					end = Integer.parseInt(scopes[1]);
+					if (start > end) {
+						return new TextMessage("你的數學老師在哭！");
+					}
+					if (end > 99999) {
+						return new TextMessage("骰子那麼大去拉斯維加斯阿！");
+					}
+				} catch (NumberFormatException e) {
+					return new TextMessage("不要亂骰！");
+				}
+				int size = wowBossMaster.getBosses().size();
+//    			Random rand = new Random();
+//    			int point = rand.nextInt(end-start+1) + start;
+    			int point = this.probabilityControl(start, end);
+    					
+    			Random randBoss = new Random();
+    			int index = randBoss.nextInt(size);
+    			String name = wowBossMaster.getBosses().get(index).getName();
+    			return new TextMessage(String.format("%s 擲出了%s (%s-%s)！", name, point, start, end));
+			}
+		} else {
+			int size = wowBossMaster.getBosses().size();
+//			Random rand = new Random();
+//			int point = rand.nextInt(100) + 1;
+			int point = this.probabilityControl(1, 100);
+			Random randBoss = new Random();
+			int index = randBoss.nextInt(size);
+			String name = wowBossMaster.getBosses().get(index).getName();
+			return new TextMessage(String.format("%s 擲出了%s (1-100)！", name, point));
+		}
+	}
+
+	private int probabilityControl(int start, int end) {
+		List<Integer> nums = new ArrayList<>();
+		for (int i = start; i <= end; i++) {
+			nums.add(i);
+		}
+		int[] numsToGenerate = nums.stream().mapToInt(i->i).toArray();
+		double[] discreteProbabilities = NudoCCUtil.zipfDistribution(end-start+1);
+		int[] result = NudoCCUtil.getIntegerDistribution(numsToGenerate, discreteProbabilities, 1);
+		return result[0];
+	}
+	
+	public void buildGuildNew() {
+		LOG.info("buildGuildNew BEGIN");
+		List<New> news = getNews();
+		Date now = new Date();
+		if (news != null && !news.isEmpty()) {
+			for (New guildNew :news) {
+				if ((now.getTime() - guildNew.getTimestamp()) > TIMER_MAX
+					|| !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
+					continue;
+				}
+				String character = guildNew.getCharacter();
+				String key = character + guildNew.getTimestamp();
+				
+				if (legendMap.containsKey(key)) {
+					continue;
+				}
+				WowItemResponse item = getItemById(guildNew.getItemId());
+				legendMap.put(key, item);
+			}
+		}
+		LOG.info("buildGuildNew END");
+	}
+	
+	public void processGuildNew() {
+		LOG.info("processGuildNew BEGIN");
+		List<New> news = getNews();
+		Date now = new Date();
+		List<Message> messages = new ArrayList<>();
+		if (news != null && !news.isEmpty()) {
+			for (New guildNew :news) {
+				if ((now.getTime() - guildNew.getTimestamp()) > TIMER_MAX
+					|| !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
+					continue;
+				}
+				if ( messages.size() == MAX_PUSH_COUNT ) {
+					break;
+				}
+				String character = guildNew.getCharacter();
+				String key = character + guildNew.getTimestamp();
+				
+				if (legendMap.containsKey(key)) {
+					continue;
+				}
+				WowItemResponse item = getItemById(guildNew.getItemId());
+				String itemName = item.getName();
+				
+				messages.add(new TextMessage(String.format("[%s]取得一件[%s]-[%s]", character, item.getItemLevel(), itemName)));
+				legendMap.put(key, item);
+			}
+		}
+		if (!messages.isEmpty()) {
+			sendMessageToUser(messages);
+		}
+		LOG.info("processGuildNew END");
+	}
+	
+	private void sendMessageToUser(List<Message> messages) {
+		retrofitImpl = getLineMessageClient();
+		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
+		
+		for (String userId :newsUserIds) {
+			PushMessage pushMessage = new PushMessage(userId, messages);
+			client.pushMessage(pushMessage);
+		}
+	}
+
+	private WowItemResponse getItemById(String itemId) {
+		WowItemParamBean paramBean = new WowItemParamBean();
+		paramBean.setItemId(itemId);
+		try {
+			WowItemResponse resp = wowItemService.doSend(paramBean);
+			return resp;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private List<New> getNews() {
+		WowGuildParamBean paramBean = new WowGuildParamBean();
+		paramBean.setGuild("Who is Ur Daddy");
+		paramBean.setRealm(NudoCCUtil.DEFAULT_SERVER);
+		try {
+			WowGuildResponse resp = wowGuildService.doSendNews(paramBean);
+			if (resp.getNews() != null && !resp.getNews().isEmpty()) {
+				return resp.getNews();
+			}
+			return null;
+		} catch (Exception e) {
+			LOG.error("getNews error!", e);
+			return null;
+		}
 	}
 	
 }
