@@ -68,6 +68,8 @@ public class NudoCCUtil {
 	
 	public static final String LEAVE_COMMAND = "稻葉請你";
 	
+	public static final String SAD_COMMAND = "稻葉錯頻";
+	
 	public static final WowItemPartsEnum[] enchantsParts = {WowItemPartsEnum.NECK, WowItemPartsEnum.SHOULDER,
 															WowItemPartsEnum.FINGER1, WowItemPartsEnum.FINGER2,
 															WowItemPartsEnum.BACK

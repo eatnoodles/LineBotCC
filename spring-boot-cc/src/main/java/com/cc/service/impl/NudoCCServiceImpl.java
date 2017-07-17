@@ -13,6 +13,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,6 +64,7 @@ import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
+import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.utils.NudoCCUtil;
 
 /**
@@ -502,14 +504,37 @@ public class NudoCCServiceImpl implements INudoCCService {
     		} else if (mesg.equals(NudoCCUtil.LEAVE_COMMAND)) {
     			leave(senderId);
     			return null; 
+    		} else if (mesg.equals(NudoCCUtil.SAD_COMMAND)) {
+    			return dauYaTalking(userId);
     		}
     		return null;
     	}
 	}
 
+	private Message dauYaTalking(String userId) {
+		retrofitImpl = getLineMessageClient();
+		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
+		try {
+			UserProfileResponse resp = client.getProfile(userId).get();
+			String displayName = resp.getDisplayName();
+			
+			return new TextMessage(String.format("%s這廢物  抱歉錯頻", displayName));
+		} catch (InterruptedException | ExecutionException e) {
+			LOG.error("getProfile error", e);
+			return null;
+		}
+	}
+
+	private LineMessagingService getLineMessageClient() {
+		if (retrofitImpl == null) {
+			retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
+		}
+		return retrofitImpl;
+	}
+
 	private void leave(String groupId) {
 		LOG.info("leaveGroup BEGIN");
-		retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
+		retrofitImpl = getLineMessageClient();
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
 		client.leaveGroup(groupId);
 		LOG.info("leaveGroup END");
@@ -624,7 +649,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 	
 	private void sendMessageToUser(List<Message> messages) {
-		retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
+		retrofitImpl = getLineMessageClient();
 		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
 		
 		for (String userId :newsUserIds) {
