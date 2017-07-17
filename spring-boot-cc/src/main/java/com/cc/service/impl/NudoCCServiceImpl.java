@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.regex.Matcher;
@@ -76,9 +75,6 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	@Autowired
 	private IRemoteService remoteService;
-	
-	@Autowired
-	private WowNewsTask wowNewsTask;
 	
 	@Autowired
 	private IWowItemService wowItemService;
@@ -492,44 +488,9 @@ public class NudoCCServiceImpl implements INudoCCService {
     			return this.getNintendoStoreResult();
     		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.GET_USER_ID_COMMAND)) {
     			return new TextMessage(String.format("你的userId=[%s]", userId));
-    		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.RUN_TIMER_COMMAND)) {
-    			return runTimer();
-    		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.STOP_TIMER_COMMAND)) {
-    			return stopTimer();
-    		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.REG_TIMER_COMMAND)) {
-    			return regTimer(userId);
-    		} else if (mesg.toLowerCase().startsWith(NudoCCUtil.UNREG_TIMER_COMMAND)) {
-    			return unregTimer(userId);
     		}
     		return null;
     	}
-	}
-
-	private Message regTimer(String userId) {
-		newsUserIds.add(userId);
-		return new TextMessage(String.format("開始使用老爹新聞"));
-	}
-	
-	private Message unregTimer(String userId) {
-		newsUserIds.remove(userId);
-		return new TextMessage(String.format("停止使用老爹新聞"));
-	}
-
-	private Message stopTimer() {
-		boolean isCancel = wowNewsTask.cancel();
-		if (isCancel) {
-			return new TextMessage(String.format("停止timer!"));
-		}
-		return new TextMessage(String.format("停止timer失敗!"));
-	}
-
-	private Message runTimer() {
-		buildGuildNew();
-		
-		Timer timer = new Timer();
-		timer.schedule(wowNewsTask, 5000, 60000);
-		
-		return new TextMessage(String.format("開始timer!"));
 	}
 
 	private Message getNintendoStoreResult() {
