@@ -76,7 +76,7 @@ public class NudoCCUtil {
 															};
 	
 	/**
-	 * 根據sie zip 機率 (y = 1/x^2)
+	 * 根據sie zip 機率 (y = 1/x), 尾筆機率 = 0
 	 * 
 	 * @param populationSize
 	 * @return

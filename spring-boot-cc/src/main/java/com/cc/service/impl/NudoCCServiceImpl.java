@@ -556,8 +556,11 @@ public class NudoCCServiceImpl implements INudoCCService {
 				try {
 					start = Integer.parseInt(scopes[0]);
 					end = Integer.parseInt(scopes[1]);
+					if (end > 99999) {
+						return new TextMessage("骰子那麼大去拉斯維加斯阿！");
+					}
 				} catch (NumberFormatException e) {
-					return new TextMessage("指定範圍有誤！");
+					return new TextMessage("不要亂骰！");
 				}
 				int size = wowBossMaster.getBosses().size();
 //    			Random rand = new Random();
