@@ -77,7 +77,7 @@ public class Application {
         	} else {
         		switch (commandBean.getEventEnum()) {
 					case CHARACTER_ITEM:
-						return nudoCCService.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
+						return nudoCCService.getWoWCharacterItems(commandBean.getName(), commandBean.getRealm());
 					case CHECK_ENCHANTS:
 						return nudoCCService.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
 					default:

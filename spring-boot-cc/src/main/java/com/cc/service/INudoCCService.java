@@ -24,7 +24,7 @@ public interface INudoCCService {
 	 * @param server :伺服器名稱
 	 * @return
 	 */
-	public TextMessage findWowCharacterProfile(String name, String server);
+	public TextMessage getWoWCharacterProfile(String name, String server);
 	
 	/**
 	 * 以name搜尋角色基本資料
@@ -32,7 +32,7 @@ public interface INudoCCService {
 	 * @param name :角色名稱
 	 * @return
 	 */
-	public TextMessage findWowCharacterProfileByName(String name);
+	public TextMessage getWoWCharacterProfileByName(String name);
 	
 	/**
 	 * 以name搜尋角色大頭照
@@ -40,7 +40,7 @@ public interface INudoCCService {
 	 * @param name :角色名稱
 	 * @return
 	 */
-	public ImageMessage findWowCharacterImgPath(String name);
+	public ImageMessage getWoWCharacterImgPath(String name);
 	
 	/**
 	 * 處理前端傳來的wow命令列成bean
@@ -65,7 +65,7 @@ public interface INudoCCService {
 	 * @param realm :伺服器名稱
 	 * @return
 	 */
-	public TextMessage findWowCharacterItem(String name, String realm);
+	public TextMessage getWoWCharacterItems(String name, String realm);
 
 	/**
 	 * 檢核裝備有無附魔
@@ -90,6 +90,4 @@ public interface INudoCCService {
 	 * @return
 	 */
 	public Message processCommand(MessageEvent<TextMessageContent> event);
-
-	public void processGuildNew();
 }
