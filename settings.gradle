@@ -22,4 +22,6 @@ include 'line-bot-spring-boot'
 // samples
 //include 'sample-spring-boot-kitchensink'
 //include 'sample-spring-boot-echo'
+include 'wow-community-api-client'
+include 'wow-community-model'
 include 'spring-boot-cc'

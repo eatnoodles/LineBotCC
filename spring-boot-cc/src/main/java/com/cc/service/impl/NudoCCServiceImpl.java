@@ -6,14 +6,8 @@ package com.cc.service.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,40 +15,32 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.cc.Application;
 import com.cc.bean.WowBossMaster;
-import com.cc.bean.WowCharacterProfileItemResponse;
 import com.cc.bean.WowCharacterProfileItemResponse.ItemParts;
 import com.cc.bean.WowCharacterProfileItemResponse.ItemParts.Appearance;
-import com.cc.bean.WowCharacterProfileItemResponse.Items;
-import com.cc.bean.WowCharacterProfileParamBean;
-import com.cc.bean.WowCharacterProfileResponse;
 import com.cc.bean.WowCommandBean;
-import com.cc.bean.WowGuildParamBean;
-import com.cc.bean.WowGuildResponse;
-import com.cc.bean.WowGuildResponse.New;
-import com.cc.bean.WowItemParamBean;
-import com.cc.bean.WowItemResponse;
 import com.cc.enums.WowClassEnum;
 import com.cc.enums.WowEventEnum;
 import com.cc.enums.WowItemPartsEnum;
-import com.cc.enums.WowProfileFieldEnum;
 import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
-import com.cc.service.IRemoteService;
-import com.cc.service.IWowCharacterProfileService;
-import com.cc.service.IWowGuildService;
-import com.cc.service.IWowItemService;
+import com.cc.wow.boss.BossMaster;
+import com.cc.wow.character.CharacterItemsResponse;
+import com.cc.wow.character.CharacterProfileResponse;
+import com.cc.wow.client.WoWCommunityClient;
+import com.cc.wow.client.WoWCommunityClientImpl;
+import com.cc.wow.client.WoWCommunityService;
+import com.cc.wow.client.WoWCommunityServiceBuilder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.LineMessagingClientImpl;
 import com.linecorp.bot.client.LineMessagingService;
 import com.linecorp.bot.client.LineMessagingServiceBuilder;
-import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.event.MessageEvent;
@@ -64,7 +50,6 @@ import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
-import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.utils.NudoCCUtil;
 
 /**
@@ -73,38 +58,20 @@ import com.utils.NudoCCUtil;
  */
 @Component
 public class NudoCCServiceImpl implements INudoCCService {
-
-	@Autowired
-	private IWowCharacterProfileService wowCharacterProfileService;
-	
-	@Autowired
-	private IRemoteService remoteService;
-	
-	@Autowired
-	private IWowItemService wowItemService;
-	
-	@Autowired
-	private IWowGuildService wowGuildService;
 	
 	private static WowBossMaster wowBossMaster;
 	
-	private static Map<String, WowItemResponse> legendMap = new ConcurrentHashMap<>();
-	
-	private static Set<String> newsUserIds = new ConcurrentSkipListSet<>();
-	
 	private static final Logger LOG = LoggerFactory.getLogger(NudoCCServiceImpl.class);
 	
-	private LineMessagingService retrofitImpl;
+	private LineMessagingClient lineMessagingClient;
 	
-	private static final Long TIMER_MAX = 80000000L;
-	
-	private static final int MAX_PUSH_COUNT = 5;
+	private WoWCommunityClient wowCommunityClient;
 	
 	static {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		try {
-			wowBossMaster = mapper.readValue(Application.class.getResourceAsStream("/wowBoss.json"), new TypeReference<WowBossMaster>(){});
+			wowBossMaster = mapper.readValue(Application.class.getResourceAsStream("/wowBoss.json"), new TypeReference<BossMaster>(){});
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -118,12 +85,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @return
 	 */
 	@Override
-	public TextMessage findWowCharacterProfile(String name, String server) {
-		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
-		paramBean.setCharacterName(name);
-		paramBean.setRealm(server);
+	public TextMessage getWoWCharacterProfile(String name, String server) {
 		try {
-			WowCharacterProfileResponse resp = wowCharacterProfileService.doSendProfile(paramBean);
+			CharacterProfileResponse resp = getWoWCommunityClient().getCharacterProfile(server, name).get();
 			if (StringUtils.isBlank(resp.getName())) {
 				return null;
 			}
@@ -144,13 +108,10 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @return
 	 */
 	@Override
-	public TextMessage findWowCharacterProfileByName(String name) {
-		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
-		paramBean.setCharacterName(name);
+	public TextMessage getWoWCharacterProfileByName(String name) {
 		for (String realm : NudoCCUtil.REALMS) {
-			paramBean.setRealm(realm);
 			try {
-				WowCharacterProfileResponse resp = wowCharacterProfileService.doSendProfile(paramBean);
+				CharacterProfileResponse resp = getWoWCommunityClient().getCharacterProfile(realm, name).get();
 				if (StringUtils.isBlank(resp.getName())) {
 					return null;
 				}
@@ -174,13 +135,10 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @return
 	 */
 	@Override
-	public ImageMessage findWowCharacterImgPath(String name) {
-		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
-		paramBean.setCharacterName(name);
+	public ImageMessage getWoWCharacterImgPath(String name) {
 		for (String realm : NudoCCUtil.REALMS) {
-			paramBean.setRealm(realm);
 			try {
-				WowCharacterProfileResponse resp = wowCharacterProfileService.doSendProfile(paramBean);
+				CharacterProfileResponse resp = getWoWCommunityClient().getCharacterProfile(realm, name).get();
 				if (StringUtils.isBlank(resp.getThumbnail())) {
 					return null;
 				}
@@ -269,12 +227,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 */
 	@Override
 	public TemplateMessage buildCharacterTemplate(String name) {
-		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
-		paramBean.setCharacterName(name);
 		for (String realm : NudoCCUtil.REALMS) {
-			paramBean.setRealm(realm);
 			try {
-				WowCharacterProfileResponse resp = wowCharacterProfileService.doSendProfile(paramBean);
+				CharacterProfileResponse resp = getWoWCommunityClient().getCharacterProfile(realm, name).get();
 				if (StringUtils.isBlank(resp.getName())) {
 					return null;
 				}
@@ -313,16 +268,14 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @return
 	 */
 	@Override
-	public TextMessage findWowCharacterItem(String name, String realm) {
-		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
-		paramBean.setCharacterName(name);
-		paramBean.setRealm(realm);
-		paramBean.setFields(WowProfileFieldEnum.ITEMS);
+	public TextMessage getWoWCharacterItems(String name, String realm) {
 		try {
-			WowCharacterProfileItemResponse resp = wowCharacterProfileService.doSendItem(paramBean);
+			CharacterProfileResponse resp = getWoWCommunityClient().getCharacterItems(realm, name).get();
+			
 			if (StringUtils.isBlank(resp.getName())) {
 				return null;
 			}
+			
 			StringBuilder sb = new StringBuilder();
 			if (resp.getItems().getAverageItemLevel() >= 900) {
 				sb.append("豪可怕!! 背包裝等%s, 穿在身上的裝等居然%s!!");
@@ -331,7 +284,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 			} else {
 				sb.append("背包裝等%s, 穿在身上的裝等%s");
 			}
-			Items items = resp.getItems();
+			
+			CharacterItemsResponse items = resp.getItems();
 			sb.append("\r\n\r\n");
 			sb.append("<").append(name).append("-").append(realm).append(">的詳細資訊→\r\n");
 			
@@ -363,17 +317,16 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 */
 	@Override
 	public TextMessage checkCharacterEnchants(String name, String realm) {
-		WowCharacterProfileParamBean paramBean = new WowCharacterProfileParamBean();
-		paramBean.setCharacterName(name);
-		paramBean.setRealm(realm);
-		paramBean.setFields(WowProfileFieldEnum.ITEMS);
 		try {
-			WowCharacterProfileItemResponse resp = wowCharacterProfileService.doSendItem(paramBean);
+			CharacterProfileResponse resp = getWoWCommunityClient().getCharacterItems(realm, name).get();
+			
 			if (StringUtils.isBlank(resp.getName())) {
 				return null;
 			}
 			StringBuilder sb = new StringBuilder();
-			Items items = resp.getItems();
+			
+			CharacterItemsResponse items = resp.getItems();
+			
 			for (WowItemPartsEnum partsEnum : NudoCCUtil.enchantsParts) {
 				ItemParts itemParts = (ItemParts)PropertyUtils.getProperty(items, partsEnum.getValue());
 				if (itemParts == null) {
@@ -387,6 +340,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 					sb.append(String.format("%s-%s", partsEnum.getContext(), itemParts.getName()));
 				}
 			}
+			
 			if (sb.length() > 0) {
 				sb.append(String.format("\r\n。。%s-%s沒有腹膜。。", name, realm));
 				return new TextMessage(sb.toString());
@@ -482,13 +436,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 					case PROFILE:
 						return this.buildCharacterTemplate(commandBean.getName());
 					case IMG:
-						return this.findWowCharacterImgPath(commandBean.getName());
+						return this.getWoWCharacterImgPath(commandBean.getName());
 					case CHARACTER_ITEM:
-						return this.findWowCharacterItem(commandBean.getName(), commandBean.getRealm());
+						return this.getWoWCharacterItems(commandBean.getName(), commandBean.getRealm());
 					case CHECK_ENCHANTS:
 						return this.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
 					case TEST:
-//						return this.getNews();
+						//TODO ...
 					default:
 						return null;
 				}
@@ -497,53 +451,20 @@ public class NudoCCServiceImpl implements INudoCCService {
     		//other command
     		if (mesg.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
     			return this.getRollNumber(mesg.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
-    		} else if (mesg.equalsIgnoreCase(NudoCCUtil.NS_COMMAND)) {
-    			return this.getNintendoStoreResult();
     		} else if (mesg.equalsIgnoreCase(NudoCCUtil.GET_USER_ID_COMMAND)) {
     			return new TextMessage(String.format("senderId=[%s], userId=[%s]", senderId, userId));
     		} else if (mesg.equals(NudoCCUtil.LEAVE_COMMAND)) {
     			leave(senderId);
     			return null; 
-    		} else if (mesg.equals(NudoCCUtil.SAD_COMMAND)) {
-    			return dauYaTalking(userId);
     		}
     		return null;
     	}
 	}
 
-	private Message dauYaTalking(String userId) {
-		retrofitImpl = getLineMessageClient();
-		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
-		try {
-			UserProfileResponse resp = client.getProfile(userId).get();
-			String displayName = resp.getDisplayName();
-			
-			return new TextMessage(String.format("%s這廢物  抱歉錯頻", displayName));
-		} catch (InterruptedException | ExecutionException e) {
-			LOG.error("getProfile error", e);
-			return null;
-		}
-	}
-
-	private LineMessagingService getLineMessageClient() {
-		if (retrofitImpl == null) {
-			retrofitImpl = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
-		}
-		return retrofitImpl;
-	}
-
 	private void leave(String groupId) {
 		LOG.info("leaveGroup BEGIN");
-		retrofitImpl = getLineMessageClient();
-		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
-		client.leaveGroup(groupId);
+		getLineMessageClient().leaveGroup(groupId);
 		LOG.info("leaveGroup END");
-	}
-
-	private Message getNintendoStoreResult() {
-		String response = remoteService.call("https://store.nintendo.co.jp/customize.html");
-		if (response.indexOf("SOLD OUT") != -1) return new TextMessage("switch官網現在沒貨!");
-		else return new TextMessage("switch官網現在有貨!");
 	}
 
 	private TextMessage getRollNumber(String command) {
@@ -566,8 +487,6 @@ public class NudoCCServiceImpl implements INudoCCService {
 					return new TextMessage("不要亂骰！");
 				}
 				int size = wowBossMaster.getBosses().size();
-//    			Random rand = new Random();
-//    			int point = rand.nextInt(end-start+1) + start;
     			int point = this.probabilityControl(start, end);
     					
     			Random randBoss = new Random();
@@ -577,8 +496,6 @@ public class NudoCCServiceImpl implements INudoCCService {
 			}
 		} else {
 			int size = wowBossMaster.getBosses().size();
-//			Random rand = new Random();
-//			int point = rand.nextInt(100) + 1;
 			int point = this.probabilityControl(1, 100);
 			Random randBoss = new Random();
 			int index = randBoss.nextInt(size);
@@ -597,98 +514,27 @@ public class NudoCCServiceImpl implements INudoCCService {
 		int[] result = NudoCCUtil.getIntegerDistribution(numsToGenerate, discreteProbabilities, 1);
 		return result[0];
 	}
-	
-	public void buildGuildNew() {
-		LOG.info("buildGuildNew BEGIN");
-		List<New> news = getNews();
-		Date now = new Date();
-		if (news != null && !news.isEmpty()) {
-			for (New guildNew :news) {
-				if ((now.getTime() - guildNew.getTimestamp()) > TIMER_MAX
-					|| !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
-					continue;
-				}
-				String character = guildNew.getCharacter();
-				String key = character + guildNew.getTimestamp();
-				
-				if (legendMap.containsKey(key)) {
-					continue;
-				}
-				WowItemResponse item = getItemById(guildNew.getItemId());
-				legendMap.put(key, item);
-			}
-		}
-		LOG.info("buildGuildNew END");
-	}
-	
-	public void processGuildNew() {
-		LOG.info("processGuildNew BEGIN");
-		List<New> news = getNews();
-		Date now = new Date();
-		List<Message> messages = new ArrayList<>();
-		if (news != null && !news.isEmpty()) {
-			for (New guildNew :news) {
-				if ((now.getTime() - guildNew.getTimestamp()) > TIMER_MAX
-					|| !"itemLoot".equalsIgnoreCase(guildNew.getType())) {
-					continue;
-				}
-				if ( messages.size() == MAX_PUSH_COUNT ) {
-					break;
-				}
-				String character = guildNew.getCharacter();
-				String key = character + guildNew.getTimestamp();
-				
-				if (legendMap.containsKey(key)) {
-					continue;
-				}
-				WowItemResponse item = getItemById(guildNew.getItemId());
-				String itemName = item.getName();
-				
-				messages.add(new TextMessage(String.format("[%s]取得一件[%s]-[%s]", character, item.getItemLevel(), itemName)));
-				legendMap.put(key, item);
-			}
-		}
-		if (!messages.isEmpty()) {
-			sendMessageToUser(messages);
-		}
-		LOG.info("processGuildNew END");
-	}
-	
-	private void sendMessageToUser(List<Message> messages) {
-		retrofitImpl = getLineMessageClient();
-		LineMessagingClientImpl client = new LineMessagingClientImpl(retrofitImpl);
-		
-		for (String userId :newsUserIds) {
-			PushMessage pushMessage = new PushMessage(userId, messages);
-			client.pushMessage(pushMessage);
-		}
-	}
 
-	private WowItemResponse getItemById(String itemId) {
-		WowItemParamBean paramBean = new WowItemParamBean();
-		paramBean.setItemId(itemId);
-		try {
-			WowItemResponse resp = wowItemService.doSend(paramBean);
-			return resp;
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	private List<New> getNews() {
-		WowGuildParamBean paramBean = new WowGuildParamBean();
-		paramBean.setGuild("Who is Ur Daddy");
-		paramBean.setRealm(NudoCCUtil.DEFAULT_SERVER);
-		try {
-			WowGuildResponse resp = wowGuildService.doSendNews(paramBean);
-			if (resp.getNews() != null && !resp.getNews().isEmpty()) {
-				return resp.getNews();
+	private LineMessagingClient getLineMessageClient() {
+		if (lineMessagingClient == null) {
+			synchronized (NudoCCServiceImpl.class) {
+				LOG.debug("=== [LineMessagingService build] ===");
+				LineMessagingService lineMessagingService = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
+				lineMessagingClient = new LineMessagingClientImpl(lineMessagingService);
 			}
-			return null;
-		} catch (Exception e) {
-			LOG.error("getNews error!", e);
-			return null;
 		}
+		return lineMessagingClient;
+	}
+	
+	private WoWCommunityClient getWoWCommunityClient() {
+		if (wowCommunityClient == null) {
+			synchronized (NudoCCServiceImpl.class) {
+				LOG.debug("=== [LineMessagingService build] ===");
+				WoWCommunityService wowCommunityService = WoWCommunityServiceBuilder.create(System.getenv("WOWApiKey")).build();
+				wowCommunityClient = new WoWCommunityClientImpl(wowCommunityService);
+			}
+		}
+		return wowCommunityClient;
 	}
 	
 }

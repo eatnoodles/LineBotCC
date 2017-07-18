@@ -19,7 +19,7 @@ public class WowNewsTask extends TimerTask {
 	
 	public void run() {
 		LOG.info("WowNewsTask BEGIN");
-		nudoCCService.processGuildNew();
+		//TODO 
 		LOG.info("WowNewsTask END");
 	}
 }

@@ -1,0 +1,12 @@
+
+dependencies {
+    compile project(':wow-community-model')
+    compile 'com.fasterxml.jackson.core:jackson-core'
+    compile 'com.fasterxml.jackson.core:jackson-databind'
+    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    compile 'com.squareup.okhttp3:logging-interceptor'
+    compile 'com.squareup.retrofit2:converter-jackson'
+    compile 'com.squareup.retrofit2:retrofit'
+
+    optional 'org.slf4j:slf4j-api'
+}
