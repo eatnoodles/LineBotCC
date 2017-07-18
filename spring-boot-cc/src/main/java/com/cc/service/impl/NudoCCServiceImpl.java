@@ -18,9 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.cc.Application;
-import com.cc.bean.WowBossMaster;
-import com.cc.bean.WowCharacterProfileItemResponse.ItemParts;
-import com.cc.bean.WowCharacterProfileItemResponse.ItemParts.Appearance;
 import com.cc.bean.WowCommandBean;
 import com.cc.enums.WowClassEnum;
 import com.cc.enums.WowEventEnum;
@@ -28,8 +25,10 @@ import com.cc.enums.WowItemPartsEnum;
 import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
 import com.cc.wow.boss.BossMaster;
+import com.cc.wow.character.Appearance;
 import com.cc.wow.character.CharacterItemsResponse;
 import com.cc.wow.character.CharacterProfileResponse;
+import com.cc.wow.character.ItemParts;
 import com.cc.wow.client.WoWCommunityClient;
 import com.cc.wow.client.WoWCommunityClientImpl;
 import com.cc.wow.client.WoWCommunityService;
@@ -59,7 +58,7 @@ import com.utils.NudoCCUtil;
 @Component
 public class NudoCCServiceImpl implements INudoCCService {
 	
-	private static WowBossMaster wowBossMaster;
+	private static BossMaster wowBossMaster;
 	
 	private static final Logger LOG = LoggerFactory.getLogger(NudoCCServiceImpl.class);
 	
