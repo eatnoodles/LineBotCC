@@ -21,8 +21,8 @@ public class BossNPC {
 	private final String urlSlug;
 	
 	public BossNPC(@JsonProperty("id") Long id,
-			@JsonProperty("id") String name,
-			@JsonProperty("id") String urlSlug
+			@JsonProperty("name") String name,
+			@JsonProperty("urlSlug") String urlSlug
 			) {
 		this.id = id;
 		this.name = name;
