@@ -63,8 +63,16 @@ public class NudoCCServiceImpl implements INudoCCService {
 	private static final Logger LOG = LoggerFactory.getLogger(NudoCCServiceImpl.class);
 	
 	private LineMessagingClient lineMessagingClient;
+	{
+		LineMessagingService lineMessagingService = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
+		lineMessagingClient = new LineMessagingClientImpl(lineMessagingService);
+	}
 	
 	private WoWCommunityClient wowCommunityClient;
+	{
+		WoWCommunityService wowCommunityService = WoWCommunityServiceBuilder.create(System.getenv("WOWApiKey")).build();
+		wowCommunityClient = new WoWCommunityClientImpl(wowCommunityService);
+	}
 	
 	static {
 		ObjectMapper mapper = new ObjectMapper();
@@ -86,7 +94,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	@Override
 	public TextMessage getWoWCharacterProfile(String name, String server) {
 		try {
-			CharacterProfileResponse resp = getWoWCommunityClient().getCharacterProfile(server, name).get();
+			CharacterProfileResponse resp = wowCommunityClient.getCharacterProfile(server, name).get();
 			if (StringUtils.isBlank(resp.getName())) {
 				return null;
 			}
@@ -110,7 +118,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	public TextMessage getWoWCharacterProfileByName(String name) {
 		for (String realm : NudoCCUtil.REALMS) {
 			try {
-				CharacterProfileResponse resp = getWoWCommunityClient().getCharacterProfile(realm, name).get();
+				CharacterProfileResponse resp = wowCommunityClient.getCharacterProfile(realm, name).get();
 				if (StringUtils.isBlank(resp.getName())) {
 					return null;
 				}
@@ -137,7 +145,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	public ImageMessage getWoWCharacterImgPath(String name) {
 		for (String realm : NudoCCUtil.REALMS) {
 			try {
-				CharacterProfileResponse resp = getWoWCommunityClient().getCharacterProfile(realm, name).get();
+				CharacterProfileResponse resp = wowCommunityClient.getCharacterProfile(realm, name).get();
 				if (StringUtils.isBlank(resp.getThumbnail())) {
 					return null;
 				}
@@ -228,7 +236,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	public TemplateMessage buildCharacterTemplate(String name) {
 		for (String realm : NudoCCUtil.REALMS) {
 			try {
-				CharacterProfileResponse resp = getWoWCommunityClient().getCharacterProfile(realm, name).get();
+				CharacterProfileResponse resp = wowCommunityClient.getCharacterProfile(realm, name).get();
 				if (StringUtils.isBlank(resp.getName())) {
 					return null;
 				}
@@ -269,7 +277,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	@Override
 	public TextMessage getWoWCharacterItems(String name, String realm) {
 		try {
-			CharacterProfileResponse resp = getWoWCommunityClient().getCharacterItems(realm, name).get();
+			CharacterProfileResponse resp = wowCommunityClient.getCharacterItems(realm, name).get();
 			
 			if (StringUtils.isBlank(resp.getName())) {
 				return null;
@@ -317,7 +325,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	@Override
 	public TextMessage checkCharacterEnchants(String name, String realm) {
 		try {
-			CharacterProfileResponse resp = getWoWCommunityClient().getCharacterItems(realm, name).get();
+			CharacterProfileResponse resp = wowCommunityClient.getCharacterItems(realm, name).get();
 			
 			if (StringUtils.isBlank(resp.getName())) {
 				return null;
@@ -462,7 +470,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 
 	private void leave(String groupId) {
 		LOG.info("leaveGroup BEGIN");
-		getLineMessageClient().leaveGroup(groupId);
+		lineMessagingClient.leaveGroup(groupId);
 		LOG.info("leaveGroup END");
 	}
 
@@ -513,27 +521,4 @@ public class NudoCCServiceImpl implements INudoCCService {
 		int[] result = NudoCCUtil.getIntegerDistribution(numsToGenerate, discreteProbabilities, 1);
 		return result[0];
 	}
-
-	private LineMessagingClient getLineMessageClient() {
-		if (lineMessagingClient == null) {
-			synchronized (NudoCCServiceImpl.class) {
-				LOG.debug("=== [LineMessagingService build] ===");
-				LineMessagingService lineMessagingService = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
-				lineMessagingClient = new LineMessagingClientImpl(lineMessagingService);
-			}
-		}
-		return lineMessagingClient;
-	}
-	
-	private WoWCommunityClient getWoWCommunityClient() {
-		if (wowCommunityClient == null) {
-			synchronized (NudoCCServiceImpl.class) {
-				LOG.debug("=== [LineMessagingService build] ===");
-				WoWCommunityService wowCommunityService = WoWCommunityServiceBuilder.create(System.getenv("WOWApiKey")).build();
-				wowCommunityClient = new WoWCommunityClientImpl(wowCommunityService);
-			}
-		}
-		return wowCommunityClient;
-	}
-	
 }
