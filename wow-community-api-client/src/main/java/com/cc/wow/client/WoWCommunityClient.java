@@ -6,6 +6,7 @@ package com.cc.wow.client;
 import java.util.concurrent.CompletableFuture;
 
 import com.cc.wow.character.CharacterProfileResponse;
+import com.cc.wow.guild.GuildProfileResponse;
 
 /**
  * @author Caleb Cheng
@@ -25,4 +26,8 @@ public interface WoWCommunityClient {
     CompletableFuture<CharacterProfileResponse> getCharacterProfile(String realm, String characterName);
     
     CompletableFuture<CharacterProfileResponse> getCharacterItems(String realm, String characterName);
+    
+    CompletableFuture<GuildProfileResponse> getGuildChallenge(String realm, String guildName);
+    
+    CompletableFuture<GuildProfileResponse> getGuildNews(String realm, String guildName);
 }

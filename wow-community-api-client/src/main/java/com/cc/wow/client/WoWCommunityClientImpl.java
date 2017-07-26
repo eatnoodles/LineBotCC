@@ -4,6 +4,8 @@ import java.util.concurrent.CompletableFuture;
 
 import com.cc.wow.character.CharacterFieldEnum;
 import com.cc.wow.character.CharacterProfileResponse;
+import com.cc.wow.guild.GuildFieldEnum;
+import com.cc.wow.guild.GuildProfileResponse;
 
 import lombok.AllArgsConstructor;
 import retrofit2.Call;
@@ -13,7 +15,6 @@ import retrofit2.Response;
 @AllArgsConstructor
 public class WoWCommunityClientImpl implements WoWCommunityClient {
 	
-//	private static final ExceptionConverter EXCEPTION_CONVERTER = new ExceptionConverter();
     private final WoWCommunityService retrofitImpl;
 	
 	@Override
@@ -24,6 +25,16 @@ public class WoWCommunityClientImpl implements WoWCommunityClient {
 	@Override
 	public CompletableFuture<CharacterProfileResponse> getCharacterItems(String realm, String characterName) {
 		return toFuture(retrofitImpl.getCharacterByFields(realm, characterName, CharacterFieldEnum.ITEMS.getContext()));
+	}
+	
+	@Override
+	public CompletableFuture<GuildProfileResponse> getGuildChallenge(String realm, String characterName) {
+		return toFuture(retrofitImpl.getGuildByFields(realm, characterName, GuildFieldEnum.CHALLENGE.getContext()));
+	}
+	
+	@Override
+	public CompletableFuture<GuildProfileResponse> getGuildNews(String realm, String characterName) {
+		return toFuture(retrofitImpl.getGuildByFields(realm, characterName, GuildFieldEnum.NEWS.getContext()));
 	}
 
 	private static <T> CompletableFuture<T> toFuture(Call<T> callToWrap) {
@@ -37,8 +48,6 @@ public class WoWCommunityClientImpl implements WoWCommunityClient {
         public void onResponse(final Call<T> call, final Response<T> response) {
             if (response.isSuccessful()) {
                 complete(response.body());
-            } else {
-//                completeExceptionally(EXCEPTION_CONVERTER.apply(response));
             }
         }
 
