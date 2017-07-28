@@ -147,7 +147,9 @@ subprojects {
     }
 }
 
-[':line-bot-api-client', ':line-bot-model', ':line-bot-servlet', ':line-bot-spring-boot', ':wow-community-api-client', ':wow-community-model'].each { projectName ->
+[':line-bot-api-client', ':line-bot-model', ':line-bot-servlet', ':line-bot-spring-boot',
+ ':wow-community-api-client', ':wow-community-model',
+ 'warcraft-logs-api-client', ':warcraft-logs-model'].each { projectName ->
     project(projectName) { project ->
         apply plugin: 'signing'
         apply plugin: 'maven'
