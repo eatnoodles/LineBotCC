@@ -4,6 +4,7 @@
 package com.cc.service.impl;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -528,13 +529,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 			
 			for (CharacterRankResponse resp :resps) {
 				
-				Long rank = resp.getRank();
-				Long outOf = resp.getOutOf();
-				Long rankPercent = (1-(rank/outOf) )*100;
+				BigDecimal rank = new BigDecimal(resp.getRank().toString());
+				BigDecimal outOf = new BigDecimal(resp.getOutOf().toString());
+				String rankPercent = BigDecimal.ONE.subtract(rank.divide(outOf, 2)).multiply(new BigDecimal("100")).toString();
 				
 				sb.append("	-WCL reportID：").append(resp.getReportID()).append(", BOSS: ").append(this.getBossNameByEncounter(resp.getEncounter())).append("-");
 				sb.append(getBossMode(resp.getDifficulty()));
-				sb.append(", Rank%：").append(rankPercent.toString()).append("% ,").append(metric).append(": ").append(resp.getTotal()).append("\r\n");
+				sb.append(", Rank%：").append(rankPercent).append("% ,").append(metric).append(": ").append(resp.getTotal()).append("\r\n");
 			}
 			return new TextMessage(sb.toString());
 		} catch (Exception e) {
