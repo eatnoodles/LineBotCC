@@ -249,10 +249,10 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setLocation(location);
 			
 			String metric = array[3];
-			if (Arrays.binarySearch(NudoCCUtil.METRICS, metric) < 0) {
-				bean.setErrorMsg("沒有這個選項喔~請輸入 [dps, hps, bossdps, tankhps, playerspeed] 其中一個");
-				return bean;
-			}
+//			if (Arrays.binarySearch(NudoCCUtil.METRICS, metric) < 0) {
+//				bean.setErrorMsg("沒有這個選項喔~請輸入 [dps, hps, bossdps, tankhps, playerspeed] 其中一個");
+//				return bean;
+//			}
 			bean.setMetric(metric);
 			
 		}else {
