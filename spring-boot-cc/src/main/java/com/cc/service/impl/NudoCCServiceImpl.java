@@ -530,7 +530,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 				
 				Long rank = resp.getRank();
 				Long outOf = resp.getOutOf();
-				Long rankPercent = (1-(rank/outOf) )*100L;
+				Long rankPercent = (1-(rank/outOf) )*100;
 				
 				sb.append("	-WCL reportID：").append(resp.getReportID()).append(", BOSS: ").append(this.getBossNameByEncounter(resp.getEncounter())).append("-");
 				sb.append(getBossMode(resp.getDifficulty()));
