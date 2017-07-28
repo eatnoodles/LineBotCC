@@ -24,6 +24,11 @@ import com.cc.enums.WowEventEnum;
 import com.cc.enums.WowItemPartsEnum;
 import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
+import com.cc.wcl.client.WarcraftLogsClient;
+import com.cc.wcl.client.WarcraftLogsClientImpl;
+import com.cc.wcl.client.WarcraftLogsService;
+import com.cc.wcl.client.WarcraftLogsServiceBuilder;
+import com.cc.wcl.rank.CharacterRankResponse;
 import com.cc.wow.boss.BossMaster;
 import com.cc.wow.character.Appearance;
 import com.cc.wow.character.CharacterItemsResponse;
@@ -72,6 +77,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 	{
 		WoWCommunityService wowCommunityService = WoWCommunityServiceBuilder.create(System.getenv("WOWApiKey")).build();
 		wowCommunityClient = new WoWCommunityClientImpl(wowCommunityService);
+	}
+	
+	private WarcraftLogsClient warcraftLogsClient;
+	{
+		WarcraftLogsService warcraftLogsService = WarcraftLogsServiceBuilder.create(System.getenv("WCLApiKey")).build();
+		warcraftLogsClient = new WarcraftLogsClientImpl(warcraftLogsService);
 	}
 	
 	static {
@@ -214,7 +225,37 @@ public class NudoCCServiceImpl implements INudoCCService {
 				return bean;
 			}
 			bean.setRealm(realm);
-		} else {
+		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_WCL)) {
+			bean.setEventEnum(WowEventEnum.WCL);
+			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_WCL, StringUtils.EMPTY).trim().split(";");
+			if (array.length != 4) {
+				bean.setErrorMsg("要更多資訊喔~");
+				return bean;
+			}
+			name = array[0];
+			
+			String realm = array[1];
+			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
+				bean.setErrorMsg("沒有這個server喔~");
+				return bean;
+			}
+			bean.setRealm(realm);
+			
+			String location = array[2];
+			if (Arrays.binarySearch(NudoCCUtil.LOCATIONS, location) < 0) {
+				bean.setErrorMsg("沒有這個地區喔~請輸入 [US, EU, KR, TW, CN] 其中一個");
+				return bean;
+			}
+			bean.setLocation(location);
+			
+			String metric = array[3];
+			if (Arrays.binarySearch(NudoCCUtil.METRICS, metric) < 0) {
+				bean.setErrorMsg("沒有這個選項喔~請輸入 [dps, hps, bossdps, tankhps, playerspeed] 其中一個");
+				return bean;
+			}
+			bean.setMetric(metric);
+			
+		}else {
 			bean.setEventEnum(WowEventEnum.PROFILE);
 			name = command;
 		}
@@ -448,6 +489,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 						return this.getWoWCharacterItems(commandBean.getName(), commandBean.getRealm());
 					case CHECK_ENCHANTS:
 						return this.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
+					case WCL:
+						return this.getCharacterWCL(commandBean.getName(), commandBean.getRealm(), commandBean.getLocation(), commandBean.getMetric());
 					case TEST:
 						//TODO ...
 					default:
@@ -466,6 +509,63 @@ public class NudoCCServiceImpl implements INudoCCService {
     		}
     		return null;
     	}
+	}
+
+	/**
+	 * 取得角色WCL資訊
+	 * 
+	 * @param name
+	 * @param realm
+	 * @param location
+	 * @param metric
+	 * @return
+	 */
+	private Message getCharacterWCL(String name, String realm, String location, String metric) {
+		try {
+			List<CharacterRankResponse> resps = warcraftLogsClient.getRankingsByCharacter(name, realm, location, metric).get();
+			StringBuilder sb = new StringBuilder();
+			sb.append(String.format("角色：%s-%s的%s WCL 如下：\r\n", name, realm, metric));
+			
+			for (CharacterRankResponse resp :resps) {
+				
+				Long rank = resp.getRank();
+				Long outOf = resp.getOutOf();
+				Long rankPercent = (1-(rank/outOf) )*100L;
+				
+				sb.append("	-WCL reportID：").append(resp.getReportID()).append(", BOSS: ").append(this.getBossNameByEncounter(resp.getEncounter())).append("-");
+				sb.append(getBossMode(resp.getDifficulty()));
+				sb.append(", Rank%：").append(rankPercent.toString()).append("% ,").append(metric).append(": ").append(resp.getTotal()).append("\r\n");
+			}
+			return new TextMessage(sb.toString());
+		} catch (Exception e) {
+			LOG.error(e.getMessage());
+			return null;
+		}
+	}
+
+	private String getBossMode(int difficulty) {
+		switch (difficulty) {
+			case 5: return "M";
+			case 4: return "H";
+			case 3: return "N";
+			default: return "??";
+		}
+	}
+
+	private String getBossNameByEncounter(Long encounter) {
+		int boss = encounter.intValue();
+		switch (boss) {
+			case 2032: return "狗洛斯";
+			case 2048: return "惡魔審判官";
+			case 2036: return "哈亞談";
+			case 2037: return "薩斯音女士";
+			case 2050: return "月光議會";
+			case 2054: return "荒瘠聚合體";
+			case 2052: return "剩女";
+			case 2038: return "墮落化身";
+			case 2051: return "基爾加單";
+			default: return "???";
+		}
 	}
 
 	private void leave(String groupId) {

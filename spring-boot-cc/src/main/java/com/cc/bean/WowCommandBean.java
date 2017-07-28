@@ -15,6 +15,10 @@ public class WowCommandBean {
 	
 	private String realm;
 	
+	private String location;
+	
+	private String metric;
+	
 	private WowEventEnum eventEnum;
 	
 	private String errorMsg;
@@ -59,5 +63,21 @@ public class WowCommandBean {
 
 	public void setWowCommand(boolean isWowCommand) {
 		this.isWowCommand = isWowCommand;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public String getMetric() {
+		return metric;
+	}
+
+	public void setMetric(String metric) {
+		this.metric = metric;
 	}
 }
