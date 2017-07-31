@@ -461,6 +461,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		sb.append("查詢角色大頭貼: -wow -img 角色名稱\r\n");
 		sb.append("查詢角色裝備: -wow -i 角色名稱;伺服器名稱\r\n");
 		sb.append("查詢角色裝備有無附魔: -wow -ec 角色名稱;伺服器名稱\r\n");
+		sb.append("查詢角色WCL: -wow -wcl 角色名稱;伺服器名稱;地區(TW);(hps/dps/bossdps/tankhps)\r\n");
 		return new TextMessage(sb.toString());
 	}
 	
