@@ -5,6 +5,7 @@ package com.cc.service.impl;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -525,17 +526,21 @@ public class NudoCCServiceImpl implements INudoCCService {
 		try {
 			List<CharacterRankResponse> resps = warcraftLogsClient.getRankingsByCharacter(name, realm, location, metric).get();
 			StringBuilder sb = new StringBuilder();
-			sb.append(String.format("角色：%s-%s的%s WCL 如下：\r\n", name, realm, metric));
+			sb.append(String.format("%s-%s 的 %s 如下：\r\n", name, realm, metric));
 			
 			for (CharacterRankResponse resp :resps) {
 				
 				BigDecimal rank = new BigDecimal(resp.getRank().toString());
 				BigDecimal outOf = new BigDecimal(resp.getOutOf().toString());
-				String rankPercent = BigDecimal.ONE.subtract(rank.divide(outOf, 2)).multiply(new BigDecimal("100")).toString();
+				String rankPercent = BigDecimal.ONE.subtract(rank.divide(outOf, 2, RoundingMode.HALF_EVEN)).multiply(new BigDecimal("100")).stripTrailingZeros().toString();
 				
-				sb.append("	-WCL reportID：").append(resp.getReportID()).append(", BOSS: ").append(this.getBossNameByEncounter(resp.getEncounter())).append("-");
-				sb.append(getBossMode(resp.getDifficulty()));
-				sb.append(", Rank%：").append(rankPercent).append("% ,").append(metric).append(": ").append(resp.getTotal()).append("\r\n");
+				sb.append("	").append(this.getBossNameByEncounter(resp.getEncounter()));
+				sb.append("-").append(getBossMode(resp.getDifficulty()));
+				
+				sb.append(" Rank%：").append(rankPercent).append("% ,").append(metric).append(": ").append(resp.getTotal());
+				
+				sb.append(" ( ").append(resp.getReportID()).append(" ) ");
+				sb.append("\r\n\r\n");
 			}
 			return new TextMessage(sb.toString());
 		} catch (Exception e) {
