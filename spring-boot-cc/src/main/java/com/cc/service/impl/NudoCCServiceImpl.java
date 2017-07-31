@@ -537,7 +537,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 				
 				BigDecimal rank = new BigDecimal(resp.getRank().toString());
 				BigDecimal outOf = new BigDecimal(resp.getOutOf().toString());
-				String rankPercent = BigDecimal.ONE.subtract(rank.divide(outOf, 4, RoundingMode.HALF_EVEN)).multiply(new BigDecimal("100")).stripTrailingZeros().toString();
+				String rankPercent = BigDecimal.ONE.subtract(rank.divide(outOf, 4, RoundingMode.HALF_EVEN)).multiply(new BigDecimal("100")).stripTrailingZeros().toPlainString();
 				
 				sb.append("	").append(this.getBossNameByEncounter(resp.getEncounter()));
 				sb.append("-").append(getBossMode(resp.getDifficulty()));
