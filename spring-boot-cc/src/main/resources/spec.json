@@ -5,15 +5,15 @@
     "specs": [
       {
         "id": 1,
-        "name": "Blood"
+        "name": "血魄 DK"
       },
       {
         "id": 2,
-        "name": "Frost"
+        "name": "冰霜DK"
       },
       {
         "id": 3,
-        "name": "Unholy"
+        "name": "髒DK"
       }
     ]
   },
@@ -23,19 +23,19 @@
     "specs": [
       {
         "id": 1,
-        "name": "Balance"
+        "name": "鳥D"
       },
       {
         "id": 2,
-        "name": "Feral"
+        "name": "貓Ｄ"
       },
       {
         "id": 3,
-        "name": "Guardian"
+        "name": "熊Ｄ"
       },
       {
         "id": 4,
-        "name": "Restoration"
+        "name": "奶Ｄ"
       }
     ]
   },
@@ -45,15 +45,15 @@
     "specs": [
       {
         "id": 1,
-        "name": "Beast Mastery"
+        "name": "獸王"
       },
       {
         "id": 2,
-        "name": "Marksmanship"
+        "name": "射擊"
       },
       {
         "id": 3,
-        "name": "Survival"
+        "name": "生存"
       }
     ]
   },
@@ -63,15 +63,15 @@
     "specs": [
       {
         "id": 1,
-        "name": "Arcane"
+        "name": "祕法"
       },
       {
         "id": 2,
-        "name": "Fire"
+        "name": "火法"
       },
       {
         "id": 3,
-        "name": "Frost"
+        "name": "冰法"
       }
     ]
   },
@@ -81,15 +81,15 @@
     "specs": [
       {
         "id": 1,
-        "name": "Brewmaster"
+        "name": "釀酒"
       },
       {
         "id": 2,
-        "name": "Mistweaver"
+        "name": "織霧"
       },
       {
         "id": 3,
-        "name": "Windwalker"
+        "name": "御風"
       }
     ]
   },
@@ -99,15 +99,15 @@
     "specs": [
       {
         "id": 1,
-        "name": "Holy"
+        "name": "奶怕"
       },
       {
         "id": 2,
-        "name": "Protection"
+        "name": "我怕怕"
       },
       {
         "id": 3,
-        "name": "Retribution"
+        "name": "懲戒"
       }
     ]
   },
@@ -117,15 +117,15 @@
     "specs": [
       {
         "id": 1,
-        "name": "Discipline"
+        "name": "戒律"
       },
       {
         "id": 2,
-        "name": "Holy"
+        "name": "神"
       },
       {
         "id": 3,
-        "name": "Shadow"
+        "name": "暗影老牧"
       }
     ]
   },
@@ -135,15 +135,15 @@
     "specs": [
       {
         "id": 1,
-        "name": "Assassination"
+        "name": "刺殺"
       },
       {
         "id": 2,
-        "name": "Combat"
+        "name": "戰鬥"
       },
       {
         "id": 3,
-        "name": "Subtlety"
+        "name": "敏銳"
       },
       {
         "id": 4,
@@ -157,15 +157,15 @@
     "specs": [
       {
         "id": 1,
-        "name": "Elemental"
+        "name": "元素"
       },
       {
         "id": 2,
-        "name": "Enhancement"
+        "name": "增薩"
       },
       {
         "id": 3,
-        "name": "Restoration"
+        "name": "奶薩"
       }
     ]
   },
@@ -175,15 +175,15 @@
     "specs": [
       {
         "id": 1,
-        "name": "Affliction"
+        "name": "痛術"
       },
       {
         "id": 2,
-        "name": "Demonology"
+        "name": "惡術"
       },
       {
         "id": 3,
-        "name": "Destruction"
+        "name": "毀樹"
       }
     ]
   },
@@ -193,15 +193,15 @@
     "specs": [
       {
         "id": 1,
-        "name": "Arms"
+        "name": "武戰"
       },
       {
         "id": 2,
-        "name": "Fury"
+        "name": "狂戰"
       },
       {
         "id": 3,
-        "name": "Protection"
+        "name": "防戰"
       },
       {
         "id": 4,
