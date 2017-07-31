@@ -548,7 +548,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 				sb.append("	").append(this.getBossNameByEncounter(resp.getEncounter()));
 				sb.append("-").append(getBossMode(resp.getDifficulty()));
 				
-				sb.append(" Rank%：").append(rankPercent).append("% ,").append(metric).append(": ").append(resp.getTotal());
+				sb.append(" ：").append(resp.getTotal()).append("(").append(rankPercent).append("%)--");
 				sb.append(" ( ").append(resp.getReportID()).append(" ) ");
 				
 				if (map.containsKey(specName)) {
