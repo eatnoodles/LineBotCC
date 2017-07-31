@@ -8,7 +8,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -529,11 +531,15 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 */
 	private Message getCharacterWCL(String name, String realm, String location, String metric) {
 		try {
+			Map<String, List<String>> map = new HashMap<>();
+			
 			List<CharacterRankResponse> resps = warcraftLogsClient.getRankingsByCharacter(name, realm, location, metric).get();
+			
 			StringBuilder sb = new StringBuilder();
-			sb.append(String.format("%s-%s 的 %s 如下：\r\n", name, realm, metric));
 			
 			for (CharacterRankResponse resp :resps) {
+				
+				String specName = getSpecName(resp.getClz(), resp.getSpec());
 				
 				BigDecimal rank = new BigDecimal(resp.getRank().toString());
 				BigDecimal outOf = new BigDecimal(resp.getOutOf().toString());
@@ -541,12 +547,31 @@ public class NudoCCServiceImpl implements INudoCCService {
 				
 				sb.append("	").append(this.getBossNameByEncounter(resp.getEncounter()));
 				sb.append("-").append(getBossMode(resp.getDifficulty()));
-				sb.append(" ( ").append(getSpecName(resp.getClz(), resp.getSpec())).append(" ) ");
 				
 				sb.append(" Rank%：").append(rankPercent).append("% ,").append(metric).append(": ").append(resp.getTotal());
 				sb.append(" ( ").append(resp.getReportID()).append(" ) ");
-				sb.append("\r\n\r\n");
+				
+				if (map.containsKey(specName)) {
+					map.get(specName).add(sb.toString());
+				} else {
+					List<String> list = new ArrayList<>();
+					list.add(sb.toString());
+					map.put(specName, list);
+				}
+				sb.delete(0, sb.length());
 			}
+			
+			sb.append(String.format("%s-%s 的 %s 如下：\r\n", name, realm, metric));
+			
+			for (String specName : map.keySet()) {
+				sb.append("　--").append(specName).append("--\r\n");
+				sb.append("--------------------------------------");
+				
+				for (String str :map.get(specName)) {
+					sb.append(str).append("\r\n\r\n");
+				}
+			}
+			
 			return new TextMessage(sb.toString());
 		} catch (Exception e) {
 			LOG.error(e.getMessage());
