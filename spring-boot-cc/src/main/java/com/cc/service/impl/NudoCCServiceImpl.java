@@ -6,6 +6,8 @@ package com.cc.service.impl;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -533,6 +535,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	private Message getCharacterWCL(String name, String realm, String location, String metric) {
 		try {
 			Map<String, List<String>> map = new HashMap<>();
+			DateFormat df = new SimpleDateFormat("(MM/dd)");
 			
 			List<CharacterRankResponse> resps = warcraftLogsClient.getRankingsByCharacter(name, realm, location, metric).get();
 			
@@ -550,7 +553,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 				sb.append("-").append(getBossMode(resp.getDifficulty()));
 				
 				sb.append(" ：").append(resp.getTotal()).append("(").append(rankPercent).append("%) ");
-				sb.append(" ( ").append(resp.getReportID()).append(" ) ");
+				sb.append(" ( ").append(resp.getReportID()).append(" ").append(df.format(resp.getStartTime())).append(" ) ");
 				
 				if (map.containsKey(specName)) {
 					map.get(specName).add(sb.toString());
