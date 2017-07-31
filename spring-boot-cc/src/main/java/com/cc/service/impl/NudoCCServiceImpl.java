@@ -564,8 +564,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 			sb.append(String.format("%s-%s 的 %s 如下：\r\n", name, realm, metric));
 			
 			for (String specName : map.keySet()) {
-				sb.append("　--").append(specName).append("--\r\n");
-				sb.append("--------------------------------------");
+				sb.append("　--").append(specName);
+				sb.append("--------------------------------------------\r\n");
 				
 				for (String str :map.get(specName)) {
 					sb.append(str).append("\r\n\r\n");
