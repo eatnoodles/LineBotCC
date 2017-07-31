@@ -31,6 +31,8 @@ import com.cc.wcl.client.WarcraftLogsClientImpl;
 import com.cc.wcl.client.WarcraftLogsService;
 import com.cc.wcl.client.WarcraftLogsServiceBuilder;
 import com.cc.wcl.rank.CharacterRankResponse;
+import com.cc.wcl.rank.Spec;
+import com.cc.wcl.rank.WarcraftLogsClass;
 import com.cc.wow.boss.BossMaster;
 import com.cc.wow.character.Appearance;
 import com.cc.wow.character.CharacterItemsResponse;
@@ -67,6 +69,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	private static BossMaster wowBossMaster;
 	
+	private static List<WarcraftLogsClass> wclClasses;
+	
 	private static final Logger LOG = LoggerFactory.getLogger(NudoCCServiceImpl.class);
 	
 	private LineMessagingClient lineMessagingClient;
@@ -92,6 +96,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		try {
 			wowBossMaster = mapper.readValue(Application.class.getResourceAsStream("/wowBoss.json"), new TypeReference<BossMaster>(){});
+			wclClasses = mapper.readValue(Application.class.getResourceAsStream("/spec.json"), new TypeReference<List<WarcraftLogsClass>>(){});
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -532,13 +537,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 				
 				BigDecimal rank = new BigDecimal(resp.getRank().toString());
 				BigDecimal outOf = new BigDecimal(resp.getOutOf().toString());
-				String rankPercent = BigDecimal.ONE.subtract(rank.divide(outOf, 2, RoundingMode.HALF_EVEN)).multiply(new BigDecimal("100")).stripTrailingZeros().toString();
+				String rankPercent = BigDecimal.ONE.subtract(rank.divide(outOf, 4, RoundingMode.HALF_EVEN)).multiply(new BigDecimal("100")).stripTrailingZeros().toString();
 				
 				sb.append("	").append(this.getBossNameByEncounter(resp.getEncounter()));
 				sb.append("-").append(getBossMode(resp.getDifficulty()));
 				
 				sb.append(" Rank%：").append(rankPercent).append("% ,").append(metric).append(": ").append(resp.getTotal());
-				
+				sb.append(", 天賦：").append(getSpecName(resp.getClz(), resp.getSpec()));
 				sb.append(" ( ").append(resp.getReportID()).append(" ) ");
 				sb.append("\r\n\r\n");
 			}
@@ -626,5 +631,22 @@ public class NudoCCServiceImpl implements INudoCCService {
 		double[] discreteProbabilities = NudoCCUtil.zipfDistribution(end-start+1);
 		int[] result = NudoCCUtil.getIntegerDistribution(numsToGenerate, discreteProbabilities, 1);
 		return result[0];
+	}
+	
+	private String getSpecName(int clz, int specId) {
+		StringBuilder sb = new StringBuilder();
+		for (WarcraftLogsClass wclClass : wclClasses) {
+			if (wclClass.getId() == clz) {
+				for (Spec spec :wclClass.getSpecs()) {
+					if (spec.getId() == specId) {
+						sb.append(spec.getName());
+						break;
+					}
+				}
+				sb.append("-").append(wclClass.getName());
+				break;
+			}
+		}
+		return sb.toString();
 	}
 }
