@@ -19,6 +19,8 @@ public class WowCommandBean {
 	
 	private String metric;
 	
+	private String mode;
+	
 	private WowEventEnum eventEnum;
 	
 	private String errorMsg;
@@ -79,5 +81,13 @@ public class WowCommandBean {
 
 	public void setMetric(String metric) {
 		this.metric = metric;
+	}
+
+	public String getMode() {
+		return mode;
+	}
+
+	public void setMode(String mode) {
+		this.mode = mode;
 	}
 }

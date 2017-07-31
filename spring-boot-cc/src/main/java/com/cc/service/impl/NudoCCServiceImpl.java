@@ -239,7 +239,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_WCL)) {
 			bean.setEventEnum(WowEventEnum.WCL);
 			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_WCL, StringUtils.EMPTY).trim().split(";");
-			if (array.length != 4) {
+			if (array.length != 4 && array.length != 5) {
 				bean.setErrorMsg("要更多資訊喔~");
 				return bean;
 			}
@@ -260,11 +260,25 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setLocation(location);
 			
 			String metric = array[3];
-//			if (Arrays.binarySearch(NudoCCUtil.METRICS, metric) < 0) {
-//				bean.setErrorMsg("沒有這個選項喔~請輸入 [dps, hps, bossdps, tankhps, playerspeed] 其中一個");
-//				return bean;
-//			}
+			if (!metric.equalsIgnoreCase("dps")
+				&& !metric.equalsIgnoreCase("hps")
+				&& !metric.equalsIgnoreCase("bossdps")
+				&& !metric.equalsIgnoreCase("tankhps")
+				&& !metric.equalsIgnoreCase("playerspeed")) {
+				bean.setErrorMsg("沒有這個選項喔~請輸入 [dps, hps, bossdps, tankhps, playerspeed] 其中一個");
+				return bean;
+			}
 			bean.setMetric(metric);
+			if (array.length == 5) {
+				String mode = array[4];
+				if (!mode.equalsIgnoreCase("N")
+					&& !mode.equalsIgnoreCase("H")
+					&& !mode.equalsIgnoreCase("M")) {
+					bean.setErrorMsg("沒有這個模式喔~請輸入 [N,H,M] 其中一個");
+					return bean;
+				}
+				bean.setMode(mode);
+			}
 			
 		}else {
 			bean.setEventEnum(WowEventEnum.PROFILE);
@@ -502,7 +516,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 					case CHECK_ENCHANTS:
 						return this.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
 					case WCL:
-						return this.getCharacterWCL(commandBean.getName(), commandBean.getRealm(), commandBean.getLocation(), commandBean.getMetric());
+						return this.getCharacterWCL(commandBean.getName(), commandBean.getRealm(), commandBean.getLocation(), commandBean.getMetric(), commandBean.getMode());
 					case TEST:
 						//TODO ...
 					default:
@@ -532,7 +546,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @param metric
 	 * @return
 	 */
-	private Message getCharacterWCL(String name, String realm, String location, String metric) {
+	private Message getCharacterWCL(String name, String realm, String location, String metric, String mode) {
 		try {
 			Map<String, List<String>> map = new HashMap<>();
 			DateFormat df = new SimpleDateFormat("(MM/dd)");
@@ -542,7 +556,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 			StringBuilder sb = new StringBuilder();
 			
 			for (CharacterRankResponse resp :resps) {
-				
+				if (mode != null && !mode.equalsIgnoreCase(getBossMode(resp.getDifficulty()))) {
+					continue;
+				}
 				String specName = getSpecName(resp.getClz(), resp.getSpec());
 				
 				BigDecimal rank = new BigDecimal(resp.getRank().toString());
