@@ -541,9 +541,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 				
 				sb.append("	").append(this.getBossNameByEncounter(resp.getEncounter()));
 				sb.append("-").append(getBossMode(resp.getDifficulty()));
+				sb.append(" ( ").append(getSpecName(resp.getClz(), resp.getSpec())).append(" ) ");
 				
 				sb.append(" Rank%：").append(rankPercent).append("% ,").append(metric).append(": ").append(resp.getTotal());
-				sb.append(", 天賦：").append(getSpecName(resp.getClz(), resp.getSpec()));
 				sb.append(" ( ").append(resp.getReportID()).append(" ) ");
 				sb.append("\r\n\r\n");
 			}
@@ -635,16 +635,14 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	private String getSpecName(int clz, int specId) {
 		StringBuilder sb = new StringBuilder();
-		for (WarcraftLogsClass wclClass : wclClasses) {
+		loop :for (WarcraftLogsClass wclClass : wclClasses) {
 			if (wclClass.getId() == clz) {
 				for (Spec spec :wclClass.getSpecs()) {
 					if (spec.getId() == specId) {
 						sb.append(spec.getName());
-						break;
+						break loop;
 					}
 				}
-				sb.append("-").append(wclClass.getName());
-				break;
 			}
 		}
 		return sb.toString();
