@@ -48,6 +48,8 @@ public class NudoCCUtil {
 	
 	public static final String WOW_COMMAND_WCL = "-wcl ";
 	
+	public static final String WOW_COMMAND_SAVE = "-save ";
+	
 	public static final String WOW_COMMAND_HELP = "-help";
 	
 	public static final String WOW_NAME_ERROR_MSG = "角色名稱的格式有誤哦~";

@@ -16,6 +16,7 @@ public enum WowEventEnum {
 	CHARACTER_ITEM(3, "角色裝備資訊"),
 	CHECK_ENCHANTS(4, "看看這個傢伙有沒附魔的裝"),
 	WCL(5, "WCL"),
+	MAPPING_A(6, "儲存角色資訊"),
 	HELP(995, "幫助"),
 	TEST(99, "測試用"),
 	NULL(0, StringUtils.EMPTY);
