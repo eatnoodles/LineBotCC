@@ -1,6 +1,7 @@
 package com.cc.wow.client;
 
 import com.cc.wow.character.CharacterProfileResponse;
+import com.cc.wow.guild.GuildProfileResponse;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -24,4 +25,12 @@ public interface WoWCommunityService {
     Call<CharacterProfileResponse> getCharacterByFields(@Path("realm") String realm, @Path("characterName") String characterName,
     		@Query(value="fields", encoded=true) String fields);
 
+    /**
+     * 
+     * @see <a href="https://dev.battle.net/io-docs">//https://dev.battle.net/io-docs</a>
+     */
+    @Streaming
+    @GET("guild/{realm}/{guildName}")
+    Call<GuildProfileResponse> getGuildByFields(@Path("realm") String realm, @Path("guildName") String guildName,
+    		@Query(value="fields", encoded=true) String fields);
 }

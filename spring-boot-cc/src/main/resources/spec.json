@@ -1,0 +1,226 @@
+[
+  {
+    "id": 1,
+    "name": "Death Knight",
+    "specs": [
+      {
+        "id": 1,
+        "name": "血魄 DK"
+      },
+      {
+        "id": 2,
+        "name": "冰霜DK"
+      },
+      {
+        "id": 3,
+        "name": "髒DK"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Druid",
+    "specs": [
+      {
+        "id": 1,
+        "name": "鳥D"
+      },
+      {
+        "id": 2,
+        "name": "貓Ｄ"
+      },
+      {
+        "id": 3,
+        "name": "熊Ｄ"
+      },
+      {
+        "id": 4,
+        "name": "奶Ｄ"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Hunter",
+    "specs": [
+      {
+        "id": 1,
+        "name": "獸王"
+      },
+      {
+        "id": 2,
+        "name": "射擊"
+      },
+      {
+        "id": 3,
+        "name": "生存"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Mage",
+    "specs": [
+      {
+        "id": 1,
+        "name": "祕法"
+      },
+      {
+        "id": 2,
+        "name": "火法"
+      },
+      {
+        "id": 3,
+        "name": "冰法"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Monk",
+    "specs": [
+      {
+        "id": 1,
+        "name": "釀酒"
+      },
+      {
+        "id": 2,
+        "name": "織霧"
+      },
+      {
+        "id": 3,
+        "name": "御風"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Paladin",
+    "specs": [
+      {
+        "id": 1,
+        "name": "奶怕"
+      },
+      {
+        "id": 2,
+        "name": "我怕怕"
+      },
+      {
+        "id": 3,
+        "name": "懲戒"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Priest",
+    "specs": [
+      {
+        "id": 1,
+        "name": "戒律"
+      },
+      {
+        "id": 2,
+        "name": "神"
+      },
+      {
+        "id": 3,
+        "name": "暗影老牧"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Rogue",
+    "specs": [
+      {
+        "id": 1,
+        "name": "刺殺"
+      },
+      {
+        "id": 2,
+        "name": "戰鬥"
+      },
+      {
+        "id": 3,
+        "name": "敏銳"
+      },
+      {
+        "id": 4,
+        "name": "Outlaw"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Shaman",
+    "specs": [
+      {
+        "id": 1,
+        "name": "元素"
+      },
+      {
+        "id": 2,
+        "name": "增薩"
+      },
+      {
+        "id": 3,
+        "name": "奶薩"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Warlock",
+    "specs": [
+      {
+        "id": 1,
+        "name": "痛術"
+      },
+      {
+        "id": 2,
+        "name": "惡術"
+      },
+      {
+        "id": 3,
+        "name": "毀樹"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Warrior",
+    "specs": [
+      {
+        "id": 1,
+        "name": "武戰"
+      },
+      {
+        "id": 2,
+        "name": "狂戰"
+      },
+      {
+        "id": 3,
+        "name": "防戰"
+      },
+      {
+        "id": 4,
+        "name": "Gladiator"
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Demon Hunter",
+    "specs": [
+      {
+        "id": 1,
+        "name": "Havoc"
+      },
+      {
+        "id": 2,
+        "name": "Vengeance"
+      }
+    ]
+  }
+]

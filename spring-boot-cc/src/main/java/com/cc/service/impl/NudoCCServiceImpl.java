@@ -4,9 +4,15 @@
 package com.cc.service.impl;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +30,13 @@ import com.cc.enums.WowEventEnum;
 import com.cc.enums.WowItemPartsEnum;
 import com.cc.enums.WowRaceEnum;
 import com.cc.service.INudoCCService;
+import com.cc.wcl.client.WarcraftLogsClient;
+import com.cc.wcl.client.WarcraftLogsClientImpl;
+import com.cc.wcl.client.WarcraftLogsService;
+import com.cc.wcl.client.WarcraftLogsServiceBuilder;
+import com.cc.wcl.rank.CharacterRankResponse;
+import com.cc.wcl.rank.Spec;
+import com.cc.wcl.rank.WarcraftLogsClass;
 import com.cc.wow.boss.BossMaster;
 import com.cc.wow.character.Appearance;
 import com.cc.wow.character.CharacterItemsResponse;
@@ -60,17 +73,34 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	private static BossMaster wowBossMaster;
 	
+	private static List<WarcraftLogsClass> wclClasses;
+	
 	private static final Logger LOG = LoggerFactory.getLogger(NudoCCServiceImpl.class);
 	
 	private LineMessagingClient lineMessagingClient;
+	{
+		LineMessagingService lineMessagingService = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
+		lineMessagingClient = new LineMessagingClientImpl(lineMessagingService);
+	}
 	
 	private WoWCommunityClient wowCommunityClient;
+	{
+		WoWCommunityService wowCommunityService = WoWCommunityServiceBuilder.create(System.getenv("WOWApiKey")).build();
+		wowCommunityClient = new WoWCommunityClientImpl(wowCommunityService);
+	}
+	
+	private WarcraftLogsClient warcraftLogsClient;
+	{
+		WarcraftLogsService warcraftLogsService = WarcraftLogsServiceBuilder.create(System.getenv("WCLApiKey")).build();
+		warcraftLogsClient = new WarcraftLogsClientImpl(warcraftLogsService);
+	}
 	
 	static {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		try {
 			wowBossMaster = mapper.readValue(Application.class.getResourceAsStream("/wowBoss.json"), new TypeReference<BossMaster>(){});
+			wclClasses = mapper.readValue(Application.class.getResourceAsStream("/spec.json"), new TypeReference<List<WarcraftLogsClass>>(){});
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -86,7 +116,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	@Override
 	public TextMessage getWoWCharacterProfile(String name, String server) {
 		try {
-			CharacterProfileResponse resp = getWoWCommunityClient().getCharacterProfile(server, name).get();
+			CharacterProfileResponse resp = wowCommunityClient.getCharacterProfile(server, name).get();
 			if (StringUtils.isBlank(resp.getName())) {
 				return null;
 			}
@@ -110,7 +140,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	public TextMessage getWoWCharacterProfileByName(String name) {
 		for (String realm : NudoCCUtil.REALMS) {
 			try {
-				CharacterProfileResponse resp = getWoWCommunityClient().getCharacterProfile(realm, name).get();
+				CharacterProfileResponse resp = wowCommunityClient.getCharacterProfile(realm, name).get();
 				if (StringUtils.isBlank(resp.getName())) {
 					return null;
 				}
@@ -137,7 +167,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	public ImageMessage getWoWCharacterImgPath(String name) {
 		for (String realm : NudoCCUtil.REALMS) {
 			try {
-				CharacterProfileResponse resp = getWoWCommunityClient().getCharacterProfile(realm, name).get();
+				CharacterProfileResponse resp = wowCommunityClient.getCharacterProfile(realm, name).get();
 				if (StringUtils.isBlank(resp.getThumbnail())) {
 					return null;
 				}
@@ -206,7 +236,51 @@ public class NudoCCServiceImpl implements INudoCCService {
 				return bean;
 			}
 			bean.setRealm(realm);
-		} else {
+		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_WCL)) {
+			bean.setEventEnum(WowEventEnum.WCL);
+			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_WCL, StringUtils.EMPTY).trim().split(";");
+			if (array.length != 4 && array.length != 5) {
+				bean.setErrorMsg("要更多資訊喔~");
+				return bean;
+			}
+			name = array[0];
+			
+			String realm = array[1];
+			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
+				bean.setErrorMsg("沒有這個server喔~");
+				return bean;
+			}
+			bean.setRealm(realm);
+			
+			String location = array[2];
+			if (Arrays.binarySearch(NudoCCUtil.LOCATIONS, location) < 0) {
+				bean.setErrorMsg("沒有這個地區喔~請輸入 [US, EU, KR, TW, CN] 其中一個");
+				return bean;
+			}
+			bean.setLocation(location);
+			
+			String metric = array[3];
+			if (!metric.equalsIgnoreCase("dps")
+				&& !metric.equalsIgnoreCase("hps")
+				&& !metric.equalsIgnoreCase("bossdps")
+				&& !metric.equalsIgnoreCase("tankhps")
+				&& !metric.equalsIgnoreCase("playerspeed")) {
+				bean.setErrorMsg("沒有這個選項喔~請輸入 [dps, hps, bossdps, tankhps, playerspeed] 其中一個");
+				return bean;
+			}
+			bean.setMetric(metric);
+			if (array.length == 5) {
+				String mode = array[4];
+				if (!mode.equalsIgnoreCase("N")
+					&& !mode.equalsIgnoreCase("H")
+					&& !mode.equalsIgnoreCase("M")) {
+					bean.setErrorMsg("沒有這個模式喔~請輸入 [N,H,M] 其中一個");
+					return bean;
+				}
+				bean.setMode(mode);
+			}
+			
+		}else {
 			bean.setEventEnum(WowEventEnum.PROFILE);
 			name = command;
 		}
@@ -228,7 +302,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	public TemplateMessage buildCharacterTemplate(String name) {
 		for (String realm : NudoCCUtil.REALMS) {
 			try {
-				CharacterProfileResponse resp = getWoWCommunityClient().getCharacterProfile(realm, name).get();
+				CharacterProfileResponse resp = wowCommunityClient.getCharacterProfile(realm, name).get();
 				if (StringUtils.isBlank(resp.getName())) {
 					return null;
 				}
@@ -269,7 +343,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	@Override
 	public TextMessage getWoWCharacterItems(String name, String realm) {
 		try {
-			CharacterProfileResponse resp = getWoWCommunityClient().getCharacterItems(realm, name).get();
+			CharacterProfileResponse resp = wowCommunityClient.getCharacterItems(realm, name).get();
 			
 			if (StringUtils.isBlank(resp.getName())) {
 				return null;
@@ -317,7 +391,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	@Override
 	public TextMessage checkCharacterEnchants(String name, String realm) {
 		try {
-			CharacterProfileResponse resp = getWoWCommunityClient().getCharacterItems(realm, name).get();
+			CharacterProfileResponse resp = wowCommunityClient.getCharacterItems(realm, name).get();
 			
 			if (StringUtils.isBlank(resp.getName())) {
 				return null;
@@ -403,6 +477,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		sb.append("查詢角色大頭貼: -wow -img 角色名稱\r\n");
 		sb.append("查詢角色裝備: -wow -i 角色名稱;伺服器名稱\r\n");
 		sb.append("查詢角色裝備有無附魔: -wow -ec 角色名稱;伺服器名稱\r\n");
+		sb.append("查詢角色WCL: -wow -wcl 角色名稱;伺服器名稱;地區(TW);(hps/dps/bossdps/tankhps)\r\n");
 		return new TextMessage(sb.toString());
 	}
 	
@@ -440,6 +515,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 						return this.getWoWCharacterItems(commandBean.getName(), commandBean.getRealm());
 					case CHECK_ENCHANTS:
 						return this.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
+					case WCL:
+						return this.getCharacterWCL(commandBean.getName(), commandBean.getRealm(), commandBean.getLocation(), commandBean.getMetric(), commandBean.getMode());
 					case TEST:
 						//TODO ...
 					default:
@@ -460,9 +537,96 @@ public class NudoCCServiceImpl implements INudoCCService {
     	}
 	}
 
+	/**
+	 * 取得角色WCL資訊
+	 * 
+	 * @param name
+	 * @param realm
+	 * @param location
+	 * @param metric
+	 * @return
+	 */
+	private Message getCharacterWCL(String name, String realm, String location, String metric, String mode) {
+		try {
+			Map<String, List<String>> map = new HashMap<>();
+			DateFormat df = new SimpleDateFormat("(MM/dd)");
+			
+			List<CharacterRankResponse> resps = warcraftLogsClient.getRankingsByCharacter(name, realm, location, metric).get();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			for (CharacterRankResponse resp :resps) {
+				if (mode != null && !mode.equalsIgnoreCase(getBossMode(resp.getDifficulty()))) {
+					continue;
+				}
+				String specName = getSpecName(resp.getClz(), resp.getSpec());
+				
+				BigDecimal rank = new BigDecimal(resp.getRank().toString());
+				BigDecimal outOf = new BigDecimal(resp.getOutOf().toString());
+				String rankPercent = BigDecimal.ONE.subtract(rank.divide(outOf, 4, RoundingMode.HALF_EVEN)).multiply(new BigDecimal("100")).stripTrailingZeros().toPlainString();
+				
+				sb.append("	").append(this.getBossNameByEncounter(resp.getEncounter()));
+				sb.append("-").append(getBossMode(resp.getDifficulty()));
+				
+				sb.append(" ：").append(resp.getTotal()).append("(").append(rankPercent).append("%) ");
+				sb.append(" ( ").append(resp.getReportID()).append(" ").append(df.format(resp.getStartTime())).append(" ) ");
+				
+				if (map.containsKey(specName)) {
+					map.get(specName).add(sb.toString());
+				} else {
+					List<String> list = new ArrayList<>();
+					list.add(sb.toString());
+					map.put(specName, list);
+				}
+				sb.delete(0, sb.length());
+			}
+			
+			sb.append(String.format("%s-%s 的 %s 如下：\r\n", name, realm, metric));
+			
+			for (String specName : map.keySet()) {
+				sb.append("　--").append(specName);
+				sb.append("--------------------------------------------\r\n");
+				
+				for (String str :map.get(specName)) {
+					sb.append(str).append("\r\n\r\n");
+				}
+			}
+			
+			return new TextMessage(sb.toString());
+		} catch (Exception e) {
+			LOG.error(e.getMessage());
+			return null;
+		}
+	}
+
+	private String getBossMode(int difficulty) {
+		switch (difficulty) {
+			case 5: return "M";
+			case 4: return "H";
+			case 3: return "N";
+			default: return "??";
+		}
+	}
+
+	private String getBossNameByEncounter(Long encounter) {
+		int boss = encounter.intValue();
+		switch (boss) {
+			case 2032: return "狗洛斯";
+			case 2048: return "惡魔審判官";
+			case 2036: return "哈亞談";
+			case 2037: return "薩斯音女士";
+			case 2050: return "月光議會";
+			case 2054: return "荒瘠聚合體";
+			case 2052: return "剩女";
+			case 2038: return "墮落化身";
+			case 2051: return "基爾加單";
+			default: return "???";
+		}
+	}
+
 	private void leave(String groupId) {
 		LOG.info("leaveGroup BEGIN");
-		getLineMessageClient().leaveGroup(groupId);
+		lineMessagingClient.leaveGroup(groupId);
 		LOG.info("leaveGroup END");
 	}
 
@@ -513,27 +677,19 @@ public class NudoCCServiceImpl implements INudoCCService {
 		int[] result = NudoCCUtil.getIntegerDistribution(numsToGenerate, discreteProbabilities, 1);
 		return result[0];
 	}
-
-	private LineMessagingClient getLineMessageClient() {
-		if (lineMessagingClient == null) {
-			synchronized (NudoCCServiceImpl.class) {
-				LOG.debug("=== [LineMessagingService build] ===");
-				LineMessagingService lineMessagingService = LineMessagingServiceBuilder.create(System.getenv("LINE_BOT_CHANNEL_TOKEN")).build();
-				lineMessagingClient = new LineMessagingClientImpl(lineMessagingService);
+	
+	private String getSpecName(int clz, int specId) {
+		StringBuilder sb = new StringBuilder();
+		loop :for (WarcraftLogsClass wclClass : wclClasses) {
+			if (wclClass.getId() == clz) {
+				for (Spec spec :wclClass.getSpecs()) {
+					if (spec.getId() == specId) {
+						sb.append(spec.getName());
+						break loop;
+					}
+				}
 			}
 		}
-		return lineMessagingClient;
+		return sb.toString();
 	}
-	
-	private WoWCommunityClient getWoWCommunityClient() {
-		if (wowCommunityClient == null) {
-			synchronized (NudoCCServiceImpl.class) {
-				LOG.debug("=== [LineMessagingService build] ===");
-				WoWCommunityService wowCommunityService = WoWCommunityServiceBuilder.create(System.getenv("WOWApiKey")).build();
-				wowCommunityClient = new WoWCommunityClientImpl(wowCommunityService);
-			}
-		}
-		return wowCommunityClient;
-	}
-	
 }

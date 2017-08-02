@@ -20,6 +20,8 @@ dependencies {
     compile project(':line-bot-servlet')
     compile project(':wow-community-api-client')
     compile project(':wow-community-model')
+    compile project(':warcraft-logs-api-client')
+    compile project(':warcraft-logs-model')
     compile 'org.springframework.boot:spring-boot-autoconfigure'
     compile 'org.springframework.boot:spring-boot-starter-web'
 
