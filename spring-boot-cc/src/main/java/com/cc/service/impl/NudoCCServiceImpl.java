@@ -66,6 +66,7 @@ import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
+import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.utils.NudoCCUtil;
 
 /**
@@ -594,16 +595,29 @@ public class NudoCCServiceImpl implements INudoCCService {
 			return new TextMessage("請先+我好友哦～");
 		}
 		try {
-			WoWCharacterMapping po = wowCharacterMappingDao.findOne(userId);
+			// first char to upper
+			name = name.substring(0, 1).toUpperCase() + name.substring(1);
+						
+			WoWCharacterMapping po = wowCharacterMappingDao.findCharacterByName(name, realm);
+			if (po != null) {
+				String lineId = po.getLineId();
+				UserProfileResponse userProfileResponse = lineMessagingClient.getProfile(lineId).get();
+				String lineName = userProfileResponse.getDisplayName();
+				
+				return new TextMessage(String.format("你少騙,%s-%s明明是%s", name, realm, lineName));
+			}
+			CharacterProfileResponse characterProfileResponse = wowCommunityClient.getCharacterProfile(realm, name).get();
+			if (characterProfileResponse == null || StringUtils.isBlank(characterProfileResponse.getName())) {
+				return new TextMessage("要馬你太久沒上, 不然就是你唬洨我！");
+			}
+			
+			po = wowCharacterMappingDao.findOne(userId);
 			if (po != null) {
 				LOG.info("delete WoWCharacterMapping begin...");
 				wowCharacterMappingDao.delete(po);
 			}
 			WoWCharacterMapping bean = new WoWCharacterMapping();
 			bean.setLineId(userId);
-			
-			// first char to upper
-			name = name.substring(0, 1).toUpperCase() + name.substring(1);
 			
 			bean.setName(name);
 			bean.setRealm(realm);
