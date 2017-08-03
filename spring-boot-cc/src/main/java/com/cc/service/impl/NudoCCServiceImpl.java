@@ -601,6 +601,10 @@ public class NudoCCServiceImpl implements INudoCCService {
 			}
 			WoWCharacterMapping bean = new WoWCharacterMapping();
 			bean.setLineId(userId);
+			
+			// first char to upper
+			name = name.substring(0, 1).toUpperCase() + name.substring(1);
+			
 			bean.setName(name);
 			bean.setRealm(realm);
 			bean.setLocation(location);
