@@ -48,6 +48,8 @@ public class NudoCCUtil {
 	
 	public static final String WOW_COMMAND_WCL = "-wcl ";
 	
+	public static final String WOW_COMMAND_SAVE = "-save ";
+	
 	public static final String WOW_COMMAND_HELP = "-help";
 	
 	public static final String WOW_NAME_ERROR_MSG = "角色名稱的格式有誤哦~";
@@ -74,7 +76,11 @@ public class NudoCCUtil {
 	
 	public static final String LEAVE_COMMAND = "稻葉請你";
 	
+	public static final String WHOAMI_COMMAND = "我是誰";
+	
 	public static final String SAD_COMMAND = "稻葉錯頻";
+	
+	public static final String WCL_USER_COMMANDS = "[mhn]{1}[的]{1}(dps|hps|bossdps|tankhps|playerspeed){1}"; 
 	
 	public static final WowItemPartsEnum[] enchantsParts = {WowItemPartsEnum.NECK, WowItemPartsEnum.SHOULDER,
 															WowItemPartsEnum.FINGER1, WowItemPartsEnum.FINGER2,

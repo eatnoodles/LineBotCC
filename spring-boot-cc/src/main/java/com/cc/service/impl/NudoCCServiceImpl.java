@@ -10,6 +10,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,10 +22,13 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.cc.Application;
 import com.cc.bean.WowCommandBean;
+import com.cc.dao.WoWCharacterMappingDao;
+import com.cc.entity.WoWCharacterMapping;
 import com.cc.enums.WowClassEnum;
 import com.cc.enums.WowEventEnum;
 import com.cc.enums.WowItemPartsEnum;
@@ -46,6 +50,7 @@ import com.cc.wow.client.WoWCommunityClient;
 import com.cc.wow.client.WoWCommunityClientImpl;
 import com.cc.wow.client.WoWCommunityService;
 import com.cc.wow.client.WoWCommunityServiceBuilder;
+import com.cc.wow.client.exception.WoWCommunityException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -62,6 +67,7 @@ import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
+import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.utils.NudoCCUtil;
 
 /**
@@ -105,6 +111,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 			e.printStackTrace();
 		}
 	}
+	
+	@Autowired
+	private WoWCharacterMappingDao wowCharacterMappingDao;
 	
 	/**
 	 * 以name、server搜尋角色基本資料
@@ -280,7 +289,30 @@ public class NudoCCServiceImpl implements INudoCCService {
 				bean.setMode(mode);
 			}
 			
-		}else {
+		}  else if (command.startsWith(NudoCCUtil.WOW_COMMAND_SAVE)) {
+			bean.setEventEnum(WowEventEnum.MAPPING_A);
+			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_SAVE, StringUtils.EMPTY).trim().split(";");
+			if (array.length != 3) {
+				bean.setErrorMsg("要更多資訊喔~");
+				return bean;
+			}
+			name = array[0];
+			
+			String realm = array[1];
+			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
+				bean.setErrorMsg("沒有這個server喔~");
+				return bean;
+			}
+			bean.setRealm(realm);
+			
+			String location = array[2];
+			if (Arrays.binarySearch(NudoCCUtil.LOCATIONS, location) < 0) {
+				bean.setErrorMsg("沒有這個地區喔~請輸入 [US, EU, KR, TW, CN] 其中一個");
+				return bean;
+			}
+			bean.setLocation(location);
+			
+		} else {
 			bean.setEventEnum(WowEventEnum.PROFILE);
 			name = command;
 		}
@@ -517,6 +549,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 						return this.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
 					case WCL:
 						return this.getCharacterWCL(commandBean.getName(), commandBean.getRealm(), commandBean.getLocation(), commandBean.getMetric(), commandBean.getMode());
+					case MAPPING_A:
+						return this.saveCharacter(commandBean.getName(), commandBean.getRealm(), commandBean.getLocation(), userId);
 					case TEST:
 						//TODO ...
 					default:
@@ -524,6 +558,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 				}
         	}
     	} else {
+    		Pattern pattern = Pattern.compile(NudoCCUtil.WCL_USER_COMMANDS);
+            
     		//other command
     		if (mesg.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
     			return this.getRollNumber(mesg.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
@@ -532,9 +568,88 @@ public class NudoCCServiceImpl implements INudoCCService {
     		} else if (mesg.equals(NudoCCUtil.LEAVE_COMMAND)) {
     			leave(senderId);
     			return null; 
+    		} else if (mesg.equals(NudoCCUtil.WHOAMI_COMMAND)) {
+    			return getWoWNameById(userId);
+    		} else if (pattern.matcher(mesg.toLowerCase()).matches()) {
+    			String[] array = mesg.split("的");
+    			return getCharacterWCLByUserId(array[0], array[1], userId);
     		}
     		return null;
     	}
+	}
+	
+	private Message getCharacterWCLByUserId(String mode, String metric, String userId) {
+		if (StringUtils.isBlank(userId)) {
+			return new TextMessage("請先+我好友哦～");
+		}
+		try {
+			WoWCharacterMapping po = wowCharacterMappingDao.findOne(userId);
+			if (po == null) {
+				return new TextMessage("？你還沒告訴我你是誰");
+			}
+			return this.getCharacterWCL(po.getName(), po.getRealm(), po.getLocation(), metric, mode);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private Message getWoWNameById(String userId) {
+		if (StringUtils.isBlank(userId)) {
+			return new TextMessage("請先+我好友哦～");
+		}
+		try {
+			WoWCharacterMapping po = wowCharacterMappingDao.findOne(userId);
+			if (po != null) {
+				return new TextMessage(String.format("我知道你是%s-%s", po.getName(), po.getRealm()));
+			} else {
+				return new TextMessage("？你是誰？");
+			}
+		} catch (Exception e) {
+			return new TextMessage("？你到底是誰？");
+		}
+	}
+
+	private DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+
+	private Message saveCharacter(String name, String realm, String location, String userId) {
+		if (StringUtils.isBlank(userId)) {
+			return new TextMessage("請先+我好友哦～");
+		}
+		try {
+			// first char to upper
+			name = name.substring(0, 1).toUpperCase() + name.substring(1);
+						
+			WoWCharacterMapping po = wowCharacterMappingDao.findCharacterByName(name, realm);
+			if (po != null && !userId.equals(po.getLineId())) {
+				String lineId = po.getLineId();
+				UserProfileResponse userProfileResponse = lineMessagingClient.getProfile(lineId).get();
+				String lineName = userProfileResponse.getDisplayName();
+				
+				return new TextMessage(String.format("你少騙,%s-%s明明是%s", name, realm, lineName));
+			}
+			wowCommunityClient.getCharacterProfile(realm, name).get();
+			
+			po = wowCharacterMappingDao.findOne(userId);
+			if (po != null) {
+				LOG.info("delete WoWCharacterMapping begin...");
+				wowCharacterMappingDao.delete(po);
+			}
+			WoWCharacterMapping bean = new WoWCharacterMapping();
+			bean.setLineId(userId);
+			
+			bean.setName(name);
+			bean.setRealm(realm);
+			bean.setLocation(location);
+			bean.setLastMdfyDttm(df.format(new Date()));
+			
+			wowCharacterMappingDao.save(bean);
+		} catch (Exception e) {
+			if (e.getCause() instanceof WoWCommunityException) {
+				return new TextMessage("要馬你太久沒上, 不然就是你唬洨我！");
+			}
+			return new TextMessage("？儲存失敗了那？");
+		}
+		return new TextMessage("已經和角色資訊建立連結！");
 	}
 
 	/**
