@@ -558,6 +558,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 				}
         	}
     	} else {
+    		Pattern pattern = Pattern.compile(NudoCCUtil.WCL_USER_COMMANDS);
+            
     		//other command
     		if (mesg.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
     			return this.getRollNumber(mesg.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
@@ -568,11 +570,29 @@ public class NudoCCServiceImpl implements INudoCCService {
     			return null; 
     		} else if (mesg.equals(NudoCCUtil.WHOAMI_COMMAND)) {
     			return getWoWNameById(userId);
+    		} else if (pattern.matcher(mesg.toLowerCase()).matches()) {
+    			String[] array = mesg.split("的");
+    			return getCharacterWCLByUserId(array[0], array[1], userId);
     		}
     		return null;
     	}
 	}
 	
+	private Message getCharacterWCLByUserId(String mode, String metric, String userId) {
+		if (StringUtils.isBlank(userId)) {
+			return new TextMessage("請先+我好友哦～");
+		}
+		try {
+			WoWCharacterMapping po = wowCharacterMappingDao.findOne(userId);
+			if (po == null) {
+				return new TextMessage("？你還沒告訴我你是誰");
+			}
+			return this.getCharacterWCL(po.getName(), po.getRealm(), po.getLocation(), metric, mode);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	private Message getWoWNameById(String userId) {
 		if (StringUtils.isBlank(userId)) {
 			return new TextMessage("請先+我好友哦～");
