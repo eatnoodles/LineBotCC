@@ -564,11 +564,29 @@ public class NudoCCServiceImpl implements INudoCCService {
     		} else if (mesg.equals(NudoCCUtil.LEAVE_COMMAND)) {
     			leave(senderId);
     			return null; 
+    		} else if (mesg.equals(NudoCCUtil.WHOAMI_COMMAND)) {
+    			return getWoWNameById(userId);
     		}
     		return null;
     	}
 	}
 	
+	private Message getWoWNameById(String userId) {
+		if (StringUtils.isBlank(userId)) {
+			return new TextMessage("請先+我好友哦～");
+		}
+		try {
+			WoWCharacterMapping po = wowCharacterMappingDao.findOne(userId);
+			if (po != null) {
+				return new TextMessage(String.format("我知道你是%s-%s", po.getName(), po.getRealm()));
+			} else {
+				return new TextMessage("？你是誰？");
+			}
+		} catch (Exception e) {
+			return new TextMessage("？你到底是誰？");
+		}
+	}
+
 	private DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
 
 	private Message saveCharacter(String name, String realm, String location, String userId) {
