@@ -50,6 +50,7 @@ import com.cc.wow.client.WoWCommunityClient;
 import com.cc.wow.client.WoWCommunityClientImpl;
 import com.cc.wow.client.WoWCommunityService;
 import com.cc.wow.client.WoWCommunityServiceBuilder;
+import com.cc.wow.client.exception.WoWCommunityException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -599,17 +600,14 @@ public class NudoCCServiceImpl implements INudoCCService {
 			name = name.substring(0, 1).toUpperCase() + name.substring(1);
 						
 			WoWCharacterMapping po = wowCharacterMappingDao.findCharacterByName(name, realm);
-			if (po != null) {
+			if (po != null && !userId.equals(po.getLineId())) {
 				String lineId = po.getLineId();
 				UserProfileResponse userProfileResponse = lineMessagingClient.getProfile(lineId).get();
 				String lineName = userProfileResponse.getDisplayName();
 				
 				return new TextMessage(String.format("你少騙,%s-%s明明是%s", name, realm, lineName));
 			}
-			CharacterProfileResponse characterProfileResponse = wowCommunityClient.getCharacterProfile(realm, name).get();
-			if (characterProfileResponse == null || StringUtils.isBlank(characterProfileResponse.getName())) {
-				return new TextMessage("要馬你太久沒上, 不然就是你唬洨我！");
-			}
+			wowCommunityClient.getCharacterProfile(realm, name).get();
 			
 			po = wowCharacterMappingDao.findOne(userId);
 			if (po != null) {
@@ -626,6 +624,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 			
 			wowCharacterMappingDao.save(bean);
 		} catch (Exception e) {
+			if (e.getCause() instanceof WoWCommunityException) {
+				return new TextMessage("要馬你太久沒上, 不然就是你唬洨我！");
+			}
 			return new TextMessage("？儲存失敗了那？");
 		}
 		return new TextMessage("已經和角色資訊建立連結！");
