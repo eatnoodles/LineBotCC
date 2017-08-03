@@ -29,7 +29,7 @@ public class MainConfig {
         basicDataSource.setUrl(dbUrl);
         basicDataSource.setUsername(username);
         basicDataSource.setPassword(password);
-
+        basicDataSource.setConnectionProperties("useUnicode=true;characterEncoding=utf-8");
         return basicDataSource;
     }
 }
