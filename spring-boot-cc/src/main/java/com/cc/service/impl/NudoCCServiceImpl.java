@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,8 +28,11 @@ import org.springframework.stereotype.Component;
 
 import com.cc.Application;
 import com.cc.bean.WowCommandBean;
+import com.cc.dao.UserTalkLevelDao;
 import com.cc.dao.WoWCharacterMappingDao;
+import com.cc.entity.UserTalkLevel;
 import com.cc.entity.WoWCharacterMapping;
+import com.cc.entity.key.UserTalkLevelKey;
 import com.cc.enums.WowClassEnum;
 import com.cc.enums.WowEventEnum;
 import com.cc.enums.WowItemPartsEnum;
@@ -114,6 +118,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	@Autowired
 	private WoWCharacterMappingDao wowCharacterMappingDao;
+	
+	@Autowired
+	private UserTalkLevelDao userTalkLevelDao;
 	
 	/**
 	 * 以name、server搜尋角色基本資料
@@ -573,11 +580,61 @@ public class NudoCCServiceImpl implements INudoCCService {
     		} else if (pattern.matcher(mesg.toLowerCase()).matches()) {
     			String[] array = mesg.split("的");
     			return getCharacterWCLByUserId(array[0], array[1], userId);
+    		} else {
+    			// logger talking
+				return processUserTalk(mesg, userId);
     		}
-    		return null;
     	}
 	}
 	
+	private Message processUserTalk(String mesg, String userId) {
+		if (StringUtils.isBlank(userId)) {
+			return null;
+		}
+		UserTalkLevelKey key = new UserTalkLevelKey(userId, mesg);
+		UserTalkLevel userTalkLevel = userTalkLevelDao.findOne(key);
+		if (userTalkLevel != null) {
+			try {
+				userTalkLevel.setTalkCount(userTalkLevel.getTalkCount()+1);
+				userTalkLevelDao.save(userTalkLevel);
+//				String displayName = getDisplayName(userId);
+				String displayName = "test";
+				switch (userTalkLevel.getTalkCount()) {
+					case 10:
+						return  new TextMessage(String.format("%s, 你的\"%s\"發言累計次數已達10次, 從現在開始你就是 『真誠的%s』！", displayName, mesg, mesg));
+					case 25: 
+						return  new TextMessage(String.format("%s, 你的\"%s\"發言累計次數已達25次, 從現在開始你就是 『超級的%s』！", displayName, mesg, mesg));
+					case 50: 
+						return  new TextMessage(String.format("%s, 你的\"%s\"發言累計次數已達50次, 從現在開始你就是 『魅力的%s』！", displayName, mesg, mesg));
+					case 99: 
+						return  new TextMessage(String.format("%s, 你的\"%s\"發言累計次數已達99次, 從現在開始你就是 『永遠的%s』！", displayName, mesg, mesg));
+					default:
+						break;
+				}
+			} catch (Exception e) {
+				LOG.error("processUserTalk error!", e);
+			}
+		} else {
+			userTalkLevel = new UserTalkLevel(userId, mesg);
+			userTalkLevel.setTalkCount(1);
+			userTalkLevelDao.save(userTalkLevel);
+		}
+		return null;
+	}
+	
+	/**
+	 * get line display name
+	 * 
+	 * @param lineId
+	 * @return
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
+	private String getDisplayName(String lineId) throws InterruptedException, ExecutionException {
+		UserProfileResponse userProfileResponse = lineMessagingClient.getProfile(lineId).get();
+		return userProfileResponse.getDisplayName();
+	}
+
 	private Message getCharacterWCLByUserId(String mode, String metric, String userId) {
 		if (StringUtils.isBlank(userId)) {
 			return new TextMessage("請先+我好友哦～");
