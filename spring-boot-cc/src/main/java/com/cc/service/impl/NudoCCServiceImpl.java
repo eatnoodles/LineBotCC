@@ -597,8 +597,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 			try {
 				userTalkLevel.setTalkCount(userTalkLevel.getTalkCount()+1);
 				userTalkLevelDao.save(userTalkLevel);
-//				String displayName = getDisplayName(userId);
-				String displayName = "test";
+				String displayName = getDisplayName(userId);
 				switch (userTalkLevel.getTalkCount()) {
 					case 10:
 						return  new TextMessage(String.format("%s, 你的\"%s\"發言累計次數已達10次, 從現在開始你就是 『真誠的%s』！", displayName, mesg, mesg));
