@@ -80,6 +80,8 @@ public class NudoCCUtil {
 	
 	public static final String SAD_COMMAND = "稻葉錯頻";
 	
+	public static final String IMG1_COMMAND = "><";
+	
 	public static final String WCL_USER_COMMANDS = "[mhn]{1}[的]{1}(dps|hps|bossdps|tankhps|playerspeed){1}"; 
 	
 	public static final WowItemPartsEnum[] enchantsParts = {WowItemPartsEnum.NECK, WowItemPartsEnum.SHOULDER,

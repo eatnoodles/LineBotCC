@@ -68,6 +68,7 @@ import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.ImageMessage;
 import com.linecorp.bot.model.message.Message;
+import com.linecorp.bot.model.message.StickerMessage;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
@@ -580,6 +581,8 @@ public class NudoCCServiceImpl implements INudoCCService {
     		} else if (pattern.matcher(mesg.toLowerCase()).matches()) {
     			String[] array = mesg.split("的");
     			return getCharacterWCLByUserId(array[0], array[1], userId);
+    		}  else if (mesg.indexOf(NudoCCUtil.IMG1_COMMAND) != -1) {
+    			return genImgMessage();
     		} else {
     			// logger talking
 				return processUserTalk(mesg, userId);
@@ -587,6 +590,10 @@ public class NudoCCServiceImpl implements INudoCCService {
     	}
 	}
 	
+	private Message genImgMessage() {
+		return new StickerMessage("3", "181");
+	}
+
 	private Message processUserTalk(String mesg, String userId) {
 		if (StringUtils.isBlank(userId)) {
 			return null;
