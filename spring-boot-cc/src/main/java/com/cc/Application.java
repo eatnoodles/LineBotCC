@@ -26,6 +26,7 @@ import com.cc.bean.WowCommandBean;
 import com.cc.service.INudoCCService;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.PostbackEvent;
+import com.linecorp.bot.model.event.message.StickerMessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TextMessage;
@@ -64,6 +65,16 @@ public class Application {
     }
     
     /**
+     * 
+     * @param event
+     * @return
+     */
+    @EventMapping
+    public Message handleStickerMessageEvent(MessageEvent<StickerMessageContent> event) {
+    	return nudoCCService.findStickerMessage(event.getMessage().getPackageId(), event.getMessage().getStickerId());
+    }
+
+	/**
      * 
      * @param event
      */

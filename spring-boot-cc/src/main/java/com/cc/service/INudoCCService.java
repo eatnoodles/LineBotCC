@@ -90,4 +90,11 @@ public interface INudoCCService {
 	 * @return
 	 */
 	public Message processCommand(MessageEvent<TextMessageContent> event);
+
+	/**
+	 * @param packageId
+	 * @param stickerId
+	 * @return
+	 */
+	public Message findStickerMessage(String packageId, String stickerId);
 }

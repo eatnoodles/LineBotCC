@@ -582,16 +582,12 @@ public class NudoCCServiceImpl implements INudoCCService {
     			String[] array = mesg.split("的");
     			return getCharacterWCLByUserId(array[0], array[1], userId);
     		}  else if (mesg.indexOf(NudoCCUtil.IMG1_COMMAND) != -1) {
-    			return genImgMessage();
+    			return findStickerMessage("3", "181");
     		} else {
     			// logger talking
 				return processUserTalk(mesg, userId);
     		}
     	}
-	}
-	
-	private Message genImgMessage() {
-		return new StickerMessage("3", "181");
 	}
 
 	private Message processUserTalk(String mesg, String userId) {
@@ -869,5 +865,10 @@ public class NudoCCServiceImpl implements INudoCCService {
 			}
 		}
 		return sb.toString();
+	}
+
+	@Override
+	public Message findStickerMessage(String packageId, String stickerId) {
+		return new StickerMessage(packageId, stickerId);
 	}
 }
