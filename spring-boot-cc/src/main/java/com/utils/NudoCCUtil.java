@@ -133,10 +133,6 @@ public class NudoCCUtil {
 
 		return distribution.sample(numSamples);
 	}
-	
-	public static void main (String[] args) {
-		System.out.println(NudoCCUtil.codeMessage("WOW001", "1", "110", "mod", "2", "3", "4", "5"));
-	}
 
 	/**
 	 * 以code 取得 訊息
