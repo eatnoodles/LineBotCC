@@ -9,7 +9,7 @@ import com.cc.enums.WowEventEnum;
  * @author Caleb.Cheng
  *
  */
-public class WowCommandBean {
+public class CommandBean {
 	
 	private String name;
 	
@@ -26,6 +26,12 @@ public class WowCommandBean {
 	private String errorMsg;
 	
 	private boolean isWowCommand = true;
+	
+	private String senderId;
+	
+	private String userId;
+	
+	private String command;
 
 	public String getName() {
 		return name;
@@ -89,5 +95,29 @@ public class WowCommandBean {
 
 	public void setMode(String mode) {
 		this.mode = mode;
+	}
+
+	public String getSenderId() {
+		return senderId;
+	}
+
+	public void setSenderId(String senderId) {
+		this.senderId = senderId;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public String getCommand() {
+		return command;
+	}
+
+	public void setCommand(String command) {
+		this.command = command;
 	}
 }

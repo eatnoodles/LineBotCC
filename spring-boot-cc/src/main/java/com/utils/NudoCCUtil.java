@@ -3,6 +3,11 @@
  */
 package com.utils;
 
+import java.text.MessageFormat;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.ResourceBundle;
+
 import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
 
 import com.cc.enums.WowItemPartsEnum;
@@ -84,10 +89,15 @@ public class NudoCCUtil {
 	
 	public static final String WCL_USER_COMMANDS = "[mhn]{1}[的]{1}(dps|hps|bossdps|tankhps|playerspeed){1}"; 
 	
-	public static final WowItemPartsEnum[] enchantsParts = {WowItemPartsEnum.NECK, WowItemPartsEnum.SHOULDER,
-															WowItemPartsEnum.FINGER1, WowItemPartsEnum.FINGER2,
-															WowItemPartsEnum.BACK
-															};
+	public static final WowItemPartsEnum[] enchantsParts = { WowItemPartsEnum.NECK,
+															 WowItemPartsEnum.SHOULDER,
+															 WowItemPartsEnum.FINGER1,
+															 WowItemPartsEnum.FINGER2,
+															 WowItemPartsEnum.BACK };
+	
+	private static ResourceBundle resource = ResourceBundle.getBundle("message");
+
+	private static Properties properties = convertResourceBundleToProperties(resource);
 	
 	/**
 	 * 根據sie zip 機率 (權重  y = 1/(x+1)^2 )
@@ -122,5 +132,32 @@ public class NudoCCUtil {
 				new EnumeratedIntegerDistribution(numsToGenerate, discreteProbabilities);
 
 		return distribution.sample(numSamples);
+	}
+	
+	public static void main (String[] args) {
+		System.out.println(NudoCCUtil.codeMessage("WOW001", "1", "110", "mod", "2", "3", "4", "5"));
+	}
+
+	/**
+	 * 以code 取得 訊息
+	 * 
+	 * @param code
+	 * @param args
+	 * @return
+	 */
+	public static String codeMessage(String code, Object... args) {
+		return MessageFormat.format(properties.getProperty(code), args);
+	}
+
+	private static Properties convertResourceBundleToProperties(ResourceBundle resource) {
+		Properties properties = new Properties();
+
+		Enumeration<String> keys = resource.getKeys();
+		while (keys.hasMoreElements()) {
+			String key = keys.nextElement();
+			properties.put(key, resource.getString(key));
+		}
+
+		return properties;
 	}
 }

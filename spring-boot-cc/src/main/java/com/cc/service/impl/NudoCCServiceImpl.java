@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.cc.Application;
-import com.cc.bean.WowCommandBean;
+import com.cc.bean.CommandBean;
 import com.cc.dao.UserTalkLevelDao;
 import com.cc.dao.WoWCharacterMappingDao;
 import com.cc.entity.UserTalkLevel;
@@ -139,9 +139,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 			}
 			String race = WowRaceEnum.getEnumByValue(resp.getRace()).getContext();
 			String clz = WowClassEnum.getEnumByValue(resp.getClz()).getContext();
-			
-			return new TextMessage(String.format("群組: %s, 等級: %s級的<%s>是一隻%s%s，他殺了%s個人、有%s成就點數！",
-					resp.getBattlegroup(), resp.getLevel(), resp.getName(), race, clz, resp.getTotalHonorableKills(), resp.getAchievementPoints()));
+			String msg = NudoCCUtil.codeMessage("WOW001", resp.getBattlegroup(), resp.getLevel(), resp.getName(), race, clz,
+					resp.getTotalHonorableKills(), resp.getAchievementPoints());
+			return new TextMessage(msg);
 		} catch (Exception e) {
 			return null;
 		}
@@ -198,21 +198,28 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 	
 	/**
-	 * 處理前端傳來的wow命令列成bean
+	 * generator command bean
 	 * 
-	 * @param command :命令列
+	 * @param event
 	 * @return
 	 */
 	@Override
-	public WowCommandBean processWowCommand(String command) {
+	public CommandBean genCommandBean(String command, String senderId, String userId) {
+		
 		if (StringUtils.isBlank(command)) {
 			return null;
 		}
-		WowCommandBean bean = new WowCommandBean();
+		
+		CommandBean bean = new CommandBean();
+		bean.setSenderId(senderId);
+		bean.setUserId(userId);
+		bean.setCommand(command);
+		
 		if (!command.startsWith(NudoCCUtil.WOW_COMMAND)) {
 			bean.setWowCommand(false);
 			return bean;
 		}
+		
 		command = command.replaceAll(NudoCCUtil.WOW_COMMAND, StringUtils.EMPTY).trim();
 		String name = null;
 		
@@ -355,13 +362,14 @@ public class NudoCCServiceImpl implements INudoCCService {
 				List<Action> actions = new ArrayList<>();
 				actions.add(postbackAction1);
 				actions.add(postbackAction2);
-				String alt = String.format("群組: %s, 等級: %s級的<%s>是一隻%s%s，他殺了%s個人、有%s成就點數！",
-						resp.getBattlegroup(), resp.getLevel(), resp.getName(), race, clz, resp.getTotalHonorableKills(), resp.getAchievementPoints());
 				
-				String title = String.format("群組-%s %s-%s %s級%s%s", resp.getBattlegroup(), resp.getName(),
+				String alt = NudoCCUtil.codeMessage("WOW001", resp.getBattlegroup(), resp.getLevel(), resp.getName(), race, clz,
+						resp.getTotalHonorableKills(), resp.getAchievementPoints());
+				
+				String title = NudoCCUtil.codeMessage("WOW002", resp.getBattlegroup(), resp.getName(),
 						resp.getRealm(), resp.getLevel(), race, clz);
 				
-				String text = String.format("殺了%s個人、有%s成就點數！", resp.getTotalHonorableKills(), resp.getAchievementPoints());
+				String text = NudoCCUtil.codeMessage("WOW003", resp.getTotalHonorableKills(), resp.getAchievementPoints());
 				
 				ButtonsTemplate buttonsTemplate = new ButtonsTemplate(imgPath, title, text, actions);
 				TemplateMessage result = new TemplateMessage(alt, buttonsTemplate);
@@ -530,63 +538,77 @@ public class NudoCCServiceImpl implements INudoCCService {
 	@Override
 	public Message processCommand(MessageEvent<TextMessageContent> event) {
 		
-		String mesg = event.getMessage().getText();
+		String command = event.getMessage().getText();
         String senderId = event.getSource().getSenderId();
         String userId = event.getSource().getUserId();
         
-        if (StringUtils.isBlank(mesg)) {
-        	return null;
-        }
+		CommandBean commandBean = this.genCommandBean(command, senderId, userId);
+		if (commandBean == null) {
+			return null;
+		}
+		return commandBean.isWowCommand() ? processWoWCommand(commandBean) : processOtherCommand(commandBean);
+	}
+
+	private Message processOtherCommand(CommandBean commandBean) {
+		
+		String command = commandBean.getCommand();
+		String senderId = commandBean.getSenderId();
+		String userId = commandBean.getUserId();
+		
+		Pattern pattern = Pattern.compile(NudoCCUtil.WCL_USER_COMMANDS);
         
-		WowCommandBean commandBean = this.processWowCommand(mesg);
-    	if (commandBean.isWowCommand()) {
-    		//wow command
-    		if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
-        		return new TextMessage(commandBean.getErrorMsg());
-        	} else {
-        		switch (commandBean.getEventEnum()) {
-        			case HELP:
-        				return this.getHelp();
-					case PROFILE:
-						return this.buildCharacterTemplate(commandBean.getName());
-					case IMG:
-						return this.getWoWCharacterImgPath(commandBean.getName());
-					case CHARACTER_ITEM:
-						return this.getWoWCharacterItems(commandBean.getName(), commandBean.getRealm());
-					case CHECK_ENCHANTS:
-						return this.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
-					case WCL:
-						return this.getCharacterWCL(commandBean.getName(), commandBean.getRealm(), commandBean.getLocation(), commandBean.getMetric(), commandBean.getMode());
-					case MAPPING_A:
-						return this.saveCharacter(commandBean.getName(), commandBean.getRealm(), commandBean.getLocation(), userId);
-					case TEST:
-						//TODO ...
-					default:
-						return null;
-				}
-        	}
+		//other command
+		if (command.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
+			return this.getRollNumber(command.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
+		} else if (command.equalsIgnoreCase(NudoCCUtil.GET_USER_ID_COMMAND)) {
+			return new TextMessage(String.format("senderId=[%s], userId=[%s]", senderId, userId));
+		} else if (command.equals(NudoCCUtil.LEAVE_COMMAND)) {
+			leave(senderId);
+			return null; 
+		} else if (command.equals(NudoCCUtil.WHOAMI_COMMAND)) {
+			return getWoWNameById(userId);
+		} else if (pattern.matcher(command.toLowerCase()).matches()) {
+			String[] array = command.split("的");
+			return getCharacterWCLByUserId(array[0], array[1], userId);
+		}  else if (command.indexOf(NudoCCUtil.IMG1_COMMAND) != -1) {
+			return findStickerMessage("3", "181");
+		} else {
+			// logger talking
+			return processUserTalk(command, userId);
+		}
+	}
+
+	/**
+	 * process wow command
+	 * 
+	 * @param commandBean
+	 * @return
+	 */
+	private Message processWoWCommand(CommandBean commandBean) {
+		//wow command
+		if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
+    		return new TextMessage(commandBean.getErrorMsg());
     	} else {
-    		Pattern pattern = Pattern.compile(NudoCCUtil.WCL_USER_COMMANDS);
-            
-    		//other command
-    		if (mesg.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
-    			return this.getRollNumber(mesg.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
-    		} else if (mesg.equalsIgnoreCase(NudoCCUtil.GET_USER_ID_COMMAND)) {
-    			return new TextMessage(String.format("senderId=[%s], userId=[%s]", senderId, userId));
-    		} else if (mesg.equals(NudoCCUtil.LEAVE_COMMAND)) {
-    			leave(senderId);
-    			return null; 
-    		} else if (mesg.equals(NudoCCUtil.WHOAMI_COMMAND)) {
-    			return getWoWNameById(userId);
-    		} else if (pattern.matcher(mesg.toLowerCase()).matches()) {
-    			String[] array = mesg.split("的");
-    			return getCharacterWCLByUserId(array[0], array[1], userId);
-    		}  else if (mesg.indexOf(NudoCCUtil.IMG1_COMMAND) != -1) {
-    			return findStickerMessage("3", "181");
-    		} else {
-    			// logger talking
-				return processUserTalk(mesg, userId);
-    		}
+    		switch (commandBean.getEventEnum()) {
+    			case HELP:
+    				return this.getHelp();
+				case PROFILE:
+					return this.buildCharacterTemplate(commandBean.getName());
+				case IMG:
+					return this.getWoWCharacterImgPath(commandBean.getName());
+				case CHARACTER_ITEM:
+					return this.getWoWCharacterItems(commandBean.getName(), commandBean.getRealm());
+				case CHECK_ENCHANTS:
+					return this.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
+				case WCL:
+					return this.getCharacterWCL(commandBean.getName(), commandBean.getRealm(), commandBean.getLocation(), commandBean.getMetric(), commandBean.getMode());
+				case MAPPING_A:
+					return this.saveCharacter(commandBean.getName(), commandBean.getRealm(), commandBean.getLocation(), commandBean.getUserId());
+				case TEST:
+					//TODO ...
+				default:
+					return null;
+			}
     	}
 	}
 
@@ -680,9 +702,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 						
 			WoWCharacterMapping po = wowCharacterMappingDao.findCharacterByName(name, realm);
 			if (po != null && !userId.equals(po.getLineId())) {
-				String lineId = po.getLineId();
-				UserProfileResponse userProfileResponse = lineMessagingClient.getProfile(lineId).get();
-				String lineName = userProfileResponse.getDisplayName();
+				String lineName = getDisplayName(po.getLineId());
 				
 				return new TextMessage(String.format("你少騙,%s-%s明明是%s", name, realm, lineName));
 			}

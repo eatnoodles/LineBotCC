@@ -3,7 +3,7 @@
  */
 package com.cc.service;
 
-import com.cc.bean.WowCommandBean;
+import com.cc.bean.CommandBean;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.ImageMessage;
@@ -41,14 +41,6 @@ public interface INudoCCService {
 	 * @return
 	 */
 	public ImageMessage getWoWCharacterImgPath(String name);
-	
-	/**
-	 * 處理前端傳來的wow命令列成bean
-	 * 
-	 * @param command :命令列
-	 * @return
-	 */
-	public WowCommandBean processWowCommand(String command);
 
 	/**
 	 * 產生角色的template訊息
@@ -97,4 +89,6 @@ public interface INudoCCService {
 	 * @return
 	 */
 	public Message findStickerMessage(String packageId, String stickerId);
+
+	public CommandBean genCommandBean(String command, String senderId, String userId);
 }

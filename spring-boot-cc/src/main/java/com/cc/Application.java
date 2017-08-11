@@ -22,7 +22,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
-import com.cc.bean.WowCommandBean;
+import com.cc.bean.CommandBean;
 import com.cc.service.INudoCCService;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.PostbackEvent;
@@ -80,9 +80,12 @@ public class Application {
      */
     @EventMapping
     public Message handleDefaultMessageEvent(PostbackEvent event) {
-    	String data = event.getPostbackContent().getData();
-    	if (StringUtils.isNotBlank(data)) {
-        	WowCommandBean commandBean = nudoCCService.processWowCommand(data);
+    	String command = event.getPostbackContent().getData();
+        String senderId = event.getSource().getSenderId();
+        String userId = event.getSource().getUserId();
+    	
+    	if (StringUtils.isNotBlank(command)) {
+        	CommandBean commandBean = nudoCCService.genCommandBean(command, senderId, userId);
         	if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
         		return new TextMessage(commandBean.getErrorMsg());
         	} else {
