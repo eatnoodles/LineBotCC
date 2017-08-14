@@ -16,23 +16,6 @@ import com.linecorp.bot.model.message.TextMessage;
  *
  */
 public interface INudoCCService {
-
-	/**
-	 * 以name、server搜尋角色基本資料
-	 * 
-	 * @param name :角色名稱
-	 * @param server :伺服器名稱
-	 * @return
-	 */
-	public TextMessage getWoWCharacterProfile(String name, String server);
-	
-	/**
-	 * 以name搜尋角色基本資料
-	 * 
-	 * @param name :角色名稱
-	 * @return
-	 */
-	public TextMessage getWoWCharacterProfileByName(String name);
 	
 	/**
 	 * 以name搜尋角色大頭照

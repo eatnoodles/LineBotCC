@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.utils;
 
 import java.text.MessageFormat;
@@ -17,6 +14,8 @@ import com.cc.enums.WowItemPartsEnum;
  *
  */
 public class NudoCCUtil {
+	
+	public static final String NEW_LINE = "\r\n";
 
 	public static final String SLASH = "/";
 	
@@ -56,12 +55,6 @@ public class NudoCCUtil {
 	public static final String WOW_COMMAND_SAVE = "-save ";
 	
 	public static final String WOW_COMMAND_HELP = "-help";
-	
-	public static final String WOW_NAME_ERROR_MSG = "角色名稱的格式有誤哦~";
-	
-	public static final String WOW_ITEM_PARAM_ERROR_MSG = "取得裝備資訊參數有誤哦~";
-	
-	public static final String WOW_ENCHANTS_PARAM_ERROR_MSG = "取得附魔資訊參數有誤哦~";
 	
 	public static final String ROLL_COMMAND = "/roll";
 	
@@ -145,6 +138,11 @@ public class NudoCCUtil {
 		return MessageFormat.format(properties.getProperty(code), args);
 	}
 
+	/**
+	 * 
+	 * @param resource
+	 * @return
+	 */
 	private static Properties convertResourceBundleToProperties(ResourceBundle resource) {
 		Properties properties = new Properties();
 

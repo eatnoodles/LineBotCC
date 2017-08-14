@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.cc.service.impl;
 
 import java.io.IOException;
@@ -82,6 +79,8 @@ import com.utils.NudoCCUtil;
 @Component
 public class NudoCCServiceImpl implements INudoCCService {
 	
+	private DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+	
 	private static BossMaster wowBossMaster;
 	
 	private static List<WarcraftLogsClass> wclClasses;
@@ -124,57 +123,6 @@ public class NudoCCServiceImpl implements INudoCCService {
 	private UserTalkLevelDao userTalkLevelDao;
 	
 	/**
-	 * 以name、server搜尋角色基本資料
-	 * 
-	 * @param name :角色名稱
-	 * @param server :伺服器名稱
-	 * @return
-	 */
-	@Override
-	public TextMessage getWoWCharacterProfile(String name, String server) {
-		try {
-			CharacterProfileResponse resp = wowCommunityClient.getCharacterProfile(server, name).get();
-			if (StringUtils.isBlank(resp.getName())) {
-				return null;
-			}
-			String race = WowRaceEnum.getEnumByValue(resp.getRace()).getContext();
-			String clz = WowClassEnum.getEnumByValue(resp.getClz()).getContext();
-			String msg = NudoCCUtil.codeMessage("WOW001", resp.getBattlegroup(), resp.getLevel(), resp.getName(), race, clz,
-					resp.getTotalHonorableKills(), resp.getAchievementPoints());
-			return new TextMessage(msg);
-		} catch (Exception e) {
-			return null;
-		}
-	}
-	
-	/**
-	 * 以name搜尋角色基本資料
-	 * 
-	 * @param name :角色名稱
-	 * @return
-	 */
-	@Override
-	public TextMessage getWoWCharacterProfileByName(String name) {
-		for (String realm : NudoCCUtil.REALMS) {
-			try {
-				CharacterProfileResponse resp = wowCommunityClient.getCharacterProfile(realm, name).get();
-				if (StringUtils.isBlank(resp.getName())) {
-					return null;
-				}
-				String race = WowRaceEnum.getEnumByValue(resp.getRace()).getContext();
-				String clz = WowClassEnum.getEnumByValue(resp.getClz()).getContext();
-				
-				return new TextMessage(String.format("群組: %s, 等級: %s級的<%s>是一隻%s%s，他殺了%s個人、有%s成就點數！",
-						resp.getBattlegroup(), resp.getLevel(), resp.getName(), race, clz, resp.getTotalHonorableKills(), resp.getAchievementPoints()));
-				
-			} catch (Exception e) {
-				continue;
-			}
-		}
-		return null;
-	}
-	
-	/**
 	 * 以name搜尋角色大頭照
 	 * 
 	 * @param name :角色名稱
@@ -195,6 +143,18 @@ public class NudoCCServiceImpl implements INudoCCService {
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * find line sticker message
+	 * 
+	 * @param packageId
+	 * @param stickerId
+	 * @return
+	 */
+	@Override
+	public Message findStickerMessage(String packageId, String stickerId) {
+		return new StickerMessage(packageId, stickerId);
 	}
 	
 	/**
@@ -236,13 +196,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(WowEventEnum.CHARACTER_ITEM);
 			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_ITEM, StringUtils.EMPTY).trim().split(";");
 			if (array.length != 2) {
-				bean.setErrorMsg(NudoCCUtil.WOW_ITEM_PARAM_ERROR_MSG);
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR016"));
 				return bean;
 			}
 			name = array[0];
 			String realm = array[1];
 			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
-				bean.setErrorMsg(NudoCCUtil.WOW_ITEM_PARAM_ERROR_MSG);
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR016"));
 				return bean;
 			}
 			bean.setRealm(realm);
@@ -250,13 +210,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(WowEventEnum.CHECK_ENCHANTS);
 			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_CHECK_ENCHANTS, StringUtils.EMPTY).trim().split(";");
 			if (array.length != 2) {
-				bean.setErrorMsg(NudoCCUtil.WOW_ENCHANTS_PARAM_ERROR_MSG);
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR017"));
 				return bean;
 			}
 			name = array[0];
 			String realm = array[1];
 			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
-				bean.setErrorMsg(NudoCCUtil.WOW_ITEM_PARAM_ERROR_MSG);
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR016"));
 				return bean;
 			}
 			bean.setRealm(realm);
@@ -264,21 +224,21 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(WowEventEnum.WCL);
 			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_WCL, StringUtils.EMPTY).trim().split(";");
 			if (array.length != 4 && array.length != 5) {
-				bean.setErrorMsg("要更多資訊喔~");
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR001"));
 				return bean;
 			}
 			name = array[0];
 			
 			String realm = array[1];
 			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
-				bean.setErrorMsg("沒有這個server喔~");
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR002"));
 				return bean;
 			}
 			bean.setRealm(realm);
 			
 			String location = array[2];
 			if (Arrays.binarySearch(NudoCCUtil.LOCATIONS, location) < 0) {
-				bean.setErrorMsg("沒有這個地區喔~請輸入 [US, EU, KR, TW, CN] 其中一個");
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR003"));
 				return bean;
 			}
 			bean.setLocation(location);
@@ -289,7 +249,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 				&& !metric.equalsIgnoreCase("bossdps")
 				&& !metric.equalsIgnoreCase("tankhps")
 				&& !metric.equalsIgnoreCase("playerspeed")) {
-				bean.setErrorMsg("沒有這個選項喔~請輸入 [dps, hps, bossdps, tankhps, playerspeed] 其中一個");
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR004"));
 				return bean;
 			}
 			bean.setMetric(metric);
@@ -298,7 +258,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 				if (!mode.equalsIgnoreCase("N")
 					&& !mode.equalsIgnoreCase("H")
 					&& !mode.equalsIgnoreCase("M")) {
-					bean.setErrorMsg("沒有這個模式喔~請輸入 [N,H,M] 其中一個");
+					bean.setErrorMsg(NudoCCUtil.codeMessage("ERR005"));
 					return bean;
 				}
 				bean.setMode(mode);
@@ -308,21 +268,21 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(WowEventEnum.MAPPING_A);
 			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_SAVE, StringUtils.EMPTY).trim().split(";");
 			if (array.length != 3) {
-				bean.setErrorMsg("要更多資訊喔~");
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR001"));
 				return bean;
 			}
 			name = array[0];
 			
 			String realm = array[1];
 			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
-				bean.setErrorMsg("沒有這個server喔~");
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR002"));
 				return bean;
 			}
 			bean.setRealm(realm);
 			
 			String location = array[2];
 			if (Arrays.binarySearch(NudoCCUtil.LOCATIONS, location) < 0) {
-				bean.setErrorMsg("沒有這個地區喔~請輸入 [US, EU, KR, TW, CN] 其中一個");
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR003"));
 				return bean;
 			}
 			bean.setLocation(location);
@@ -332,7 +292,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 			name = command;
 		}
 		if (!checkWowName(name)) {
-			bean.setErrorMsg(NudoCCUtil.WOW_NAME_ERROR_MSG);
+			bean.setErrorMsg(NudoCCUtil.codeMessage("ERR015"));
 		} else {
 			bean.setName(name);
 		}
@@ -398,17 +358,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 			}
 			
 			StringBuilder sb = new StringBuilder();
-			if (resp.getItems().getAverageItemLevel() >= 900) {
-				sb.append("豪可怕!! 背包裝等%s, 穿在身上的裝等居然%s!!");
-			} else if (resp.getItems().getAverageItemLevel() <= 860){
-				sb.append("好費... 背包裝等%s, 穿在身上的裝等....%s...額");
-			} else {
-				sb.append("背包裝等%s, 穿在身上的裝等%s");
-			}
+			
+			String msgCode = this.getMsgCodeByItemLevel(resp.getItems().getAverageItemLevel());
+			
+			sb.append(NudoCCUtil.codeMessage(msgCode, resp.getItems().getAverageItemLevel(),
+					resp.getItems().getAverageItemLevelEquipped(), name, realm));
 			
 			CharacterItemsResponse items = resp.getItems();
-			sb.append("\r\n\r\n");
-			sb.append("<").append(name).append("-").append(realm).append(">的詳細資訊→\r\n");
 			
 			for (WowItemPartsEnum partsEnum :WowItemPartsEnum.values()) {
 				if (partsEnum == WowItemPartsEnum.NULL) {
@@ -421,14 +377,32 @@ public class NudoCCServiceImpl implements INudoCCService {
 				}
 				sb.append(String.format("　%s－%s %s", partsName, itemParts.getItemLevel(), itemParts.getName())).append("\r\n");
 			}
+			
 			sb.append("------------------------------");
 			
-			return new TextMessage(String.format(sb.toString(), resp.getItems().getAverageItemLevel(), resp.getItems().getAverageItemLevelEquipped()));
+			return new TextMessage(sb.toString());
+			
 		} catch (Exception e) {
 			return null;
 		}
 	}
 	
+	/**
+	 * get message code by item level
+	 * 
+	 * @param itemLevel
+	 * @return
+	 */
+	private String getMsgCodeByItemLevel(Integer itemLevel) {
+		if (itemLevel >= 900) {
+			return "WOW004";
+		} else if (itemLevel <= 860){
+			return "WOW005";
+		} else {
+			return "WOW006";
+		}
+	}
+
 	/**
 	 * 檢核裝備有無附魔
 	 * 
@@ -463,11 +437,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 			}
 			
 			if (sb.length() > 0) {
-				sb.append(String.format("\r\n。。%s-%s沒有腹膜。。", name, realm));
+				sb.append("\r\n");
+				sb.append(NudoCCUtil.codeMessage("WOW007", name, realm));
 				return new TextMessage(sb.toString());
 			} else {
-				return new TextMessage(String.format("%s-%s都有好好附魔~", name, realm));
+				return new TextMessage(NudoCCUtil.codeMessage("WOW008", name, realm));
 			}
+			
 		} catch (Exception e) {
 			return null;
 		}
@@ -482,7 +458,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 */
 	private PostbackAction genItemPostbackAction(String name, String realm) {
 		String command = "-wow -i ".concat(name).concat(";").concat(realm);
-		return new PostbackAction(WowEventEnum.CHARACTER_ITEM.getContext(), command, String.format("我想知道<%s-%s>的裝等o.o", name, realm));
+		return new PostbackAction(WowEventEnum.CHARACTER_ITEM.getContext(), command, NudoCCUtil.codeMessage("WOW009", name, realm));
 	}
 	
 	/**
@@ -494,7 +470,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 */
 	private PostbackAction genCheckEnchantsPostbackAction(String name, String realm) {
 		String command = "-wow -ec ".concat(name).concat(";").concat(realm);
-		return new PostbackAction(WowEventEnum.CHECK_ENCHANTS.getContext(), command, String.format("我想知道<%s-%s>有沒有沒附魔的莊o.o", name, realm));
+		return new PostbackAction(WowEventEnum.CHECK_ENCHANTS.getContext(), command, NudoCCUtil.codeMessage("WOW010", name, realm));
 	}
 	
 
@@ -520,12 +496,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 	@Override
 	public TextMessage getHelp() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("995: -wow -help\r\n");
-		sb.append("查詢角色基本資訊: -wow 角色名稱\r\n");
-		sb.append("查詢角色大頭貼: -wow -img 角色名稱\r\n");
-		sb.append("查詢角色裝備: -wow -i 角色名稱;伺服器名稱\r\n");
-		sb.append("查詢角色裝備有無附魔: -wow -ec 角色名稱;伺服器名稱\r\n");
-		sb.append("查詢角色WCL: -wow -wcl 角色名稱;伺服器名稱;地區(TW);(hps/dps/bossdps/tankhps)\r\n");
+		sb.append(NudoCCUtil.codeMessage("HLP001")).append(NudoCCUtil.NEW_LINE);
+		sb.append(NudoCCUtil.codeMessage("HLP002")).append(NudoCCUtil.NEW_LINE);
+		sb.append(NudoCCUtil.codeMessage("HLP003")).append(NudoCCUtil.NEW_LINE);
+		sb.append(NudoCCUtil.codeMessage("HLP004")).append(NudoCCUtil.NEW_LINE);
+		sb.append(NudoCCUtil.codeMessage("HLP005")).append(NudoCCUtil.NEW_LINE);
+		sb.append(NudoCCUtil.codeMessage("HLP006")).append(NudoCCUtil.NEW_LINE);
 		return new TextMessage(sb.toString());
 	}
 	
@@ -543,12 +519,19 @@ public class NudoCCServiceImpl implements INudoCCService {
         String userId = event.getSource().getUserId();
         
 		CommandBean commandBean = this.genCommandBean(command, senderId, userId);
+		
 		if (commandBean == null) {
 			return null;
 		}
+		
 		return commandBean.isWowCommand() ? processWoWCommand(commandBean) : processOtherCommand(commandBean);
 	}
 
+	/**
+	 * 
+	 * @param commandBean
+	 * @return
+	 */
 	private Message processOtherCommand(CommandBean commandBean) {
 		
 		String command = commandBean.getCommand();
@@ -559,16 +542,16 @@ public class NudoCCServiceImpl implements INudoCCService {
         
 		//other command
 		if (command.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
-			return this.getRollNumber(command.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
+			return this.getRollMessage(command.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
 		} else if (command.equalsIgnoreCase(NudoCCUtil.GET_USER_ID_COMMAND)) {
-			return new TextMessage(String.format("senderId=[%s], userId=[%s]", senderId, userId));
+			return new TextMessage(NudoCCUtil.codeMessage("OTR001", senderId, userId));
 		} else if (command.equals(NudoCCUtil.LEAVE_COMMAND)) {
 			leave(senderId);
 			return null; 
 		} else if (command.equals(NudoCCUtil.WHOAMI_COMMAND)) {
 			return getWoWNameById(userId);
 		} else if (pattern.matcher(command.toLowerCase()).matches()) {
-			String[] array = command.split("的");
+			String[] array = command.split(NudoCCUtil.codeMessage("OTR002"));
 			return getCharacterWCLByUserId(array[0], array[1], userId);
 		}  else if (command.indexOf(NudoCCUtil.IMG1_COMMAND) != -1) {
 			return findStickerMessage("3", "181");
@@ -612,6 +595,13 @@ public class NudoCCServiceImpl implements INudoCCService {
     	}
 	}
 
+	/**
+	 * return message by talking count
+	 * 
+	 * @param mesg
+	 * @param userId
+	 * @return
+	 */
 	private Message processUserTalk(String mesg, String userId) {
 		if (StringUtils.isBlank(userId)) {
 			return null;
@@ -625,13 +615,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 				String displayName = getDisplayName(userId);
 				switch (userTalkLevel.getTalkCount()) {
 					case 10:
-						return  new TextMessage(String.format("%s, 你的\"%s\"發言累計次數已達10次, 從現在開始你就是 『真誠的%s』！", displayName, mesg, mesg));
+						return  new TextMessage(NudoCCUtil.codeMessage("OTR003", displayName, mesg, mesg));
 					case 25: 
-						return  new TextMessage(String.format("%s, 你的\"%s\"發言累計次數已達25次, 從現在開始你就是 『超級的%s』！", displayName, mesg, mesg));
+						return  new TextMessage(NudoCCUtil.codeMessage("OTR004", displayName, mesg, mesg));
 					case 50: 
-						return  new TextMessage(String.format("%s, 你的\"%s\"發言累計次數已達50次, 從現在開始你就是 『魅力的%s』！", displayName, mesg, mesg));
+						return  new TextMessage(NudoCCUtil.codeMessage("OTR005", displayName, mesg, mesg));
 					case 99: 
-						return  new TextMessage(String.format("%s, 你的\"%s\"發言累計次數已達99次, 從現在開始你就是 『永遠的%s』！", displayName, mesg, mesg));
+						return  new TextMessage(NudoCCUtil.codeMessage("OTR006", displayName, mesg, mesg));
 					default:
 						break;
 				}
@@ -659,14 +649,21 @@ public class NudoCCServiceImpl implements INudoCCService {
 		return userProfileResponse.getDisplayName();
 	}
 
+	/**
+	 * 
+	 * @param mode
+	 * @param metric
+	 * @param userId
+	 * @return
+	 */
 	private Message getCharacterWCLByUserId(String mode, String metric, String userId) {
 		if (StringUtils.isBlank(userId)) {
-			return new TextMessage("請先+我好友哦～");
+			return new TextMessage(NudoCCUtil.codeMessage("COM001"));
 		}
 		try {
 			WoWCharacterMapping po = wowCharacterMappingDao.findOne(userId);
 			if (po == null) {
-				return new TextMessage("？你還沒告訴我你是誰");
+				return new TextMessage(NudoCCUtil.codeMessage("COM002"));
 			}
 			return this.getCharacterWCL(po.getName(), po.getRealm(), po.getLocation(), metric, mode);
 		} catch (Exception e) {
@@ -674,37 +671,52 @@ public class NudoCCServiceImpl implements INudoCCService {
 		}
 	}
 
+	/**
+	 * get mapping wow name by line id
+	 * 
+	 * @param userId
+	 * @return
+	 */
 	private Message getWoWNameById(String userId) {
 		if (StringUtils.isBlank(userId)) {
-			return new TextMessage("請先+我好友哦～");
+			return new TextMessage(NudoCCUtil.codeMessage("COM001"));
 		}
 		try {
 			WoWCharacterMapping po = wowCharacterMappingDao.findOne(userId);
 			if (po != null) {
-				return new TextMessage(String.format("我知道你是%s-%s", po.getName(), po.getRealm()));
+				return new TextMessage(NudoCCUtil.codeMessage("WOW011", po.getName(), po.getRealm()));
 			} else {
-				return new TextMessage("？你是誰？");
+				return new TextMessage(NudoCCUtil.codeMessage("ERR006"));
 			}
 		} catch (Exception e) {
-			return new TextMessage("？你到底是誰？");
+			return new TextMessage(NudoCCUtil.codeMessage("ERR007"));
 		}
 	}
 
-	private DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
-
+	/**
+	 * save character by line id
+	 * 
+	 * @param name
+	 * @param realm
+	 * @param location
+	 * @param userId
+	 * @return
+	 */
 	private Message saveCharacter(String name, String realm, String location, String userId) {
+		
 		if (StringUtils.isBlank(userId)) {
-			return new TextMessage("請先+我好友哦～");
+			return new TextMessage(NudoCCUtil.codeMessage("COM001"));
 		}
 		try {
 			// first char to upper
 			name = name.substring(0, 1).toUpperCase() + name.substring(1);
 						
 			WoWCharacterMapping po = wowCharacterMappingDao.findCharacterByName(name, realm);
+			
 			if (po != null && !userId.equals(po.getLineId())) {
 				String lineName = getDisplayName(po.getLineId());
 				
-				return new TextMessage(String.format("你少騙,%s-%s明明是%s", name, realm, lineName));
+				return new TextMessage(NudoCCUtil.codeMessage("ERR008", name, realm, lineName));
 			}
 			wowCommunityClient.getCharacterProfile(realm, name).get();
 			
@@ -724,11 +736,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 			wowCharacterMappingDao.save(bean);
 		} catch (Exception e) {
 			if (e.getCause() instanceof WoWCommunityException) {
-				return new TextMessage("要馬你太久沒上, 不然就是你唬洨我！");
+				return new TextMessage(NudoCCUtil.codeMessage("ERR009"));
 			}
-			return new TextMessage("？儲存失敗了那？");
+			
+			return new TextMessage(NudoCCUtil.codeMessage("ERR010"));
 		}
-		return new TextMessage("已經和角色資訊建立連結！");
+		return new TextMessage(NudoCCUtil.codeMessage("COM003"));
 	}
 
 	/**
@@ -775,14 +788,18 @@ public class NudoCCServiceImpl implements INudoCCService {
 				sb.delete(0, sb.length());
 			}
 			
-			sb.append(String.format("%s-%s 的 %s 如下：\r\n", name, realm, metric));
+			sb.append(NudoCCUtil.codeMessage("WCL001", name, realm, metric));
+			sb.append(NudoCCUtil.NEW_LINE);
 			
 			for (String specName : map.keySet()) {
 				sb.append("　--").append(specName);
-				sb.append("--------------------------------------------\r\n");
+				sb.append("--------------------------------------------");
+				sb.append(NudoCCUtil.NEW_LINE);
 				
 				for (String str :map.get(specName)) {
-					sb.append(str).append("\r\n\r\n");
+					sb.append(str);
+					sb.append(NudoCCUtil.NEW_LINE);
+					sb.append(NudoCCUtil.NEW_LINE);
 				}
 			}
 			
@@ -793,6 +810,11 @@ public class NudoCCServiceImpl implements INudoCCService {
 		}
 	}
 
+	/**
+	 * 
+	 * @param difficulty
+	 * @return
+	 */
 	private String getBossMode(int difficulty) {
 		switch (difficulty) {
 			case 5: return "M";
@@ -802,65 +824,96 @@ public class NudoCCServiceImpl implements INudoCCService {
 		}
 	}
 
+	/**
+	 * 
+	 * @param encounter
+	 * @return
+	 */
 	private String getBossNameByEncounter(Long encounter) {
 		int boss = encounter.intValue();
 		switch (boss) {
-			case 2032: return "狗洛斯";
-			case 2048: return "惡魔審判官";
-			case 2036: return "哈亞談";
-			case 2037: return "薩斯音女士";
-			case 2050: return "月光議會";
-			case 2054: return "荒瘠聚合體";
-			case 2052: return "剩女";
-			case 2038: return "墮落化身";
-			case 2051: return "基爾加單";
+			case 2032: return NudoCCUtil.codeMessage("WCL002");
+			case 2048: return NudoCCUtil.codeMessage("WCL003");
+			case 2036: return NudoCCUtil.codeMessage("WCL004");
+			case 2037: return NudoCCUtil.codeMessage("WCL005");
+			case 2050: return NudoCCUtil.codeMessage("WCL006");
+			case 2054: return NudoCCUtil.codeMessage("WCL007");
+			case 2052: return NudoCCUtil.codeMessage("WCL008");
+			case 2038: return NudoCCUtil.codeMessage("WCL009");
+			case 2051: return NudoCCUtil.codeMessage("WCL010");
 			default: return "???";
 		}
 	}
 
+	/**
+	 * leave group
+	 * 
+	 * @param groupId
+	 */
 	private void leave(String groupId) {
 		LOG.info("leaveGroup BEGIN");
 		lineMessagingClient.leaveGroup(groupId);
 		LOG.info("leaveGroup END");
 	}
 
-	private TextMessage getRollNumber(String command) {
+	/**
+	 * Roll
+	 * 
+	 * @param command
+	 * @return
+	 */
+	private TextMessage getRollMessage(String command) {
 		if (StringUtils.isNotBlank(command) && command.indexOf(" ") == 0) {
 			String[] scopes = command.trim().split("-");
 			if (scopes.length != 2) {
-				return new TextMessage("指定範圍有誤！");
+				return new TextMessage(NudoCCUtil.codeMessage("ERR011"));
 			} else {
+				// validate start & end
 				int start, end = 0;
 				try {
 					start = Integer.parseInt(scopes[0]);
 					end = Integer.parseInt(scopes[1]);
 					if (start > end) {
-						return new TextMessage("你的數學老師在哭！");
+						return new TextMessage(NudoCCUtil.codeMessage("ERR012"));
 					}
 					if (end > 99999) {
-						return new TextMessage("骰子那麼大去拉斯維加斯阿！");
+						return new TextMessage(NudoCCUtil.codeMessage("ERR013"));
 					}
 				} catch (NumberFormatException e) {
-					return new TextMessage("不要亂骰！");
+					return new TextMessage(NudoCCUtil.codeMessage("ERR014"));
 				}
-				int size = wowBossMaster.getBosses().size();
-    			int point = this.probabilityControl(start, end);
-    					
-    			Random randBoss = new Random();
-    			int index = randBoss.nextInt(size);
-    			String name = wowBossMaster.getBosses().get(index).getName();
-    			return new TextMessage(String.format("%s 擲出了%s (%s-%s)！", name, point, start, end));
+				return this.getRollMessage(start, end);
 			}
 		} else {
-			int size = wowBossMaster.getBosses().size();
-			int point = this.probabilityControl(1, 100);
-			Random randBoss = new Random();
-			int index = randBoss.nextInt(size);
-			String name = wowBossMaster.getBosses().get(index).getName();
-			return new TextMessage(String.format("%s 擲出了%s (1-100)！", name, point));
+			return this.getRollMessage(1, 100);
 		}
 	}
 
+	/**
+	 * get roll number message
+	 * 
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	private TextMessage getRollMessage(int start, int end) {
+		int size = wowBossMaster.getBosses().size();
+		int point = this.probabilityControl(start, end);
+				
+		Random randBoss = new Random();
+		int index = randBoss.nextInt(size);
+		String name = wowBossMaster.getBosses().get(index).getName();
+		
+		return new TextMessage(NudoCCUtil.codeMessage("COM004", name, point, start, end));
+	}
+
+	/**
+	 * probability point by start,end
+	 * 
+	 * @param start
+	 * @param end
+	 * @return
+	 */
 	private int probabilityControl(int start, int end) {
 		List<Integer> nums = new ArrayList<>();
 		for (int i = start; i <= end; i++) {
@@ -872,6 +925,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 		return result[0];
 	}
 	
+	/**
+	 * get wow spec name by class, spec id
+	 * 
+	 * @param clz
+	 * @param specId
+	 * @return
+	 */
 	private String getSpecName(int clz, int specId) {
 		StringBuilder sb = new StringBuilder();
 		loop :for (WarcraftLogsClass wclClass : wclClasses) {
@@ -886,9 +946,5 @@ public class NudoCCServiceImpl implements INudoCCService {
 		}
 		return sb.toString();
 	}
-
-	@Override
-	public Message findStickerMessage(String packageId, String stickerId) {
-		return new StickerMessage(packageId, stickerId);
-	}
+	
 }
