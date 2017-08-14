@@ -7,8 +7,6 @@ import java.util.Properties;
 import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 
 import com.cc.Application;
 import com.cc.enums.WowItemPartsEnum;
@@ -17,7 +15,6 @@ import com.cc.enums.WowItemPartsEnum;
  * @author Caleb.Cheng
  *
  */
-@PropertySource("classpath:/system.properties")
 public class NudoCCUtil {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(NudoCCUtil.class);
@@ -40,23 +37,19 @@ public class NudoCCUtil {
 	
 	public static final String QUESTION_MARK = "?";
 	
-	@Value("${wow.default.server}")
-	public static String DEFAULT_SERVER;
+	public static final String DEFAULT_SERVER = systemProperties.getProperty("wow.default.server");
 	
 	public static final String PATTERN_EN = "^[a-zA-Z]+$";
 	
 	public static final String PATTERN_CH = "^[\u4e00-\u9fa5]+$";
 	
-	public static final String[] LOCATIONS = new String[]{ "US", "EU", "KR", "TW", "CN" };
+	public static final String[] LOCATIONS = systemProperties.getProperty("wow.locations").split(",");
 	
 	public static final String[] METRICS = new String[]{ "dps", "hps", "bossdps", "tankhps","playerspeed" };
 	
-	public static final String[] REALMS = new String[]{ "阿薩斯", "地獄吼", "狂熱之刃", "水晶之刺", "世界之樹", "聖光之願"};
+	public static final String[] REALMS = systemProperties.getProperty("wow.default.realms").split(",");
 	
-	public static final String[] ALL_REALMS = new String[]{ "世界之樹", "亞雷戈斯", "冰霜之刺",	"冰風崗哨", "地獄吼", "夜空之歌",	  	  	  	  
-														"天空之牆", "寒冰皇冠", "尖石", "屠魔山谷", "巨龍之喉",	 "憤怒使者",	  	  	  	  
-														"日落沼澤", "暗影之月", "水晶之刺",	"狂熱之刃", "眾星之子", "米奈希爾",	  	  	  	  
-														"聖光之願", "血之谷", "語風", "銀翼要塞", "阿薩斯", "雲蛟衛", "雷鱗" };
+	public static final String[] ALL_REALMS = systemProperties.getProperty("wow.realms").split(",");
 	
 	public static final String WOW_IMG_BASE_PATH = "https://render-tw.worldofwarcraft.com/character/";
 	
@@ -92,8 +85,7 @@ public class NudoCCUtil {
 	
 	public static final String ROLL_SUB_COMMAND_A = "-a";
 	
-	@Value("${wow.command.leave}")
-	public static String LEAVE_COMMAND;
+	public static String LEAVE_COMMAND = systemProperties.getProperty("wow.command.leave");
 	
 	public static final String WHOAMI_COMMAND = "我是誰";
 	
