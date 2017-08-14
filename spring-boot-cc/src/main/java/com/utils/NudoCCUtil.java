@@ -85,20 +85,18 @@ public class NudoCCUtil {
 	
 	public static final String ROLL_SUB_COMMAND_A = "-a";
 	
-	public static String LEAVE_COMMAND = systemProperties.getProperty("wow.command.leave");
+	public static final String LEAVE_COMMAND = systemProperties.getProperty("wow.command.leave");
 	
-	public static final String WHOAMI_COMMAND = "我是誰";
+	public static final String WHOAMI_COMMAND = systemProperties.getProperty("wow.command.whoami");
 	
-	public static final String SAD_COMMAND = "稻葉錯頻";
+	public static final String SAD_COMMAND = systemProperties.getProperty("wow.command.sad");
 	
 	public static final String IMG1_COMMAND = "><";
 	
 	public static final String WCL_USER_COMMANDS = "[mhn]{1}[的]{1}(dps|hps|bossdps|tankhps|playerspeed){1}"; 
 	
-	public static final WowItemPartsEnum[] enchantsParts = { WowItemPartsEnum.NECK,
-															 WowItemPartsEnum.SHOULDER,
-															 WowItemPartsEnum.FINGER1,
-															 WowItemPartsEnum.FINGER2,
+	public static final WowItemPartsEnum[] enchantsParts = { WowItemPartsEnum.NECK, WowItemPartsEnum.SHOULDER,
+															 WowItemPartsEnum.FINGER1, WowItemPartsEnum.FINGER2,
 															 WowItemPartsEnum.BACK };
 
 	
