@@ -1,19 +1,38 @@
 package com.utils;
 
+import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Enumeration;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
 import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 
+import com.cc.Application;
 import com.cc.enums.WowItemPartsEnum;
 
 /**
  * @author Caleb.Cheng
  *
  */
+@PropertySource("classpath:/system.properties")
 public class NudoCCUtil {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(NudoCCUtil.class);
+	
+	private static Properties messageProperties = new Properties();
+	private static Properties systemProperties = new Properties();
+	
+	static {
+		try {
+			messageProperties.load(Application.class.getResourceAsStream("/message.properties"));
+			systemProperties.load(Application.class.getResourceAsStream("/system.properties"));
+		} catch (IOException e) {
+			LOG.error("properties init error!");
+		}
+	}
 	
 	public static final String NEW_LINE = "\r\n";
 
@@ -21,7 +40,8 @@ public class NudoCCUtil {
 	
 	public static final String QUESTION_MARK = "?";
 	
-	public static final String DEFAULT_SERVER = "阿薩斯";
+	@Value("${wow.default.server}")
+	public static String DEFAULT_SERVER;
 	
 	public static final String PATTERN_EN = "^[a-zA-Z]+$";
 	
@@ -72,7 +92,8 @@ public class NudoCCUtil {
 	
 	public static final String ROLL_SUB_COMMAND_A = "-a";
 	
-	public static final String LEAVE_COMMAND = "稻葉請你";
+	@Value("${wow.command.leave}")
+	public static String LEAVE_COMMAND;
 	
 	public static final String WHOAMI_COMMAND = "我是誰";
 	
@@ -87,10 +108,8 @@ public class NudoCCUtil {
 															 WowItemPartsEnum.FINGER1,
 															 WowItemPartsEnum.FINGER2,
 															 WowItemPartsEnum.BACK };
-	
-	private static ResourceBundle resource = ResourceBundle.getBundle("message");
 
-	private static Properties properties = convertResourceBundleToProperties(resource);
+	
 	
 	/**
 	 * 根據sie zip 機率 (權重  y = 1/(x+1)^2 )
@@ -135,23 +154,6 @@ public class NudoCCUtil {
 	 * @return
 	 */
 	public static String codeMessage(String code, Object... args) {
-		return MessageFormat.format(properties.getProperty(code), args);
-	}
-
-	/**
-	 * 
-	 * @param resource
-	 * @return
-	 */
-	private static Properties convertResourceBundleToProperties(ResourceBundle resource) {
-		Properties properties = new Properties();
-
-		Enumeration<String> keys = resource.getKeys();
-		while (keys.hasMoreElements()) {
-			String key = keys.nextElement();
-			properties.put(key, resource.getString(key));
-		}
-
-		return properties;
+		return MessageFormat.format(messageProperties.getProperty(code), args);
 	}
 }

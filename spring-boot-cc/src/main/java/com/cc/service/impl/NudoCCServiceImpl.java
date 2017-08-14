@@ -223,7 +223,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(WowEventEnum.PROFILE);
 			name = command;
 		}
-		if (!checkWowName(name)) {
+		if (!checkWoWName(name)) {
 			bean.setErrorMsg(NudoCCUtil.codeMessage("ERR015"));
 		} else {
 			bean.setName(name);
@@ -273,7 +273,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @param name :角色名稱
 	 * @return
 	 */
-	private boolean checkWowName(String name) {
+	private boolean checkWoWName(String name) {
 		Pattern patternCh = Pattern.compile(NudoCCUtil.PATTERN_CH);
 		Pattern patternEn = Pattern.compile(NudoCCUtil.PATTERN_EN);
 	    Matcher matcherCh = patternCh.matcher(name);
