@@ -13,7 +13,7 @@ import javax.persistence.Embeddable;
  */
 @SuppressWarnings("serial")
 @Embeddable
-public class UserTalkLevelKey implements Serializable{
+public class UserTalkLevelKey implements Serializable {
 
 	private String lineId;
 

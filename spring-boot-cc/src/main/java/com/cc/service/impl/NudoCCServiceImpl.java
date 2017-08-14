@@ -23,6 +23,7 @@ import com.cc.entity.UserTalkLevel;
 import com.cc.entity.WoWCharacterMapping;
 import com.cc.entity.key.UserTalkLevelKey;
 import com.cc.enums.WowEventEnum;
+import com.cc.service.IIrolService;
 import com.cc.service.INudoCCService;
 import com.cc.service.IWoWService;
 import com.cc.wow.boss.BossMaster;
@@ -75,8 +76,11 @@ public class NudoCCServiceImpl implements INudoCCService {
 	private WoWCharacterMappingDao wowCharacterMappingDao;
 	
 	@Autowired
-	private UserTalkLevelDao userTalkLevelDao;
+	private IIrolService irolService;
 	
+	@Autowired
+	private UserTalkLevelDao userTalkLevelDao;
+		
 	/**
 	 * find line sticker message
 	 * 
@@ -307,8 +311,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 		} else if (pattern.matcher(command.toLowerCase()).matches()) {
 			String[] array = command.split(NudoCCUtil.codeMessage("OTR002"));
 			return getCharacterWCLByUserId(array[0], array[1], userId);
-		}  else if (command.indexOf(NudoCCUtil.IMG1_COMMAND) != -1) {
+		} else if (command.indexOf(NudoCCUtil.IMG1_COMMAND) != -1) {
 			return findStickerMessage("3", "181");
+		} else if (command.equals(NudoCCUtil.OPEN_COMMAND)) {
+			return irolService.getIrols(userId);
+		} else if (command.toLowerCase().endsWith(NudoCCUtil.BATTLE_COMMAND)) {
+			return irolService.doBattle(userId, command.toLowerCase().replace(NudoCCUtil.BATTLE_COMMAND, StringUtils.EMPTY));
 		} else {
 			// logger talking
 			return processUserTalk(command, userId);
