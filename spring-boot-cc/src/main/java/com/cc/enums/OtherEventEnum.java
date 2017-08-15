@@ -17,6 +17,7 @@ public enum OtherEventEnum {
 	WHOAMI(4, "我是誰"),
 	WCL_USER(5, "WCL"),
 	IMG1(6, "><"),
+	TALKING(7, "talk"),
 	NULL(0, StringUtils.EMPTY);
 	
 	private int value;

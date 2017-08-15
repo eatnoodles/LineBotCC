@@ -158,7 +158,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(OtherEventEnum.WCL_USER);
 		} else if (command.indexOf(NudoCCUtil.IMG1_COMMAND) != -1) {
 			bean.setEventEnum(OtherEventEnum.IMG1);
-		} 
+		} else {
+			bean.setEventEnum(OtherEventEnum.TALKING);
+		}
 		return bean;
 	}
 
@@ -221,8 +223,10 @@ public class NudoCCServiceImpl implements INudoCCService {
 					return getCharacterWCLByUserId(array[0], array[1], commandBean.getUserId());
 				case IMG1:
 					return findStickerMessage("3", "181");
-				default:
+				case TALKING:
 					return processUserTalk(commandBean.getCommand(), commandBean.getUserId());
+				default:
+					return null;
 			}
     	}
 	}
