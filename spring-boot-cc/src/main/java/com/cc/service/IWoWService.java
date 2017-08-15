@@ -1,5 +1,6 @@
 package com.cc.service;
 
+import com.cc.bean.WoWCommandBean;
 import com.linecorp.bot.model.message.ImageMessage;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
@@ -73,4 +74,13 @@ public interface IWoWService {
 	 * @return
 	 */
 	public Message saveCharacter(String name, String realm, String location, String userId);
+
+	/**
+	 * 
+	 * @param command
+	 * @param senderId
+	 * @param userId
+	 * @return
+	 */
+	public WoWCommandBean genWoWCommandBean(String command, String senderId, String userId);
 }

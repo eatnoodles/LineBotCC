@@ -9,14 +9,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.cc.bean.IrolCommandBean;
 import com.cc.dao.irol.IIrolDao;
 import com.cc.dao.irol.IMasterCardsDao;
 import com.cc.dao.irol.IMonsterDao;
-import com.cc.dao.irol.ISkillDao;
 import com.cc.entity.irol.Irol;
 import com.cc.entity.irol.MasterCards;
 import com.cc.entity.irol.Monster;
 import com.cc.entity.key.MasterCardsKey;
+import com.cc.enums.IrolEventEnum;
 import com.cc.service.IIrolService;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.PostbackAction;
@@ -34,9 +35,6 @@ import com.utils.NudoCCUtil;
 public class IrolServiceImpl implements IIrolService {
 
 	@Autowired
-	private ISkillDao skillDao;
-	
-	@Autowired
 	private IIrolDao irolDao;
 	
 	@Autowired
@@ -44,6 +42,16 @@ public class IrolServiceImpl implements IIrolService {
 	
 	@Autowired
 	private IMasterCardsDao masterCardsDao;
+	
+	@Override
+	public boolean isIrolCommand(String command) {
+		boolean isIrol = false;
+		
+		isIrol = isIrol || command.toLowerCase().endsWith(NudoCCUtil.BATTLE_COMMAND);
+		isIrol = isIrol || command.equalsIgnoreCase(NudoCCUtil.OPEN_COMMAND);
+		
+		return isIrol;
+	}
 
 	@Override
 	public Message getIrols(String userId) {
@@ -114,5 +122,22 @@ public class IrolServiceImpl implements IIrolService {
 		return result;
 	}
 
+	@Override
+	public IrolCommandBean genIrolCommandBean(String command, String senderId, String userId) {
+		IrolCommandBean bean = new IrolCommandBean();
+		bean.setSenderId(senderId);
+		bean.setUserId(userId);
+		bean.setCommand(command);
+		
+		if (command.equalsIgnoreCase(NudoCCUtil.OPEN_COMMAND)) {
+			bean.setEventEnum(IrolEventEnum.OPEN);
+			return bean;
+		} else if (command.toLowerCase().endsWith(NudoCCUtil.BATTLE_COMMAND)) {
+			bean.setEventEnum(IrolEventEnum.BATTLE);
+			String name = command.replaceAll(NudoCCUtil.BATTLE_COMMAND, StringUtils.EMPTY).trim();
+			bean.setIrolName(name);
+		} 
+		return bean;
+	}
 	
 }

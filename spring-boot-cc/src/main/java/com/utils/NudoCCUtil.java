@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cc.Application;
-import com.cc.enums.WowItemPartsEnum;
+import com.cc.enums.WoWItemPartsEnum;
 
 /**
  * @author Caleb.Cheng
@@ -99,9 +99,9 @@ public class NudoCCUtil {
 	
 	public static final String WCL_USER_COMMANDS = "[mhn]{1}[的]{1}(dps|hps|bossdps|tankhps|playerspeed){1}"; 
 	
-	public static final WowItemPartsEnum[] enchantsParts = { WowItemPartsEnum.NECK, WowItemPartsEnum.SHOULDER,
-															 WowItemPartsEnum.FINGER1, WowItemPartsEnum.FINGER2,
-															 WowItemPartsEnum.BACK };
+	public static final WoWItemPartsEnum[] enchantsParts = { WoWItemPartsEnum.NECK, WoWItemPartsEnum.SHOULDER,
+															 WoWItemPartsEnum.FINGER1, WoWItemPartsEnum.FINGER2,
+															 WoWItemPartsEnum.BACK };
 
 	
 	

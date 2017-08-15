@@ -6,10 +6,13 @@ import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,12 +22,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.cc.Application;
+import com.cc.bean.WoWCommandBean;
 import com.cc.dao.WoWCharacterMappingDao;
 import com.cc.entity.WoWCharacterMapping;
-import com.cc.enums.WowClassEnum;
-import com.cc.enums.WowEventEnum;
-import com.cc.enums.WowItemPartsEnum;
-import com.cc.enums.WowRaceEnum;
+import com.cc.enums.WoWClassEnum;
+import com.cc.enums.WoWEventEnum;
+import com.cc.enums.WoWItemPartsEnum;
+import com.cc.enums.WoWRaceEnum;
 import com.cc.service.INudoCCService;
 import com.cc.service.IWoWService;
 import com.cc.wcl.client.WarcraftLogsClient;
@@ -110,6 +114,140 @@ public class WoWServiceImpl implements IWoWService {
 		sb.append(NudoCCUtil.codeMessage("HLP006")).append(NudoCCUtil.NEW_LINE);
 		return new TextMessage(sb.toString());
 	}
+	
+	/**
+	 * 
+	 * @param command
+	 * @param senderId
+	 * @param userId
+	 * @return
+	 */
+	@Override
+	public WoWCommandBean genWoWCommandBean(String command, String senderId, String userId) {
+		
+		WoWCommandBean bean = new WoWCommandBean();
+		bean.setSenderId(senderId);
+		bean.setUserId(userId);
+		bean.setCommand(command);
+		
+		command = command.replaceAll(NudoCCUtil.WOW_COMMAND, StringUtils.EMPTY).trim();
+		String name = null;
+		
+		if (command.equalsIgnoreCase(NudoCCUtil.WOW_COMMAND_HELP)) {
+			bean.setEventEnum(WoWEventEnum.HELP);
+			return bean;
+		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_IMG)) {
+			bean.setEventEnum(WoWEventEnum.IMG);
+			name = command.replaceAll(NudoCCUtil.WOW_COMMAND_IMG, StringUtils.EMPTY).trim();
+		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_TEST)) {
+			bean.setEventEnum(WoWEventEnum.TEST);
+			name = command.replaceAll(NudoCCUtil.WOW_COMMAND_TEST, StringUtils.EMPTY).trim();
+		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_ITEM)) {
+			bean.setEventEnum(WoWEventEnum.CHARACTER_ITEM);
+			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_ITEM, StringUtils.EMPTY).trim().split(";");
+			if (array.length != 2) {
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR016"));
+				return bean;
+			}
+			name = array[0];
+			String realm = array[1];
+			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR016"));
+				return bean;
+			}
+			bean.setRealm(realm);
+		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_CHECK_ENCHANTS)) {
+			bean.setEventEnum(WoWEventEnum.CHECK_ENCHANTS);
+			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_CHECK_ENCHANTS, StringUtils.EMPTY).trim().split(";");
+			if (array.length != 2) {
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR017"));
+				return bean;
+			}
+			name = array[0];
+			String realm = array[1];
+			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR016"));
+				return bean;
+			}
+			bean.setRealm(realm);
+		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_WCL)) {
+			bean.setEventEnum(WoWEventEnum.WCL);
+			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_WCL, StringUtils.EMPTY).trim().split(";");
+			if (array.length != 4 && array.length != 5) {
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR001"));
+				return bean;
+			}
+			name = array[0];
+			
+			String realm = array[1];
+			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR002"));
+				return bean;
+			}
+			bean.setRealm(realm);
+			
+			String location = array[2];
+			if (Arrays.binarySearch(NudoCCUtil.LOCATIONS, location) < 0) {
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR003"));
+				return bean;
+			}
+			bean.setLocation(location);
+			
+			String metric = array[3];
+			if (!metric.equalsIgnoreCase("dps")
+				&& !metric.equalsIgnoreCase("hps")
+				&& !metric.equalsIgnoreCase("bossdps")
+				&& !metric.equalsIgnoreCase("tankhps")
+				&& !metric.equalsIgnoreCase("playerspeed")) {
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR004"));
+				return bean;
+			}
+			bean.setMetric(metric);
+			if (array.length == 5) {
+				String mode = array[4];
+				if (!mode.equalsIgnoreCase("N")
+					&& !mode.equalsIgnoreCase("H")
+					&& !mode.equalsIgnoreCase("M")) {
+					bean.setErrorMsg(NudoCCUtil.codeMessage("ERR005"));
+					return bean;
+				}
+				bean.setMode(mode);
+			}
+			
+		}  else if (command.startsWith(NudoCCUtil.WOW_COMMAND_SAVE)) {
+			bean.setEventEnum(WoWEventEnum.MAPPING_A);
+			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_SAVE, StringUtils.EMPTY).trim().split(";");
+			if (array.length != 3) {
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR001"));
+				return bean;
+			}
+			name = array[0];
+			
+			String realm = array[1];
+			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR002"));
+				return bean;
+			}
+			bean.setRealm(realm);
+			
+			String location = array[2];
+			if (Arrays.binarySearch(NudoCCUtil.LOCATIONS, location) < 0) {
+				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR003"));
+				return bean;
+			}
+			bean.setLocation(location);
+			
+		} else {
+			bean.setEventEnum(WoWEventEnum.PROFILE);
+			name = command;
+		}
+		if (!checkWoWName(name)) {
+			bean.setErrorMsg(NudoCCUtil.codeMessage("ERR015"));
+		} else {
+			bean.setName(name);
+		}
+		return bean;
+	}
 
 	/**
 	 * 以name搜尋角色大頭照
@@ -149,8 +287,8 @@ public class WoWServiceImpl implements IWoWService {
 				if (StringUtils.isBlank(resp.getName())) {
 					return null;
 				}
-				String race = WowRaceEnum.getEnumByValue(resp.getRace()).getContext();
-				String clz = WowClassEnum.getEnumByValue(resp.getClz()).getContext();
+				String race = WoWRaceEnum.getEnumByValue(resp.getRace()).getContext();
+				String clz = WoWClassEnum.getEnumByValue(resp.getClz()).getContext();
 				String imgPath = NudoCCUtil.WOW_IMG_BASE_PATH.concat(resp.getThumbnail());
 				PostbackAction postbackAction1 = this.genItemPostbackAction(resp.getName(), resp.getRealm());
 				PostbackAction postbackAction2 = this.genCheckEnchantsPostbackAction(resp.getName(), resp.getRealm());
@@ -202,8 +340,8 @@ public class WoWServiceImpl implements IWoWService {
 			
 			CharacterItemsResponse items = resp.getItems();
 			
-			for (WowItemPartsEnum partsEnum :WowItemPartsEnum.values()) {
-				if (partsEnum == WowItemPartsEnum.NULL) {
+			for (WoWItemPartsEnum partsEnum :WoWItemPartsEnum.values()) {
+				if (partsEnum == WoWItemPartsEnum.NULL) {
 					continue;
 				}
 				String partsName = partsEnum.getContext();
@@ -242,7 +380,7 @@ public class WoWServiceImpl implements IWoWService {
 			
 			CharacterItemsResponse items = resp.getItems();
 			
-			for (WowItemPartsEnum partsEnum : NudoCCUtil.enchantsParts) {
+			for (WoWItemPartsEnum partsEnum : NudoCCUtil.enchantsParts) {
 				ItemParts itemParts = (ItemParts)PropertyUtils.getProperty(items, partsEnum.getValue());
 				if (itemParts == null) {
 					continue;
@@ -399,7 +537,7 @@ public class WoWServiceImpl implements IWoWService {
 	 */
 	private PostbackAction genItemPostbackAction(String name, String realm) {
 		String command = "-wow -i ".concat(name).concat(";").concat(realm);
-		return new PostbackAction(WowEventEnum.CHARACTER_ITEM.getContext(), command, NudoCCUtil.codeMessage("WOW009", name, realm));
+		return new PostbackAction(WoWEventEnum.CHARACTER_ITEM.getContext(), command, NudoCCUtil.codeMessage("WOW009", name, realm));
 	}
 	
 	/**
@@ -411,7 +549,7 @@ public class WoWServiceImpl implements IWoWService {
 	 */
 	private PostbackAction genCheckEnchantsPostbackAction(String name, String realm) {
 		String command = "-wow -ec ".concat(name).concat(";").concat(realm);
-		return new PostbackAction(WowEventEnum.CHECK_ENCHANTS.getContext(), command, NudoCCUtil.codeMessage("WOW010", name, realm));
+		return new PostbackAction(WoWEventEnum.CHECK_ENCHANTS.getContext(), command, NudoCCUtil.codeMessage("WOW010", name, realm));
 	}
 
 	/**
@@ -485,5 +623,19 @@ public class WoWServiceImpl implements IWoWService {
 			}
 		}
 		return sb.toString();
+	}
+	
+	/**
+	 * check wow name
+	 * 
+	 * @param name :角色名稱
+	 * @return
+	 */
+	private boolean checkWoWName(String name) {
+		Pattern patternCh = Pattern.compile(NudoCCUtil.PATTERN_CH);
+		Pattern patternEn = Pattern.compile(NudoCCUtil.PATTERN_EN);
+	    Matcher matcherCh = patternCh.matcher(name);
+	    Matcher matcherEn = patternEn.matcher(name);
+	    return (matcherCh.matches() && name.length() <= 6) || (matcherEn.matches() && name.length() <= 12);
 	}
 }

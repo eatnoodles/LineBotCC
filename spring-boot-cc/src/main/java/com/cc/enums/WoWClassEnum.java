@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Caleb.Cheng
  *
  */
-public enum WowClassEnum {
+public enum WoWClassEnum {
 
 	DEATH_KNIGHT(6, "死亡騎士"),
 	DEMON_HUNTER(12, "惡魔獵人"),
@@ -32,24 +32,24 @@ public enum WowClassEnum {
 	
 	private String context;
 	
-	private static final Map< Integer, WowClassEnum > map = new HashMap<>();
+	private static final Map< Integer, WoWClassEnum > map = new HashMap<>();
 
 	static
 	{
-		for( WowClassEnum classEnum : WowClassEnum.values() )
+		for( WoWClassEnum classEnum : WoWClassEnum.values() )
 			map.put( classEnum.getValue(), classEnum );
 	}
 	
-	private WowClassEnum(int value, String context){
+	private WoWClassEnum(int value, String context){
 		this.value = value;
 		this.context = context;
 	}
 	
-	public static WowClassEnum getEnumByValue( int value )
+	public static WoWClassEnum getEnumByValue( int value )
 	{
-		WowClassEnum classEnum = map.get( value );
+		WoWClassEnum classEnum = map.get( value );
 
-		return classEnum == null ? WowClassEnum.NULL : classEnum;
+		return classEnum == null ? WoWClassEnum.NULL : classEnum;
 	}
 
 	public int getValue() {

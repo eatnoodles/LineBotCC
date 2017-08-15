@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 import com.cc.bean.CommandBean;
+import com.cc.bean.WoWCommandBean;
 import com.cc.service.INudoCCService;
 import com.cc.service.IWoWService;
 import com.linecorp.bot.model.event.MessageEvent;
@@ -77,11 +78,15 @@ public class Application {
         	if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
         		return new TextMessage(commandBean.getErrorMsg());
         	} else {
-        		switch (commandBean.getEventEnum()) {
+        		if (commandBean instanceof WoWCommandBean) {
+        			
+        		}
+        		WoWCommandBean wowCommandBean = (WoWCommandBean)commandBean;
+        		switch (wowCommandBean.getEventEnum()) {
 					case CHARACTER_ITEM:
-						return wowService.getWoWCharacterItems(commandBean.getName(), commandBean.getRealm());
+						return wowService.getWoWCharacterItems(wowCommandBean.getName(), wowCommandBean.getRealm());
 					case CHECK_ENCHANTS:
-						return wowService.checkCharacterEnchants(commandBean.getName(), commandBean.getRealm());
+						return wowService.checkCharacterEnchants(wowCommandBean.getName(), wowCommandBean.getRealm());
 					default:
 						return null;
 				}

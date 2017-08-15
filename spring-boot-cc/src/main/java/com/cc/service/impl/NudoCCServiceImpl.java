@@ -2,11 +2,9 @@ package com.cc.service.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -17,12 +15,15 @@ import org.springframework.stereotype.Component;
 
 import com.cc.Application;
 import com.cc.bean.CommandBean;
+import com.cc.bean.IrolCommandBean;
+import com.cc.bean.OtherCommandBean;
+import com.cc.bean.WoWCommandBean;
 import com.cc.dao.UserTalkLevelDao;
 import com.cc.dao.WoWCharacterMappingDao;
 import com.cc.entity.UserTalkLevel;
 import com.cc.entity.WoWCharacterMapping;
 import com.cc.entity.key.UserTalkLevelKey;
-import com.cc.enums.WowEventEnum;
+import com.cc.enums.OtherEventEnum;
 import com.cc.service.IIrolService;
 import com.cc.service.INudoCCService;
 import com.cc.service.IWoWService;
@@ -94,6 +95,20 @@ public class NudoCCServiceImpl implements INudoCCService {
 	}
 	
 	/**
+	 * get line display name
+	 * 
+	 * @param lineId
+	 * @return
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
+	@Override
+	public String getDisplayName(String lineId) throws InterruptedException, ExecutionException {
+		UserProfileResponse userProfileResponse = lineMessagingClient.getProfile(lineId).get();
+		return userProfileResponse.getDisplayName();
+	}
+	
+	/**
 	 * generator command bean
 	 * 
 	 * @param event
@@ -106,135 +121,47 @@ public class NudoCCServiceImpl implements INudoCCService {
 			return null;
 		}
 		
-		CommandBean bean = new CommandBean();
-		bean.setSenderId(senderId);
-		bean.setUserId(userId);
-		bean.setCommand(command);
-		
-		if (!command.startsWith(NudoCCUtil.WOW_COMMAND)) {
-			bean.setWowCommand(false);
-			return bean;
+		if (command.startsWith(NudoCCUtil.WOW_COMMAND)) {
+			return wowService.genWoWCommandBean(command, senderId, userId);
 		}
 		
-		command = command.replaceAll(NudoCCUtil.WOW_COMMAND, StringUtils.EMPTY).trim();
-		String name = null;
+		if (irolService.isIrolCommand(command)) {
+			return irolService.genIrolCommandBean(command, senderId, userId);
+		}
 		
-		if (command.equalsIgnoreCase(NudoCCUtil.WOW_COMMAND_HELP)) {
-			bean.setEventEnum(WowEventEnum.HELP);
-			return bean;
-		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_IMG)) {
-			bean.setEventEnum(WowEventEnum.IMG);
-			name = command.replaceAll(NudoCCUtil.WOW_COMMAND_IMG, StringUtils.EMPTY).trim();
-		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_TEST)) {
-			bean.setEventEnum(WowEventEnum.TEST);
-			name = command.replaceAll(NudoCCUtil.WOW_COMMAND_TEST, StringUtils.EMPTY).trim();
-		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_ITEM)) {
-			bean.setEventEnum(WowEventEnum.CHARACTER_ITEM);
-			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_ITEM, StringUtils.EMPTY).trim().split(";");
-			if (array.length != 2) {
-				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR016"));
-				return bean;
-			}
-			name = array[0];
-			String realm = array[1];
-			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
-				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR016"));
-				return bean;
-			}
-			bean.setRealm(realm);
-		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_CHECK_ENCHANTS)) {
-			bean.setEventEnum(WowEventEnum.CHECK_ENCHANTS);
-			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_CHECK_ENCHANTS, StringUtils.EMPTY).trim().split(";");
-			if (array.length != 2) {
-				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR017"));
-				return bean;
-			}
-			name = array[0];
-			String realm = array[1];
-			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
-				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR016"));
-				return bean;
-			}
-			bean.setRealm(realm);
-		} else if (command.startsWith(NudoCCUtil.WOW_COMMAND_WCL)) {
-			bean.setEventEnum(WowEventEnum.WCL);
-			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_WCL, StringUtils.EMPTY).trim().split(";");
-			if (array.length != 4 && array.length != 5) {
-				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR001"));
-				return bean;
-			}
-			name = array[0];
-			
-			String realm = array[1];
-			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
-				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR002"));
-				return bean;
-			}
-			bean.setRealm(realm);
-			
-			String location = array[2];
-			if (Arrays.binarySearch(NudoCCUtil.LOCATIONS, location) < 0) {
-				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR003"));
-				return bean;
-			}
-			bean.setLocation(location);
-			
-			String metric = array[3];
-			if (!metric.equalsIgnoreCase("dps")
-				&& !metric.equalsIgnoreCase("hps")
-				&& !metric.equalsIgnoreCase("bossdps")
-				&& !metric.equalsIgnoreCase("tankhps")
-				&& !metric.equalsIgnoreCase("playerspeed")) {
-				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR004"));
-				return bean;
-			}
-			bean.setMetric(metric);
-			if (array.length == 5) {
-				String mode = array[4];
-				if (!mode.equalsIgnoreCase("N")
-					&& !mode.equalsIgnoreCase("H")
-					&& !mode.equalsIgnoreCase("M")) {
-					bean.setErrorMsg(NudoCCUtil.codeMessage("ERR005"));
-					return bean;
-				}
-				bean.setMode(mode);
-			}
-			
-		}  else if (command.startsWith(NudoCCUtil.WOW_COMMAND_SAVE)) {
-			bean.setEventEnum(WowEventEnum.MAPPING_A);
-			String[] array = command.replaceAll(NudoCCUtil.WOW_COMMAND_SAVE, StringUtils.EMPTY).trim().split(";");
-			if (array.length != 3) {
-				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR001"));
-				return bean;
-			}
-			name = array[0];
-			
-			String realm = array[1];
-			if (Arrays.binarySearch(NudoCCUtil.ALL_REALMS, realm) < 0) {
-				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR002"));
-				return bean;
-			}
-			bean.setRealm(realm);
-			
-			String location = array[2];
-			if (Arrays.binarySearch(NudoCCUtil.LOCATIONS, location) < 0) {
-				bean.setErrorMsg(NudoCCUtil.codeMessage("ERR003"));
-				return bean;
-			}
-			bean.setLocation(location);
-			
-		} else {
-			bean.setEventEnum(WowEventEnum.PROFILE);
-			name = command;
-		}
-		if (!checkWoWName(name)) {
-			bean.setErrorMsg(NudoCCUtil.codeMessage("ERR015"));
-		} else {
-			bean.setName(name);
-		}
+		return this.genOtherCommandBean(command, senderId, userId);
+	}
+
+	/**
+	 * 
+	 * @param command
+	 * @param senderId
+	 * @param userId
+	 * @return
+	 */
+	private CommandBean genOtherCommandBean(String command, String senderId, String userId) {
+		
+		OtherCommandBean bean = new OtherCommandBean(command, senderId, userId);
+		
+		Pattern pattern = Pattern.compile(NudoCCUtil.WCL_USER_COMMANDS);
+        
+		//other command
+		if (command.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
+			bean.setEventEnum(OtherEventEnum.ROLL);
+		} else if (command.equalsIgnoreCase(NudoCCUtil.GET_USER_ID_COMMAND)) {
+			bean.setEventEnum(OtherEventEnum.GET_USER_ID);
+		} else if (command.equals(NudoCCUtil.LEAVE_COMMAND)) {
+			bean.setEventEnum(OtherEventEnum.LEAVE);
+		} else if (command.equals(NudoCCUtil.WHOAMI_COMMAND)) {
+			bean.setEventEnum(OtherEventEnum.WHOAMI);
+		} else if (pattern.matcher(command.toLowerCase()).matches()) {
+			bean.setEventEnum(OtherEventEnum.WCL_USER);
+		} else if (command.indexOf(NudoCCUtil.IMG1_COMMAND) != -1) {
+			bean.setEventEnum(OtherEventEnum.IMG1);
+		} 
 		return bean;
 	}
-	
+
 	/**
 	 * 根據request傳來的command回傳message
 	 * 
@@ -254,35 +181,19 @@ public class NudoCCServiceImpl implements INudoCCService {
 			return null;
 		}
 		
-		return commandBean.isWowCommand() ? processWoWCommand(commandBean) : processOtherCommand(commandBean);
-	}
-	
-	/**
-	 * get line display name
-	 * 
-	 * @param lineId
-	 * @return
-	 * @throws InterruptedException
-	 * @throws ExecutionException
-	 */
-	@Override
-	public String getDisplayName(String lineId) throws InterruptedException, ExecutionException {
-		UserProfileResponse userProfileResponse = lineMessagingClient.getProfile(lineId).get();
-		return userProfileResponse.getDisplayName();
-	}
-	
-	/**
-	 * check wow name
-	 * 
-	 * @param name :角色名稱
-	 * @return
-	 */
-	private boolean checkWoWName(String name) {
-		Pattern patternCh = Pattern.compile(NudoCCUtil.PATTERN_CH);
-		Pattern patternEn = Pattern.compile(NudoCCUtil.PATTERN_EN);
-	    Matcher matcherCh = patternCh.matcher(name);
-	    Matcher matcherEn = patternEn.matcher(name);
-	    return (matcherCh.matches() && name.length() <= 6) || (matcherEn.matches() && name.length() <= 12);
+		if (commandBean instanceof WoWCommandBean) {
+			return processWoWCommand((WoWCommandBean)commandBean);
+		}
+		
+		if (commandBean instanceof IrolCommandBean) {
+			return processIrolCommand((IrolCommandBean)commandBean);
+		}
+		
+		if (commandBean instanceof OtherCommandBean) {
+			return processOtherCommand((OtherCommandBean)commandBean);
+		}
+		
+		return null;
 	}
 
 	/**
@@ -290,37 +201,30 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @param commandBean
 	 * @return
 	 */
-	private Message processOtherCommand(CommandBean commandBean) {
-		
-		String command = commandBean.getCommand();
-		String senderId = commandBean.getSenderId();
-		String userId = commandBean.getUserId();
-		
-		Pattern pattern = Pattern.compile(NudoCCUtil.WCL_USER_COMMANDS);
-        
+	private Message processOtherCommand(OtherCommandBean commandBean) {
 		//other command
-		if (command.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
-			return this.getRollMessage(command.toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
-		} else if (command.equalsIgnoreCase(NudoCCUtil.GET_USER_ID_COMMAND)) {
-			return new TextMessage(NudoCCUtil.codeMessage("OTR001", senderId, userId));
-		} else if (command.equals(NudoCCUtil.LEAVE_COMMAND)) {
-			leave(senderId);
-			return null; 
-		} else if (command.equals(NudoCCUtil.WHOAMI_COMMAND)) {
-			return getWoWNameById(userId);
-		} else if (pattern.matcher(command.toLowerCase()).matches()) {
-			String[] array = command.split(NudoCCUtil.codeMessage("OTR002"));
-			return getCharacterWCLByUserId(array[0], array[1], userId);
-		} else if (command.indexOf(NudoCCUtil.IMG1_COMMAND) != -1) {
-			return findStickerMessage("3", "181");
-		} else if (command.equals(NudoCCUtil.OPEN_COMMAND)) {
-			return irolService.getIrols(userId);
-		} else if (command.toLowerCase().endsWith(NudoCCUtil.BATTLE_COMMAND)) {
-			return irolService.doBattle(userId, command.toLowerCase().replace(NudoCCUtil.BATTLE_COMMAND, StringUtils.EMPTY));
-		} else {
-			// logger talking
-			return processUserTalk(command, userId);
-		}
+		if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
+    		return new TextMessage(commandBean.getErrorMsg());
+    	} else {
+    		switch (commandBean.getEventEnum()) {
+    			case ROLL:
+    				return this.getRollMessage(commandBean.getCommand().toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
+				case GET_USER_ID:
+					return new TextMessage(NudoCCUtil.codeMessage("OTR001", commandBean.getSenderId(), commandBean.getUserId()));
+				case LEAVE:
+					leave(commandBean.getSenderId());
+					return null; 
+				case WHOAMI:
+					return getWoWNameById(commandBean.getUserId());
+				case WCL_USER:
+					String[] array = commandBean.getCommand().split(NudoCCUtil.codeMessage("OTR002"));
+					return getCharacterWCLByUserId(array[0], array[1], commandBean.getUserId());
+				case IMG1:
+					return findStickerMessage("3", "181");
+				default:
+					return processUserTalk(commandBean.getCommand(), commandBean.getUserId());
+			}
+    	}
 	}
 
 	/**
@@ -329,7 +233,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @param commandBean
 	 * @return
 	 */
-	private Message processWoWCommand(CommandBean commandBean) {
+	private Message processWoWCommand(WoWCommandBean commandBean) {
 		//wow command
 		if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
     		return new TextMessage(commandBean.getErrorMsg());
@@ -351,6 +255,28 @@ public class NudoCCServiceImpl implements INudoCCService {
 					return wowService.saveCharacter(commandBean.getName(), commandBean.getRealm(), commandBean.getLocation(), commandBean.getUserId());
 				case TEST:
 					//TODO ...
+				default:
+					return null;
+			}
+    	}
+	}
+	
+	/**
+	 * process irol command
+	 * 
+	 * @param commandBean
+	 * @return
+	 */
+	private Message processIrolCommand(IrolCommandBean commandBean) {
+		//irol command
+		if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
+    		return new TextMessage(commandBean.getErrorMsg());
+    	} else {
+    		switch (commandBean.getEventEnum()) {
+    			case OPEN:
+    				return irolService.getIrols(commandBean.getUserId());
+    			case BATTLE:
+    				return irolService.doBattle(commandBean.getUserId(), commandBean.getIrolName());
 				default:
 					return null;
 			}
