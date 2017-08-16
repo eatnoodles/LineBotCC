@@ -17,7 +17,7 @@ import com.cc.entity.irol.FightingLog;
 @Repository
 public interface IFightingLogDao extends CrudRepository<FightingLog, Long> {
 
-	@Query("select 1 a from FightingLog a where a.lineId = :lineId and a.irol.id = :irolId and a.monster.id = :monsterId and a.status = 1 order by lastDttm desc")
+	@Query("select 1 from FightingLog a where a.lineId = :lineId and a.irol.id = :irolId and a.monster.id = :monsterId and a.status = 1 order by a.lastDttm desc")
 	public FightingLog findLastLog(@Param("lineId")String lineId, @Param("irolId")Long irolId, @Param("monsterId")Long monsterId);
 
 }
