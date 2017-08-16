@@ -33,6 +33,14 @@ public class FightingLog {
 	@JoinColumn(name = "irol_status_id")
 	private FightingIrolStatus fightingIrolStatus;
 	
+	public static final int STATUS_COMPLETE = 0;
+	
+	public static final int STATUS_FIGHTING = 1;
+	
+	/*
+	 * 0: complete
+	 * 1: fighting
+	 * */
 	@Column(name = "STATUS")
 	private int status;
 	

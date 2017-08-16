@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
@@ -23,8 +25,20 @@ public class FightingIrolStatus {
 	@Column(name = "HP")
 	private int hp;
 	
+	@ManyToOne
+	@JoinColumn(name = "irol_id")
+	private Irol irol;
+	
+	/**
+	 * 0:dead
+	 * 1:normal
+	 */
 	@Column(name = "STATUS")
 	private int status;
+	
+	public static final int STATUS_DEAD = 0;
+	
+	public static final int STATUS_NORMAL = 1;
 
 	public Long getId() {
 		return id;
@@ -48,5 +62,13 @@ public class FightingIrolStatus {
 
 	public void setStatus(int status) {
 		this.status = status;
+	}
+
+	public Irol getIrol() {
+		return irol;
+	}
+
+	public void setIrol(Irol irol) {
+		this.irol = irol;
 	}
 }

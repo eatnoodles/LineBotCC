@@ -13,6 +13,8 @@ public enum IrolEventEnum {
 	
 	OPEN(1, ""),
 	BATTLE(2, ""),
+	FIGHT(3, ""),
+	SKILL(4, ""),
 	NULL(0, StringUtils.EMPTY);
 	
 	private int value;

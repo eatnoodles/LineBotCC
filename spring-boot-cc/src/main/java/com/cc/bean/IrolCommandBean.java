@@ -9,6 +9,12 @@ import com.cc.enums.IrolEventEnum;
 public class IrolCommandBean extends CommandBean {
 	
 	private String irolName;
+	
+	private Long irolId;
+	
+	private Long monsterId;
+	
+	private Long skillId;
 
 	private IrolEventEnum eventEnum;
 
@@ -26,5 +32,29 @@ public class IrolCommandBean extends CommandBean {
 
 	public void setIrolName(String irolName) {
 		this.irolName = irolName;
+	}
+
+	public Long getIrolId() {
+		return irolId;
+	}
+
+	public void setIrolId(Long irolId) {
+		this.irolId = irolId;
+	}
+
+	public Long getMonsterId() {
+		return monsterId;
+	}
+
+	public void setMonsterId(Long monsterId) {
+		this.monsterId = monsterId;
+	}
+
+	public Long getSkillId() {
+		return skillId;
+	}
+
+	public void setSkillId(Long skillId) {
+		this.skillId = skillId;
 	}
 }

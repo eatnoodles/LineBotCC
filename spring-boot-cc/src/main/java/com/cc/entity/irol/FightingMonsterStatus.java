@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
@@ -23,8 +25,16 @@ public class FightingMonsterStatus {
 	@Column(name = "HP")
 	private int hp;
 	
+	@ManyToOne
+	@JoinColumn(name = "monster_id")
+	private Monster monster;
+	
 	@Column(name = "STATUS")
 	private int status;
+	
+	public static final int STATUS_DEAD = 0;
+	
+	public static final int STATUS_NORMAL = 1;
 
 	public Long getId() {
 		return id;
@@ -48,5 +58,13 @@ public class FightingMonsterStatus {
 
 	public void setStatus(int status) {
 		this.status = status;
+	}
+
+	public Monster getMonster() {
+		return monster;
+	}
+
+	public void setMonster(Monster monster) {
+		this.monster = monster;
 	}
 }

@@ -69,6 +69,12 @@ public class NudoCCUtil {
 	
 	public static final String WOW_COMMAND_HELP = "-help";
 	
+	public static final String IROL_COMMAND = "-irol ";
+	
+	public static final String IROL_COMMAND_FIGHT = "-fight ";
+	
+	public static final String IROL_COMMAND_SKILL = "-skill ";
+	
 	public static final String ROLL_COMMAND = "/roll";
 	
 	public static final String NS_COMMAND = "/ns";
