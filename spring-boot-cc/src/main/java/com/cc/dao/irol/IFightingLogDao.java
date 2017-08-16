@@ -25,6 +25,10 @@ public interface IFightingLogDao extends CrudRepository<FightingLog, Long> {
 	public List<FightingLog> findLog(@Param("lineId")String lineId, @Param("irolId")Long irolId, @Param("monsterId")Long monsterId, Pageable pageable);
 
 	default FightingLog findLastLog(String lineId, Long irolId, Long monsterId) {
-		return findLog(lineId, irolId, monsterId, new PageRequest(0, 1)).get(0);
+		List<FightingLog> logs = findLog(lineId, irolId, monsterId, new PageRequest(0, 1));
+		if (logs == null || logs.size() != 1) {
+			return null;
+		}
+		return logs.get(0);
 	}
 }
