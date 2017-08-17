@@ -425,6 +425,9 @@ public class IrolServiceImpl implements IIrolService {
 				sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL012"));
 			}
 			
+			fightingMonsterStatusDao.save(monsterStatus);
+			fightingIrolStatusDao.save(irolStatus);
+			
 			return new TextMessage(sb.toString());
 		} catch (Exception e) {
 			LOG.error("doFight error!", e);
@@ -579,7 +582,7 @@ public class IrolServiceImpl implements IIrolService {
 				.setScale(BigDecimal.ROUND_DOWN).intValue();
 		
 		irolDamage = irolDamage - monsterStatus.getDef();
-		return irolDamage;
+		return irolDamage <= 0 ? 0 : irolDamage;
 	}
 	
 	/**
@@ -597,7 +600,7 @@ public class IrolServiceImpl implements IIrolService {
 				.setScale(BigDecimal.ROUND_DOWN).intValue();
 		
 		monsterDamage = monsterDamage - irolStatus.getDef();
-		return monsterDamage;
+		return monsterDamage <= 0 ? 0 : monsterDamage;
 	}
 
 	/**
