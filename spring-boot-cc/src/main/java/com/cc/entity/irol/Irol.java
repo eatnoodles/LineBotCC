@@ -33,8 +33,25 @@ public class Irol {
 	@JoinColumn(name = "SKILL_2")
 	private Skill skill2;
 	
+	/**
+	 * 1: fire
+	 * 2: water
+	 * 3: wind
+	 * 4: holy
+	 * 5: showdown
+	 */
 	@Column(name = "ATTRIBUTE")
 	private int attribute;
+	
+	public static final int ATTR_FIRE = 1;
+	
+	public static final int ATTR_WATER = 2;
+	
+	public static final int ATTR_WIND = 3;
+	
+	public static final int ATTR_HOLY = 4;
+	
+	public static final int ATTR_SHOWDOWN = 5;
 	
 	@Column(name = "HP")
 	private int hp;

@@ -1,5 +1,6 @@
 package com.cc.service.impl;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -11,18 +12,30 @@ import java.util.Set;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.cc.bean.IrolCommandBean;
+import com.cc.dao.irol.IFightingIrolBuffStatusDao;
+import com.cc.dao.irol.IFightingIrolDebuffStatusDao;
 import com.cc.dao.irol.IFightingIrolStatusDao;
 import com.cc.dao.irol.IFightingLogDao;
+import com.cc.dao.irol.IFightingMonsterBuffStatusDao;
+import com.cc.dao.irol.IFightingMonsterDebuffStatusDao;
 import com.cc.dao.irol.IFightingMonsterStatusDao;
 import com.cc.dao.irol.IIrolDao;
 import com.cc.dao.irol.IMasterCardsDao;
 import com.cc.dao.irol.IMonsterDao;
+import com.cc.entity.irol.Buff;
+import com.cc.entity.irol.Debuff;
+import com.cc.entity.irol.FightingIrolBuffStatus;
+import com.cc.entity.irol.FightingIrolDebuffStatus;
 import com.cc.entity.irol.FightingIrolStatus;
 import com.cc.entity.irol.FightingLog;
+import com.cc.entity.irol.FightingMonsterBuffStatus;
+import com.cc.entity.irol.FightingMonsterDebuffStatus;
 import com.cc.entity.irol.FightingMonsterStatus;
 import com.cc.entity.irol.Irol;
 import com.cc.entity.irol.MasterCards;
@@ -44,7 +57,9 @@ import com.utils.NudoCCUtil;
  */
 @Component
 public class IrolServiceImpl implements IIrolService {
-
+	
+	private static final Logger LOG = LoggerFactory.getLogger(IrolServiceImpl.class);
+	
 	@Autowired
 	private IIrolDao irolDao;
 	
@@ -62,6 +77,19 @@ public class IrolServiceImpl implements IIrolService {
 	
 	@Autowired
 	private IFightingMonsterStatusDao fightingMonsterStatusDao;
+	
+	@Autowired
+	private IFightingIrolBuffStatusDao fightingIrolBuffStatusDao;
+	
+	@Autowired
+	private IFightingIrolDebuffStatusDao fightingIrolDebuffStatusDao;
+	
+	@Autowired
+	private IFightingMonsterBuffStatusDao fightingMonsterBuffStatusDao;
+	
+	@Autowired
+	private IFightingMonsterDebuffStatusDao fightingMonsterDebuffStatusDao;
+	
 	
 	@Override
 	public boolean isIrolCommand(String command) {
@@ -123,12 +151,16 @@ public class IrolServiceImpl implements IIrolService {
 			fightingIrolStatus.setHp(irol.getHp());
 			fightingIrolStatus.setStatus(FightingIrolStatus.STATUS_NORMAL);
 			fightingIrolStatus.setIrol(irol);
+			this.initIrolStatus(fightingIrolStatus, irol);
+			
 			fightingIrolStatusDao.save(fightingIrolStatus);
 			
 			FightingMonsterStatus fightingMonsterStatus = new FightingMonsterStatus();
 			fightingMonsterStatus.setHp(monster.getHp());
 			fightingMonsterStatus.setStatus(FightingMonsterStatus.STATUS_NORMAL);
 			fightingMonsterStatus.setMonster(monster);
+			this.initMonsterStatus(fightingMonsterStatus, monster);
+			
 			fightingMonsterStatusDao.save(fightingMonsterStatus);
 			
 			fightingLog.setFightingMonsterStatus(fightingMonsterStatus);
@@ -172,6 +204,26 @@ public class IrolServiceImpl implements IIrolService {
 		TemplateMessage result = new TemplateMessage(alt, buttonsTemplate);
 		
 		return result;
+	}
+
+	private void initMonsterStatus(FightingMonsterStatus fightingMonsterStatus, Monster monster) {
+		fightingMonsterStatus.setAtk(monster.getAtk());
+		fightingMonsterStatus.setDef(monster.getDef());
+		fightingMonsterStatus.setSpeed(monster.getSpeed());
+		fightingMonsterStatus.setMaxhp(monster.getHp());
+	}
+
+	/**
+	 * init irol status
+	 * 
+	 * @param fightingIrolStatus
+	 * @param irol
+	 */
+	private void initIrolStatus(FightingIrolStatus fightingIrolStatus, Irol irol) {
+		fightingIrolStatus.setAtk(irol.getAtk());
+		fightingIrolStatus.setDef(irol.getDef());
+		fightingIrolStatus.setSpeed(irol.getSpeed());
+		fightingIrolStatus.setMaxhp(irol.getHp());
 	}
 
 	@Override
@@ -229,28 +281,297 @@ public class IrolServiceImpl implements IIrolService {
 
 	@Override
 	public Message doFight(String userId, Long irolId, Long monsterId) {
-		
-		if (irolId == null || monsterId == null || StringUtils.isBlank(userId)) {
+		try {
+			if (irolId == null || monsterId == null || StringUtils.isBlank(userId)) {
+				return null;
+			}
+			
+			// check irol exists
+			Irol irol = irolDao.findOne(irolId);
+			if (irol == null) {
+				return null;
+			}
+			
+			MasterCardsKey key = new MasterCardsKey(userId, irol); 
+			MasterCards masterCards = masterCardsDao.findOne(key);
+			if (masterCards == null) {
+				return null;
+			}
+			
+			Monster monster = monsterDao.findOne(monsterId);
+			if (monster == null) {
+				return null;
+			}
+			
+			FightingLog fightingLog = fightingLogDao.findLastLog(userId, irolId, monsterId);
+			if (fightingLog == null) {
+				return null;
+			}
+			
+			LOG.info("Fighting begin...");
+			StringBuilder sb = new StringBuilder();
+			sb.append(NudoCCUtil.codeMessage("IRL007"));
+			
+			FightingIrolStatus irolStatus = fightingLog.getFightingIrolStatus();
+			FightingMonsterStatus monsterStatus = fightingLog.getFightingMonsterStatus();
+			
+			List<FightingIrolBuffStatus> irolBuffs = irolStatus.getFightingIrolBuffStatusList();
+			List<FightingIrolDebuffStatus> irolDebuffs = irolStatus.getFightingIrolDebuffStatusList();
+			
+			List<FightingMonsterBuffStatus> monsterBuffs = monsterStatus.getFightingMonsterBuffStatusList();
+			List<FightingMonsterDebuffStatus> monsterDebuffs = monsterStatus.getFightingMonsterDebuffStatusList();
+			
+			if (irolStatus.getSpeed() >= monsterStatus.getSpeed()) {
+				sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL008", irol.getName()));
+				
+				int irolDamage = new BigDecimal(Integer.toString(irolStatus.getAtk())).multiply(this.getAttributeBonus(irol.getAttribute(), monster.getAttribute())).setScale(BigDecimal.ROUND_DOWN).intValue();
+				
+				irolDamage = irolDamage - monsterStatus.getDef();
+				monsterStatus.setHp(this.getHpByDamage(monsterStatus.getHp(), irolDamage));
+				sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL009", irol.getName(), monster.getName(), irolDamage));
+				
+				sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL010", monster.getName(), monsterStatus.getHp()));
+				
+				if (monsterStatus.getHp() == 0) {
+					monsterStatus.setStatus(FightingMonsterStatus.STATUS_DEAD);
+					fightingMonsterStatusDao.save(monsterStatus);
+					
+					fightingLog.setStatus(FightingLog.STATUS_COMPLETE);
+					fightingLogDao.save(fightingLog);
+					
+					sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL011", irol.getName()));
+					sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL012"));
+					
+					return new TextMessage(sb.toString());
+				}
+				
+				int monsterDamage = new BigDecimal(Integer.toString(monsterStatus.getAtk())).multiply(this.getAttributeBonus(monster.getAttribute(), irol.getAttribute())).setScale(BigDecimal.ROUND_DOWN).intValue();
+				
+				irolStatus.setHp(this.getHpByDamage(irolStatus.getHp(), monsterDamage));
+				
+				if (irolStatus.getHp() == 0) {
+					irolStatus.setStatus(FightingIrolStatus.STATUS_DEAD);
+					fightingIrolStatusDao.save(irolStatus);
+					
+					fightingLog.setStatus(FightingLog.STATUS_COMPLETE);
+					fightingLogDao.save(fightingLog);
+					
+					// TODO sb
+					return new TextMessage(sb.toString());
+				}
+				
+				if (isSpeedBonus(irolStatus.getSpeed(), monsterStatus.getSpeed())) {
+					//irolDamage bonus...
+					monsterStatus.setHp(this.getHpByDamage(monsterStatus.getHp(), irolDamage));
+					
+					if (monsterStatus.getHp() == 0) {
+						monsterStatus.setStatus(FightingMonsterStatus.STATUS_DEAD);
+						fightingMonsterStatusDao.save(monsterStatus);
+						
+						fightingLog.setStatus(FightingLog.STATUS_COMPLETE);
+						fightingLogDao.save(fightingLog);
+						
+						// TODO sb
+						return new TextMessage(sb.toString());
+					}
+				}
+				
+				this.processIrolBuffs(irolBuffs, irolStatus);
+				boolean isIrolDead = this.processIrolDebuffs(irolDebuffs, irolStatus);
+				if (isIrolDead) {
+					irolStatus.setStatus(FightingIrolStatus.STATUS_DEAD);
+					fightingIrolStatusDao.save(irolStatus);
+					
+					fightingLog.setStatus(FightingLog.STATUS_COMPLETE);
+					fightingLogDao.save(fightingLog);
+					
+					// TODO sb
+					return new TextMessage(sb.toString());
+				}
+				
+				this.processMonsterBuffs(monsterBuffs, monsterStatus);
+				boolean isMonsterDead = this.processMonsterDebuffs(monsterDebuffs, monsterStatus);
+				if (isMonsterDead) {
+					monsterStatus.setStatus(FightingMonsterStatus.STATUS_DEAD);
+					fightingMonsterStatusDao.save(monsterStatus);
+					
+					fightingLog.setStatus(FightingLog.STATUS_COMPLETE);
+					fightingLogDao.save(fightingLog);
+					
+					// TODO sb
+					return new TextMessage(sb.toString());
+				}
+				
+			} else {
+				//TODO
+			}
+			
+			return new TextMessage(sb.toString());
+		} catch (Exception e) {
+			LOG.error("doFight error!", e);
 			return null;
 		}
-		
-		// check irol exists
-		Irol irol = irolDao.findOne(irolId);
-		if (irol == null) {
-			return null;
+	}
+	
+	/**
+	 * 
+	 * @param monsterDebuffs
+	 * @param monsterStatus
+	 * @return
+	 */
+	private boolean processMonsterDebuffs(List<FightingMonsterDebuffStatus> monsterDebuffs, FightingMonsterStatus monsterStatus) {
+		boolean isDead = false;
+		// process debuff
+		for (FightingMonsterDebuffStatus debuffStatus :monsterDebuffs) {
+			debuffStatus.setOverCount(debuffStatus.getOverCount() - 1);
+			Debuff debuff = debuffStatus.getDebuff();
+			//damage
+			monsterStatus.setHp(this.getHpByDamage(monsterStatus.getHp(), debuff.getDamage()));
+			
+			if (monsterStatus.getHp() == 0) {
+				return true;
+			}
+			
+			if (debuffStatus.getOverCount() == 0) {
+				//reset att
+				monsterStatus.setAtk(monsterStatus.getAtk() + debuff.getAtk());
+				monsterStatus.setDef(monsterStatus.getDef() + debuff.getDef());
+				monsterStatus.setSpeed(monsterStatus.getSpeed() + debuff.getSpeed());
+				monsterStatus.setMaxhp(monsterStatus.getMaxhp() + debuff.getMaxHp());
+				fightingMonsterDebuffStatusDao.delete(debuffStatus);
+			} else {
+				fightingMonsterDebuffStatusDao.save(debuffStatus);
+			}
 		}
-		
-		MasterCardsKey key = new MasterCardsKey(userId, irol); 
-		MasterCards masterCards = masterCardsDao.findOne(key);
-		if (masterCards == null) {
-			return null;
+		return isDead;
+	}
+
+	/**
+	 * 
+	 * @param monsterBuffs
+	 * @param monsterStatus
+	 */
+	private void processMonsterBuffs(List<FightingMonsterBuffStatus> monsterBuffs, FightingMonsterStatus monsterStatus) {
+		// process buff
+		for (FightingMonsterBuffStatus buffStatus :monsterBuffs) {
+			buffStatus.setOverCount(buffStatus.getOverCount() - 1);
+			Buff buff = buffStatus.getBuff();
+			//hot
+			monsterStatus.setHp(monsterStatus.getHp() + buff.getHeal());
+			
+			if (buffStatus.getOverCount() == 0) {
+				//reset att
+				monsterStatus.setAtk(monsterStatus.getAtk() - buff.getAtk());
+				monsterStatus.setDef(monsterStatus.getDef() - buff.getDef());
+				monsterStatus.setSpeed(monsterStatus.getSpeed() - buff.getSpeed());
+				monsterStatus.setMaxhp(monsterStatus.getMaxhp() - buff.getMaxHp() <= 0 ? 1 :  monsterStatus.getMaxhp() - buff.getMaxHp());
+				fightingMonsterBuffStatusDao.delete(buffStatus);
+			} else {
+				fightingMonsterBuffStatusDao.save(buffStatus);
+			}
 		}
-		
-		Monster monster = monsterDao.findOne(monsterId);
-		if (monster == null) {
-			return null;
+	}
+
+	/**
+	 * 
+	 * @param irolDebuffs
+	 * @param irolStatus
+	 * @return
+	 */
+	private boolean processIrolDebuffs(List<FightingIrolDebuffStatus> irolDebuffs, FightingIrolStatus irolStatus) {
+		boolean isDead = false;
+		// process debuff
+		for (FightingIrolDebuffStatus debuffStatus :irolDebuffs) {
+			debuffStatus.setOverCount(debuffStatus.getOverCount() - 1);
+			Debuff debuff = debuffStatus.getDebuff();
+			//damage
+			irolStatus.setHp(this.getHpByDamage(irolStatus.getHp(), debuff.getDamage()));
+			
+			if (irolStatus.getHp() == 0) {
+				return true;
+			}
+			
+			if (debuffStatus.getOverCount() == 0) {
+				//reset att
+				irolStatus.setAtk(irolStatus.getAtk() + debuff.getAtk());
+				irolStatus.setDef(irolStatus.getDef() + debuff.getDef());
+				irolStatus.setSpeed(irolStatus.getSpeed() + debuff.getSpeed());
+				irolStatus.setMaxhp(irolStatus.getMaxhp() + debuff.getMaxHp());
+				fightingIrolDebuffStatusDao.delete(debuffStatus);
+			} else {
+				fightingIrolDebuffStatusDao.save(debuffStatus);
+			}
 		}
-		return null;
+		return isDead;
+	}
+
+	/**
+	 * 
+	 * @param irolBuffs
+	 * @param irolStatus
+	 */
+	private void processIrolBuffs(List<FightingIrolBuffStatus> irolBuffs, FightingIrolStatus irolStatus) {
+		// process buff
+		for (FightingIrolBuffStatus buffStatus :irolBuffs) {
+			buffStatus.setOverCount(buffStatus.getOverCount() - 1);
+			Buff buff = buffStatus.getBuff();
+			//hot
+			irolStatus.setHp(irolStatus.getHp() + buff.getHeal());
+			
+			if (buffStatus.getOverCount() == 0) {
+				//reset att
+				irolStatus.setAtk(irolStatus.getAtk() - buff.getAtk());
+				irolStatus.setDef(irolStatus.getDef() - buff.getDef());
+				irolStatus.setSpeed(irolStatus.getSpeed() - buff.getSpeed());
+				irolStatus.setMaxhp(irolStatus.getMaxhp() - buff.getMaxHp() <= 0 ? 1 :  irolStatus.getMaxhp() - buff.getMaxHp());
+				fightingIrolBuffStatusDao.delete(buffStatus);
+			} else {
+				fightingIrolBuffStatusDao.save(buffStatus);
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @param hp
+	 * @param damage
+	 * @return
+	 */
+	private int getHpByDamage(int hp, int damage) {
+		return hp - damage <= 0 ? 0 : hp-damage;
+	}
+
+	/**
+	 * 
+	 * @param attribute1
+	 * @param attribute2
+	 * @return
+	 */
+	private BigDecimal getAttributeBonus(int attribute1, int attribute2) {
+		switch (attribute1 - attribute2) {
+			case   -1:
+			case    2:
+				return new BigDecimal("0.5");
+			case    1:
+			case   -2:
+			case  198:
+			case -198:
+				return new BigDecimal("1.5");
+			default:
+				return BigDecimal.ONE;
+		}
+	}
+
+	/**
+	 * 追擊
+	 * 
+	 * @param damage
+	 * @param speed1
+	 * @param speed2
+	 * @return
+	 */
+	private boolean isSpeedBonus(int speed1, int speed2) {
+		return speed1 - speed2 >= 5;
 	}
 	
 }
