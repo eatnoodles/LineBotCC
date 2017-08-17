@@ -237,7 +237,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @param commandBean
 	 * @return
 	 */
-	private Message processWoWCommand(WoWCommandBean commandBean) {
+	@Override
+	public Message processWoWCommand(WoWCommandBean commandBean) {
 		//wow command
 		if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
     		return new TextMessage(commandBean.getErrorMsg());
@@ -271,7 +272,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @param commandBean
 	 * @return
 	 */
-	private Message processIrolCommand(IrolCommandBean commandBean) {
+	@Override
+	public Message processIrolCommand(IrolCommandBean commandBean) {
 		//irol command
 		if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
     		return new TextMessage(commandBean.getErrorMsg());

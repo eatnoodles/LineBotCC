@@ -3,6 +3,8 @@ package com.cc.service;
 import java.util.concurrent.ExecutionException;
 
 import com.cc.bean.CommandBean;
+import com.cc.bean.IrolCommandBean;
+import com.cc.bean.WoWCommandBean;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.Message;
@@ -44,4 +46,18 @@ public interface INudoCCService {
 	 * @return
 	 */
 	public String getDisplayName(String lineId) throws InterruptedException, ExecutionException;
+
+	/**
+	 * 
+	 * @param commandBean
+	 * @return
+	 */
+	public Message processIrolCommand(IrolCommandBean commandBean);
+
+	/**
+	 * 
+	 * @param commandBean
+	 * @return
+	 */
+	public Message processWoWCommand(WoWCommandBean commandBean);
 }

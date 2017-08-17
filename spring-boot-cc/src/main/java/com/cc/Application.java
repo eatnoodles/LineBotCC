@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 import com.cc.bean.CommandBean;
+import com.cc.bean.IrolCommandBean;
 import com.cc.bean.WoWCommandBean;
 import com.cc.service.INudoCCService;
 import com.cc.service.IWoWService;
@@ -79,17 +80,20 @@ public class Application {
         		return new TextMessage(commandBean.getErrorMsg());
         	} else {
         		if (commandBean instanceof WoWCommandBean) {
-        			
+        			WoWCommandBean wowCommandBean = (WoWCommandBean)commandBean;
+            		switch (wowCommandBean.getEventEnum()) {
+    					case CHARACTER_ITEM:
+    						return wowService.getWoWCharacterItems(wowCommandBean.getName(), wowCommandBean.getRealm());
+    					case CHECK_ENCHANTS:
+    						return wowService.checkCharacterEnchants(wowCommandBean.getName(), wowCommandBean.getRealm());
+    					default:
+    						return null;
+    				}
         		}
-        		WoWCommandBean wowCommandBean = (WoWCommandBean)commandBean;
-        		switch (wowCommandBean.getEventEnum()) {
-					case CHARACTER_ITEM:
-						return wowService.getWoWCharacterItems(wowCommandBean.getName(), wowCommandBean.getRealm());
-					case CHECK_ENCHANTS:
-						return wowService.checkCharacterEnchants(wowCommandBean.getName(), wowCommandBean.getRealm());
-					default:
-						return null;
-				}
+        		if (commandBean instanceof IrolCommandBean) {
+        			return nudoCCService.processIrolCommand((IrolCommandBean)commandBean);
+        		}
+        		return null;
         	}
         } else {
             return null;

@@ -371,7 +371,6 @@ public class IrolServiceImpl implements IIrolService {
 						fightingLog.setStatus(FightingLog.STATUS_COMPLETE);
 						fightingLogDao.save(fightingLog);
 						
-						// TODO sb
 						return new TextMessage(sb.toString());
 					}
 				}
