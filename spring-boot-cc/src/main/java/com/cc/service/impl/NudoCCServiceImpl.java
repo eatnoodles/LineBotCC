@@ -238,7 +238,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 				case USER_ROLL_START:
 					return updateUserRoll(commandBean.getSenderId(), true);
 				case USER_ROLL_END:
-					return updateUserRoll(commandBean.getUserId(), false);
+					return updateUserRoll(commandBean.getSenderId(), false);
 				default:
 					return null;
 			}
