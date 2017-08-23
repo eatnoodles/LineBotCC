@@ -103,6 +103,10 @@ public class NudoCCUtil {
 	
 	public static final String BATTLE_COMMAND = "battle";
 	
+	public static final String USER_ROLL_START_COMMAND = systemProperties.getProperty("roll.command.start");
+	
+	public static final String USER_ROLL_END_COMMAND = systemProperties.getProperty("roll.command.end");
+	
 	public static final String WCL_USER_COMMANDS = "[mhn]{1}[的]{1}(dps|hps|bossdps|tankhps|playerspeed){1}"; 
 	
 	public static final WoWItemPartsEnum[] enchantsParts = { WoWItemPartsEnum.NECK, WoWItemPartsEnum.SHOULDER,

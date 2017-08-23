@@ -18,6 +18,8 @@ public enum OtherEventEnum {
 	WCL_USER(5, "WCL"),
 	IMG1(6, "><"),
 	TALKING(7, "talk"),
+	USER_ROLL_START(8, ""),
+	USER_ROLL_END(9, ""),
 	NULL(0, StringUtils.EMPTY);
 	
 	private int value;

@@ -37,6 +37,12 @@ public class NudoControl {
 		try {
 			String path = String.format("img/%s.png", num > 100 ? "default" : num);
 		    InputStream is = Application.class.getClassLoader().getResourceAsStream(path);
+
+		    if (is == null) {
+		    	path = String.format("img/default.png");
+		    	is = Application.class.getClassLoader().getResourceAsStream(path);
+		    }
+		    
 		    BufferedImage image = ImageIO.read(is);
 		    if (image != null) {
 		        OutputStream out = response.getOutputStream();

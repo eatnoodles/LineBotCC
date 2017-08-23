@@ -18,8 +18,10 @@ import com.cc.bean.CommandBean;
 import com.cc.bean.IrolCommandBean;
 import com.cc.bean.OtherCommandBean;
 import com.cc.bean.WoWCommandBean;
+import com.cc.dao.UserImgFuncDao;
 import com.cc.dao.UserTalkLevelDao;
 import com.cc.dao.WoWCharacterMappingDao;
+import com.cc.entity.UserImgFunc;
 import com.cc.entity.UserTalkLevel;
 import com.cc.entity.WoWCharacterMapping;
 import com.cc.entity.key.UserTalkLevelKey;
@@ -37,6 +39,7 @@ import com.linecorp.bot.client.LineMessagingService;
 import com.linecorp.bot.client.LineMessagingServiceBuilder;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
+import com.linecorp.bot.model.message.ImageMessage;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.StickerMessage;
 import com.linecorp.bot.model.message.TextMessage;
@@ -81,6 +84,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	@Autowired
 	private UserTalkLevelDao userTalkLevelDao;
+	
+	@Autowired
+	private UserImgFuncDao userImgFuncDao;
 		
 	/**
 	 * find line sticker message
@@ -158,6 +164,10 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(OtherEventEnum.WCL_USER);
 		} else if (command.indexOf(NudoCCUtil.IMG1_COMMAND) != -1) {
 			bean.setEventEnum(OtherEventEnum.IMG1);
+		} else if (command.equals(NudoCCUtil.USER_ROLL_START_COMMAND)) {
+			bean.setEventEnum(OtherEventEnum.USER_ROLL_START);
+		} else if (command.equals(NudoCCUtil.USER_ROLL_END_COMMAND)) {
+			bean.setEventEnum(OtherEventEnum.USER_ROLL_END);
 		} else {
 			bean.setEventEnum(OtherEventEnum.TALKING);
 		}
@@ -210,7 +220,7 @@ public class NudoCCServiceImpl implements INudoCCService {
     	} else {
     		switch (commandBean.getEventEnum()) {
     			case ROLL:
-    				return this.getRollMessage(commandBean.getCommand().toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
+    				return this.getRollMessage(commandBean.getCommand().toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY), commandBean.getSenderId());
 				case GET_USER_ID:
 					return new TextMessage(NudoCCUtil.codeMessage("OTR001", commandBean.getSenderId(), commandBean.getUserId()));
 				case LEAVE:
@@ -225,10 +235,31 @@ public class NudoCCServiceImpl implements INudoCCService {
 					return findStickerMessage("3", "181");
 				case TALKING:
 					return processUserTalk(commandBean.getCommand(), commandBean.getUserId());
+				case USER_ROLL_START:
+					return updateUserRoll(commandBean.getSenderId(), true);
+				case USER_ROLL_END:
+					return updateUserRoll(commandBean.getUserId(), false);
 				default:
 					return null;
 			}
     	}
+	}
+
+	/**
+	 * 
+	 * @param senderId
+	 * @param status
+	 * @return
+	 */
+	private Message updateUserRoll(String senderId, boolean status) {
+		UserImgFunc userImgFunc = userImgFuncDao.findOne(senderId);
+		if (userImgFunc == null) {
+			userImgFunc = new UserImgFunc();
+			userImgFunc.setLineId(senderId);
+		}
+		userImgFunc.setStatus(status);
+		userImgFuncDao.save(userImgFunc);
+		return new TextMessage("hs..hs..");
 	}
 
 	/**
@@ -393,7 +424,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @param command
 	 * @return
 	 */
-	private TextMessage getRollMessage(String command) {
+	private Message getRollMessage(String command, String senderId) {
 		if (StringUtils.isNotBlank(command) && command.indexOf(" ") == 0) {
 			String[] scopes = command.trim().split("-");
 			if (scopes.length != 2) {
@@ -413,10 +444,10 @@ public class NudoCCServiceImpl implements INudoCCService {
 				} catch (NumberFormatException e) {
 					return new TextMessage(NudoCCUtil.codeMessage("ERR014"));
 				}
-				return this.getRollMessage(start, end);
+				return this.getRollMessage(start, end, senderId);
 			}
 		} else {
-			return this.getRollMessage(1, 100);
+			return this.getRollMessage(1, 100, senderId);
 		}
 	}
 
@@ -427,15 +458,32 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @param end
 	 * @return
 	 */
-	private TextMessage getRollMessage(int start, int end) {
-		int size = wowBossMaster.getBosses().size();
-		int point = this.probabilityControl(start, end);
-				
-		Random randBoss = new Random();
-		int index = randBoss.nextInt(size);
-		String name = wowBossMaster.getBosses().get(index).getName();
+	private Message getRollMessage(int start, int end, String senderId) {
+		boolean isUserRoll = isUserRoll(senderId);
 		
-		return new TextMessage(NudoCCUtil.codeMessage("COM004", name, point, start, end));
+		int point = this.probabilityControl(start, end);
+		
+		if (isUserRoll) {
+			String img = System.getenv("ROOT_PATH") + "/API/img/" + point;
+			return new ImageMessage(img, img);
+		} else {
+			int size = wowBossMaster.getBosses().size();
+			Random randBoss = new Random();
+			int index = randBoss.nextInt(size);
+			String name = wowBossMaster.getBosses().get(index).getName();
+			
+			return new TextMessage(NudoCCUtil.codeMessage("COM004", name, point, start, end));
+		}
+	}
+
+	/**
+	 * 
+	 * @param senderId
+	 * @return
+	 */
+	private boolean isUserRoll(String senderId) {
+		UserImgFunc userImgFunc = userImgFuncDao.findOne(senderId);
+		return userImgFunc == null ? false : userImgFunc.isStatus();
 	}
 
 	/**
