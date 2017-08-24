@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -282,6 +283,7 @@ public class IrolServiceImpl implements IIrolService {
 	}
 
 	@Override
+	@Transactional
 	public Message doFight(String userId, Long irolId, Long monsterId) {
 		try {
 			if (irolId == null || monsterId == null || StringUtils.isBlank(userId)) {
@@ -475,6 +477,7 @@ public class IrolServiceImpl implements IIrolService {
 	}
 	
 	@Override
+	@Transactional
 	public Message doSkill(String userId, Long irolId, Long monsterId, Long skillId) {
 		try {
 			if (irolId == null || monsterId == null || StringUtils.isBlank(userId) || skillId == null) {
@@ -1027,7 +1030,11 @@ public class IrolServiceImpl implements IIrolService {
 	 */
 	private void processIrolBuffs(List<FightingIrolBuffStatus> irolBuffs, FightingIrolStatus irolStatus, StringBuilder sb) {
 		// process buff
-		for (FightingIrolBuffStatus buffStatus :irolBuffs) {
+		
+		Iterator<FightingIrolBuffStatus> iterator = irolBuffs.iterator();
+		if (iterator.hasNext()) {
+			FightingIrolBuffStatus buffStatus = iterator.next();
+			
 			buffStatus.setOverCount(buffStatus.getOverCount() - 1);
 			Buff buff = buffStatus.getBuff();
 			//hot
@@ -1045,6 +1052,8 @@ public class IrolServiceImpl implements IIrolService {
 				irolStatus.setDef(irolStatus.getDef() - buff.getDef());
 				irolStatus.setSpeed(irolStatus.getSpeed() - buff.getSpeed());
 				irolStatus.setMaxhp(irolStatus.getMaxhp() - buff.getMaxHp() <= 0 ? 1 :  irolStatus.getMaxhp() - buff.getMaxHp());
+//				irolBuffs.remove(buffStatus);
+//				iterator.remove();
 				fightingIrolBuffStatusDao.delete(buffStatus);
 			} else {
 				fightingIrolBuffStatusDao.save(buffStatus);
