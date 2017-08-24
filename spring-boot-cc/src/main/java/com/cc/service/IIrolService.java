@@ -53,4 +53,14 @@ public interface IIrolService {
 	 */
 	public Message doFight(String userId, Long irolId, Long monsterId);
 
+	/**
+	 * 
+	 * @param userId
+	 * @param irolId
+	 * @param monsterId
+	 * @param skillId
+	 * @return
+	 */
+	public Message doSkill(String userId, Long irolId, Long monsterId, Long skillId);
+
 }

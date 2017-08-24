@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import javax.transaction.Transactional;
@@ -40,6 +41,7 @@ import com.cc.entity.irol.FightingMonsterStatus;
 import com.cc.entity.irol.Irol;
 import com.cc.entity.irol.MasterCards;
 import com.cc.entity.irol.Monster;
+import com.cc.entity.irol.Skill;
 import com.cc.entity.key.MasterCardsKey;
 import com.cc.enums.IrolEventEnum;
 import com.cc.service.IIrolService;
@@ -331,7 +333,13 @@ public class IrolServiceImpl implements IIrolService {
 				}
 				
 				// monster attk!
-				boolean isIrolDead = this.doMonsterFighting(irol, monster, irolStatus, monsterStatus, sb);
+				boolean isIrolDead = false;
+				Long monsterSkillId = selectMonsterEvent(monster);
+				if (monsterSkillId == null) {
+					isIrolDead = this.doMonsterFighting(irol, monster, irolStatus, monsterStatus, sb);
+				} else {
+					isIrolDead = this.doMonsterSkill(irol, monster, irolStatus, monsterStatus, monsterSkillId, sb);
+				}
 				if (isIrolDead) {
 					return getIrolDeadMessage(monster, irolStatus, fightingLog, sb);
 				}
@@ -376,7 +384,13 @@ public class IrolServiceImpl implements IIrolService {
 				sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL008", monster.getName()));
 
 				// monster attk!
-				boolean isIrolDead = this.doMonsterFighting(irol, monster, irolStatus, monsterStatus, sb);
+				boolean isIrolDead = false;
+				Long monsterSkillId = selectMonsterEvent(monster);
+				if (monsterSkillId == null) {
+					isIrolDead = this.doMonsterFighting(irol, monster, irolStatus, monsterStatus, sb);
+				} else {
+					isIrolDead = this.doMonsterSkill(irol, monster, irolStatus, monsterStatus, monsterSkillId, sb);
+				}
 				if (isIrolDead) {
 					return getIrolDeadMessage(monster, irolStatus, fightingLog, sb);
 				}
@@ -434,7 +448,314 @@ public class IrolServiceImpl implements IIrolService {
 			return null;
 		}
 	}
+
+	/**
+	 * 取得monster攻擊模式
+	 * 
+	 * @param monster
+	 * @return
+	 */
+	private Long selectMonsterEvent(Monster monster) {
+		int i = 1;
+		
+		if (monster.getSkill1() != null) {
+			i++;
+		}
+		if (monster.getSkill2() != null) {
+			i++;
+		}
+		Random randBoss = new Random();
+		
+		switch (randBoss.nextInt(i) + 1) {
+			case 1: return null;
+			case 2: return monster.getSkill1().getId();
+			case 3: return monster.getSkill1().getId();
+			default : return null;
+		}
+	}
 	
+	@Override
+	public Message doSkill(String userId, Long irolId, Long monsterId, Long skillId) {
+		try {
+			if (irolId == null || monsterId == null || StringUtils.isBlank(userId) || skillId == null) {
+				return null;
+			}
+			
+			// check irol exists
+			Irol irol = irolDao.findOne(irolId);
+			if (irol == null) {
+				return null;
+			}
+			
+			MasterCardsKey key = new MasterCardsKey(userId, irol); 
+			MasterCards masterCards = masterCardsDao.findOne(key);
+			if (masterCards == null) {
+				return null;
+			}
+			
+			Monster monster = monsterDao.findOne(monsterId);
+			if (monster == null) {
+				return null;
+			}
+			
+			FightingLog fightingLog = fightingLogDao.findLastLog(userId, irolId, monsterId);
+			if (fightingLog == null) {
+				return null;
+			}
+			
+			LOG.info("doSkill begin...");
+			StringBuilder sb = new StringBuilder();
+			sb.append(NudoCCUtil.codeMessage("IRL007"));
+			
+			FightingIrolStatus irolStatus = fightingLog.getFightingIrolStatus();
+			FightingMonsterStatus monsterStatus = fightingLog.getFightingMonsterStatus();
+			
+			List<FightingIrolBuffStatus> irolBuffs = irolStatus.getFightingIrolBuffStatusList();
+			List<FightingIrolDebuffStatus> irolDebuffs = irolStatus.getFightingIrolDebuffStatusList();
+			
+			List<FightingMonsterBuffStatus> monsterBuffs = monsterStatus.getFightingMonsterBuffStatusList();
+			List<FightingMonsterDebuffStatus> monsterDebuffs = monsterStatus.getFightingMonsterDebuffStatusList();
+			
+			if (irolStatus.getSpeed() >= monsterStatus.getSpeed()) {
+				sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL008", irol.getName()));
+
+				// irol attk!
+				boolean isMonsterDead = this.doIrolSkill(irol, monster, irolStatus, monsterStatus, skillId, sb);
+				if (isMonsterDead) {
+					return getMonsterDeadMessage(irol, monsterStatus, fightingLog, sb);
+				}
+				
+				// monster attk!
+				boolean isIrolDead = false;
+				Long monsterSkillId = selectMonsterEvent(monster);
+				if (monsterSkillId == null) {
+					isIrolDead = this.doMonsterFighting(irol, monster, irolStatus, monsterStatus, sb);
+				} else {
+					isIrolDead = this.doMonsterSkill(irol, monster, irolStatus, monsterStatus, monsterSkillId, sb);
+				}
+				
+				if (isIrolDead) {
+					return getIrolDeadMessage(monster, irolStatus, fightingLog, sb);
+				}
+
+				// irol bonus attk!
+				isMonsterDead = this.doIrolSpeedBonus(irol, monster, irolStatus, monsterStatus, sb); 
+				if (isMonsterDead) {
+					return getMonsterDeadMessage(irol, monsterStatus, fightingLog, sb);
+				}
+				
+				// irol buff process
+				if (irolBuffs != null && !irolBuffs.isEmpty()) {
+					sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL014", irol.getName()));
+					this.processIrolBuffs(irolBuffs, irolStatus, sb);
+				}
+				// irol debuff process
+				if (irolDebuffs != null && !irolDebuffs.isEmpty()) {
+					sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL017", irol.getName()));
+					
+					isIrolDead = this.processIrolDebuffs(irolDebuffs, irolStatus, sb);
+					if (isIrolDead) {
+						return getIrolDeadMessage(monster, irolStatus, fightingLog, sb);
+					}
+				}
+				
+				// monster buff process
+				if (monsterBuffs != null && !monsterBuffs.isEmpty()) {
+					sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL014", monster.getName()));
+					this.processMonsterBuffs(monsterBuffs, monsterStatus);
+				}
+				// monster debuff process
+				if (monsterDebuffs != null && !monsterDebuffs.isEmpty()) {
+					sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL017", monster.getName()));
+					
+					isMonsterDead = this.processMonsterDebuffs(monsterDebuffs, monsterStatus);
+					if (isMonsterDead) {
+						return getMonsterDeadMessage(irol, monsterStatus, fightingLog, sb);
+					}
+				}
+				sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL012"));
+			} else {
+				sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL008", monster.getName()));
+
+				// monster attk!
+				boolean isIrolDead = false;
+				Long monsterSkillId = selectMonsterEvent(monster);
+				if (monsterSkillId == null) {
+					isIrolDead = this.doMonsterFighting(irol, monster, irolStatus, monsterStatus, sb);
+				} else {
+					isIrolDead = this.doMonsterSkill(irol, monster, irolStatus, monsterStatus, monsterSkillId, sb);
+				}
+				
+				// irol attk!
+				boolean isMonsterDead = this.doIrolSkill(irol, monster, irolStatus, monsterStatus, skillId, sb);
+				if (isMonsterDead) {
+					return getMonsterDeadMessage(irol, monsterStatus, fightingLog, sb);
+				}
+
+				// monster bonus attk!
+				isIrolDead = this.doMonsterSpeedBonus(irol, monster, irolStatus, monsterStatus, sb); 
+				if (isIrolDead) {
+					return getIrolDeadMessage(monster, irolStatus, fightingLog, sb);
+				}
+				
+				// irol buff process
+				if (irolBuffs != null && !irolBuffs.isEmpty()) {
+					sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL014", irol.getName()));
+					this.processIrolBuffs(irolBuffs, irolStatus, sb);
+				}
+				// irol debuff process
+				if (irolDebuffs != null && !irolDebuffs.isEmpty()) {
+					sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL017", irol.getName()));
+					
+					isIrolDead = this.processIrolDebuffs(irolDebuffs, irolStatus, sb);
+					if (isIrolDead) {
+						return getIrolDeadMessage(monster, irolStatus, fightingLog, sb);
+					}
+				}
+				
+				// monster buff process
+				if (monsterBuffs != null && !monsterBuffs.isEmpty()) {
+					sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL014", monster.getName()));
+					this.processMonsterBuffs(monsterBuffs, monsterStatus);
+				}
+				// monster debuff process
+				if (monsterDebuffs != null && !monsterDebuffs.isEmpty()) {
+					sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL017", monster.getName()));
+					
+					isMonsterDead = this.processMonsterDebuffs(monsterDebuffs, monsterStatus);
+					if (isMonsterDead) {
+						return getMonsterDeadMessage(irol, monsterStatus, fightingLog, sb);
+					}
+				}
+				sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL012"));
+			}
+			
+			fightingMonsterStatusDao.save(monsterStatus);
+			fightingIrolStatusDao.save(irolStatus);
+			
+			return new TextMessage(sb.toString());
+		} catch (Exception e) {
+			LOG.error("doSkill error!", e);
+			return null;
+		}
+	}
+	
+	/**
+	 * 
+	 * @param irol
+	 * @param monster
+	 * @param irolStatus
+	 * @param monsterStatus
+	 * @param skillId
+	 * @param sb
+	 * @return
+	 */
+	private boolean doMonsterSkill(Irol irol, Monster monster, FightingIrolStatus irolStatus,
+			FightingMonsterStatus monsterStatus, Long skillId, StringBuilder sb) {
+		Skill skill = null;
+		if (monster.getSkill1() != null && monster.getSkill1().getId().compareTo(skillId) == 0) {
+			skill = monster.getSkill1();
+		} else if (monster.getSkill2() != null && monster.getSkill2().getId().compareTo(skillId) == 0) {
+			skill = monster.getSkill2();
+		}
+		if (skill == null) {
+			return false;
+		}
+		sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL019", monster.getName(), skill.getName()));
+		
+		if (skill.getDamage() > 0) {
+			irolStatus.setHp(this.getHpByDamage(irolStatus.getHp(), skill.getDamage()));
+			sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL009", monster.getName(), irol.getName(), skill.getDamage()));
+			sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL010", irol.getName(), irolStatus.getHp()));
+		}
+		if (skill.getBuff() != null) {
+			List<FightingMonsterBuffStatus> monsterBuffs = monsterStatus.getFightingMonsterBuffStatusList();
+			if (monsterBuffs == null) {
+				monsterBuffs = new ArrayList<>();
+			}
+			FightingMonsterBuffStatus buffStatus = new FightingMonsterBuffStatus();
+			buffStatus.setBuff(skill.getBuff());
+			buffStatus.setFightingMonsterStatusId(monsterStatus.getId());
+			buffStatus.setOverCount(skill.getBuff().getBuffCount());
+			monsterBuffs.add(buffStatus);
+			fightingMonsterBuffStatusDao.save(buffStatus);
+			sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL020", skill.getBuff().getName(), skill.getBuff().getBuffCount()));
+		}
+		if (skill.getDebuff() != null) {
+			List<FightingIrolDebuffStatus> irolDebuffs = irolStatus.getFightingIrolDebuffStatusList();
+			if (irolDebuffs == null) {
+				irolDebuffs = new ArrayList<>();
+			}
+			FightingIrolDebuffStatus debuffStatus = new FightingIrolDebuffStatus();
+			debuffStatus.setDebuff(skill.getDebuff());
+			debuffStatus.setFightingIrolStatusId(irolStatus.getId());
+			debuffStatus.setOverCount(skill.getDebuff().getDebuffCount());
+			irolDebuffs.add(debuffStatus);
+			fightingIrolDebuffStatusDao.save(debuffStatus);
+			sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL020", skill.getDebuff().getName(), skill.getDebuff().getDebuffCount()));
+		}
+		
+		return irolStatus.getHp() == 0;
+	}
+
+	/**
+	 * 
+	 * @param irol
+	 * @param monster
+	 * @param irolStatus
+	 * @param monsterStatus
+	 * @param skillId
+	 * @param sb
+	 * @return
+	 */
+	private boolean doIrolSkill(Irol irol, Monster monster, FightingIrolStatus irolStatus,
+			FightingMonsterStatus monsterStatus, Long skillId, StringBuilder sb) {
+		Skill skill = null;
+		if (irol.getSkill1() != null && irol.getSkill1().getId().compareTo(skillId) == 0) {
+			skill = irol.getSkill1();
+		} else if (irol.getSkill2() != null && irol.getSkill2().getId().compareTo(skillId) == 0) {
+			skill = irol.getSkill2();
+		}
+		if (skill == null) {
+			return false;
+		}
+		sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL019", irol.getName(), skill.getName()));
+		
+		if (skill.getDamage() > 0) {
+			monsterStatus.setHp(this.getHpByDamage(monsterStatus.getHp(), skill.getDamage()));
+			sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL009", irol.getName(), monster.getName(), skill.getDamage()));
+			sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL010", monster.getName(), monsterStatus.getHp()));
+		}
+		if (skill.getBuff() != null) {
+			List<FightingIrolBuffStatus> irolBuffs = irolStatus.getFightingIrolBuffStatusList();
+			if (irolBuffs == null) {
+				irolBuffs = new ArrayList<>();
+			}
+			FightingIrolBuffStatus buffStatus = new FightingIrolBuffStatus();
+			buffStatus.setBuff(skill.getBuff());
+			buffStatus.setFightingIrolStatusId(irolStatus.getId());
+			buffStatus.setOverCount(skill.getBuff().getBuffCount());
+			irolBuffs.add(buffStatus);
+			fightingIrolBuffStatusDao.save(buffStatus);
+			sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL020", skill.getBuff().getName(), skill.getBuff().getBuffCount()));
+		}
+		if (skill.getDebuff() != null) {
+			List<FightingMonsterDebuffStatus> monsterDebuffs = monsterStatus.getFightingMonsterDebuffStatusList();
+			if (monsterDebuffs == null) {
+				monsterDebuffs = new ArrayList<>();
+			}
+			FightingMonsterDebuffStatus debuffStatus = new FightingMonsterDebuffStatus();
+			debuffStatus.setDebuff(skill.getDebuff());
+			debuffStatus.setFightingMonsterStatusId(monsterStatus.getId());
+			debuffStatus.setOverCount(skill.getDebuff().getDebuffCount());
+			monsterDebuffs.add(debuffStatus);
+			fightingMonsterDebuffStatusDao.save(debuffStatus);
+			sb.append(NudoCCUtil.NEW_LINE).append(NudoCCUtil.codeMessage("IRL020", skill.getDebuff().getName(), skill.getDebuff().getDebuffCount()));
+		}
+		
+		return monsterStatus.getHp() == 0;
+	}
+
 	/**
 	 * 
 	 * @param irol

@@ -316,6 +316,8 @@ public class NudoCCServiceImpl implements INudoCCService {
     				return irolService.doBattle(commandBean.getUserId(), commandBean.getIrolName());
     			case FIGHT:
     				return irolService.doFight(commandBean.getUserId(), commandBean.getIrolId(), commandBean.getMonsterId());
+    			case SKILL:
+    				return irolService.doSkill(commandBean.getUserId(), commandBean.getIrolId(), commandBean.getMonsterId(), commandBean.getSkillId());
 				default:
 					return null;
 			}
