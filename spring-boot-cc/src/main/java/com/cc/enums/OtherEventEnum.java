@@ -20,6 +20,7 @@ public enum OtherEventEnum {
 	TALKING(7, "talk"),
 	USER_ROLL_START(8, ""),
 	USER_ROLL_END(9, ""),
+	EMOJI(10, ""),
 	NULL(0, StringUtils.EMPTY);
 	
 	private int value;

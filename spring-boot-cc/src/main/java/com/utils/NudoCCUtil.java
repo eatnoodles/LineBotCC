@@ -103,6 +103,8 @@ public class NudoCCUtil {
 	
 	public static final String BATTLE_COMMAND = "battle";
 	
+	public static final String EMOJI_COMMAND = systemProperties.getProperty("other.command.emoji");
+	
 	public static final String USER_ROLL_START_COMMAND = systemProperties.getProperty("roll.command.start");
 	
 	public static final String USER_ROLL_END_COMMAND = systemProperties.getProperty("roll.command.end");

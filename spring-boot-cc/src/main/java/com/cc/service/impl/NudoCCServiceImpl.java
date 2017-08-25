@@ -168,6 +168,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(OtherEventEnum.USER_ROLL_START);
 		} else if (command.equals(NudoCCUtil.USER_ROLL_END_COMMAND)) {
 			bean.setEventEnum(OtherEventEnum.USER_ROLL_END);
+		} else if (command.equals(NudoCCUtil.EMOJI_COMMAND)) {
+			bean.setEventEnum(OtherEventEnum.EMOJI);
 		} else {
 			bean.setEventEnum(OtherEventEnum.TALKING);
 		}
@@ -239,10 +241,21 @@ public class NudoCCServiceImpl implements INudoCCService {
 					return updateUserRoll(commandBean.getSenderId(), true);
 				case USER_ROLL_END:
 					return updateUserRoll(commandBean.getSenderId(), false);
+				case EMOJI:
+					return getEmojiMessage();
 				default:
 					return null;
 			}
     	}
+	}
+
+	/**
+	 * get emoji message
+	 * 
+	 * @return
+	 */
+	private TextMessage getEmojiMessage() {
+		return new TextMessage(NudoCCUtil.codeMessage("OTR007"));
 	}
 
 	/**
