@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Caleb.Cheng
  *
  */
-public enum WowItemPartsEnum {
+public enum WoWItemPartsEnum {
 
 	HEAD("head", "頭部"),
 	NECK("neck", "項鍊"),
@@ -36,24 +36,24 @@ public enum WowItemPartsEnum {
 	
 	private String context;
 	
-	private static final Map< String, WowItemPartsEnum > map = new HashMap<>();
+	private static final Map< String, WoWItemPartsEnum > map = new HashMap<>();
 
 	static
 	{
-		for( WowItemPartsEnum itemPartsEnum : WowItemPartsEnum.values() )
+		for( WoWItemPartsEnum itemPartsEnum : WoWItemPartsEnum.values() )
 			map.put( itemPartsEnum.getValue(), itemPartsEnum );
 	}
 	
-	private WowItemPartsEnum(String value, String context){
+	private WoWItemPartsEnum(String value, String context){
 		this.value = value;
 		this.context = context;
 	}
 	
-	public static WowItemPartsEnum getEnumByValue( String value )
+	public static WoWItemPartsEnum getEnumByValue( String value )
 	{
-		WowItemPartsEnum itemPartsEnum = map.get( value );
+		WoWItemPartsEnum itemPartsEnum = map.get( value );
 
-		return itemPartsEnum == null ? WowItemPartsEnum.NULL : itemPartsEnum;
+		return itemPartsEnum == null ? WoWItemPartsEnum.NULL : itemPartsEnum;
 	}
 
 	public String getValue() {

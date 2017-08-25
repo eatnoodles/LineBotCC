@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Caleb.Cheng
  *
  */
-public enum WowEventEnum {
+public enum WoWEventEnum {
 	
 	PROFILE(1, "取得角色基本資料"),
 	IMG(2, "取得角色大頭照"),
@@ -25,24 +25,24 @@ public enum WowEventEnum {
 	
 	private String context;
 	
-	private static final Map< Integer, WowEventEnum > map = new HashMap<>();
+	private static final Map< Integer, WoWEventEnum > map = new HashMap<>();
 
 	static
 	{
-		for( WowEventEnum eventEnum : WowEventEnum.values() )
+		for( WoWEventEnum eventEnum : WoWEventEnum.values() )
 			map.put( eventEnum.getValue(), eventEnum );
 	}
 	
-	private WowEventEnum(int value, String context){
+	private WoWEventEnum(int value, String context){
 		this.value = value;
 		this.context = context;
 	}
 	
-	public static WowEventEnum getEnumByValue( int value )
+	public static WoWEventEnum getEnumByValue( int value )
 	{
-		WowEventEnum eventEnum = map.get( value );
+		WoWEventEnum eventEnum = map.get( value );
 
-		return eventEnum == null ? WowEventEnum.NULL : eventEnum;
+		return eventEnum == null ? WoWEventEnum.NULL : eventEnum;
 	}
 
 	public int getValue() {

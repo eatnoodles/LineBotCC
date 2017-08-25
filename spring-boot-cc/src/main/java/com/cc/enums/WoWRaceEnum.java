@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Caleb.Cheng
  *
  */
-public enum WowRaceEnum {
+public enum WoWRaceEnum {
 
 	HUMAN(1, "人類"),
 	ORC(2, "獸人"),
@@ -35,24 +35,24 @@ public enum WowRaceEnum {
 	
 	private String context;
 	
-	private static final Map< Integer, WowRaceEnum > map = new HashMap<>();
+	private static final Map< Integer, WoWRaceEnum > map = new HashMap<>();
 
 	static
 	{
-		for( WowRaceEnum raceEnum : WowRaceEnum.values() )
+		for( WoWRaceEnum raceEnum : WoWRaceEnum.values() )
 			map.put( raceEnum.getValue(), raceEnum );
 	}
 	
-	private WowRaceEnum(int value, String context){
+	private WoWRaceEnum(int value, String context){
 		this.value = value;
 		this.context = context;
 	}
 	
-	public static WowRaceEnum getEnumByValue( int value )
+	public static WoWRaceEnum getEnumByValue( int value )
 	{
-		WowRaceEnum raceEnum = map.get( value );
+		WoWRaceEnum raceEnum = map.get( value );
 
-		return raceEnum == null ? WowRaceEnum.NULL : raceEnum;
+		return raceEnum == null ? WoWRaceEnum.NULL : raceEnum;
 	}
 
 	public int getValue() {

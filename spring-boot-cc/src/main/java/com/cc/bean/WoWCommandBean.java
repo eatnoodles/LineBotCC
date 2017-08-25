@@ -1,17 +1,14 @@
-/**
- * 
- */
 package com.cc.bean;
 
-import com.cc.enums.WowEventEnum;
+import com.cc.enums.WoWEventEnum;
 
 /**
- * @author Caleb.Cheng
+ * @author Caleb Cheng
  *
  */
-public class WowCommandBean {
-	
-	private String name;
+public class WoWCommandBean extends CommandBean {
+
+private String name;
 	
 	private String realm;
 	
@@ -21,11 +18,7 @@ public class WowCommandBean {
 	
 	private String mode;
 	
-	private WowEventEnum eventEnum;
-	
-	private String errorMsg;
-	
-	private boolean isWowCommand = true;
+	private WoWEventEnum eventEnum;
 
 	public String getName() {
 		return name;
@@ -41,30 +34,6 @@ public class WowCommandBean {
 
 	public void setRealm(String realm) {
 		this.realm = realm;
-	}
-
-	public String getErrorMsg() {
-		return errorMsg;
-	}
-
-	public void setErrorMsg(String errorMsg) {
-		this.errorMsg = errorMsg;
-	}
-
-	public WowEventEnum getEventEnum() {
-		return eventEnum;
-	}
-
-	public void setEventEnum(WowEventEnum eventEnum) {
-		this.eventEnum = eventEnum;
-	}
-
-	public boolean isWowCommand() {
-		return isWowCommand;
-	}
-
-	public void setWowCommand(boolean isWowCommand) {
-		this.isWowCommand = isWowCommand;
 	}
 
 	public String getLocation() {
@@ -90,4 +59,13 @@ public class WowCommandBean {
 	public void setMode(String mode) {
 		this.mode = mode;
 	}
+
+	public WoWEventEnum getEventEnum() {
+		return eventEnum;
+	}
+
+	public void setEventEnum(WoWEventEnum eventEnum) {
+		this.eventEnum = eventEnum;
+	}
+	
 }

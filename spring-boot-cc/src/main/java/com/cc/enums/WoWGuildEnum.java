@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Caleb.Cheng
  *
  */
-public enum WowGuildEnum {
+public enum WoWGuildEnum {
 
 	NEWS(1, "news"),
 	NULL(0, StringUtils.EMPTY);
@@ -21,24 +21,24 @@ public enum WowGuildEnum {
 	
 	private String context;
 	
-	private static final Map< Integer, WowGuildEnum > map = new HashMap<>();
+	private static final Map< Integer, WoWGuildEnum > map = new HashMap<>();
 
 	static
 	{
-		for( WowGuildEnum fieldEnum : WowGuildEnum.values() )
+		for( WoWGuildEnum fieldEnum : WoWGuildEnum.values() )
 			map.put( fieldEnum.getValue(), fieldEnum );
 	}
 	
-	private WowGuildEnum(int value, String context){
+	private WoWGuildEnum(int value, String context){
 		this.value = value;
 		this.context = context;
 	}
 	
-	public static WowGuildEnum getEnumByValue( int value )
+	public static WoWGuildEnum getEnumByValue( int value )
 	{
-		WowGuildEnum fieldEnum = map.get( value );
+		WoWGuildEnum fieldEnum = map.get( value );
 
-		return fieldEnum == null ? WowGuildEnum.NULL : fieldEnum;
+		return fieldEnum == null ? WoWGuildEnum.NULL : fieldEnum;
 	}
 
 	public int getValue() {

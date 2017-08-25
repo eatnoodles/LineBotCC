@@ -1,38 +1,55 @@
-/**
- * 
- */
 package com.utils;
 
-import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.Properties;
 
-import com.cc.enums.WowItemPartsEnum;
+import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.cc.Application;
+import com.cc.enums.WoWItemPartsEnum;
 
 /**
  * @author Caleb.Cheng
  *
  */
 public class NudoCCUtil {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(NudoCCUtil.class);
+	
+	private static Properties messageProperties = new Properties();
+	private static Properties systemProperties = new Properties();
+	
+	static {
+		try {
+			messageProperties.load(Application.class.getResourceAsStream("/message.properties"));
+			systemProperties.load(Application.class.getResourceAsStream("/system.properties"));
+		} catch (IOException e) {
+			LOG.error("properties init error!");
+		}
+	}
+	
+	public static final String NEW_LINE = "\r\n";
 
 	public static final String SLASH = "/";
 	
 	public static final String QUESTION_MARK = "?";
 	
-	public static final String DEFAULT_SERVER = "阿薩斯";
+	public static final String DEFAULT_SERVER = systemProperties.getProperty("wow.default.server");
 	
 	public static final String PATTERN_EN = "^[a-zA-Z]+$";
 	
 	public static final String PATTERN_CH = "^[\u4e00-\u9fa5]+$";
 	
-	public static final String[] LOCATIONS = new String[]{ "US", "EU", "KR", "TW", "CN" };
+	public static final String[] LOCATIONS = systemProperties.getProperty("wow.locations").split(",");
 	
 	public static final String[] METRICS = new String[]{ "dps", "hps", "bossdps", "tankhps","playerspeed" };
 	
-	public static final String[] REALMS = new String[]{ "阿薩斯", "地獄吼", "狂熱之刃", "水晶之刺", "世界之樹", "聖光之願"};
+	public static final String[] REALMS = systemProperties.getProperty("wow.default.realms").split(",");
 	
-	public static final String[] ALL_REALMS = new String[]{ "世界之樹", "亞雷戈斯", "冰霜之刺",	"冰風崗哨", "地獄吼", "夜空之歌",	  	  	  	  
-														"天空之牆", "寒冰皇冠", "尖石", "屠魔山谷", "巨龍之喉",	 "憤怒使者",	  	  	  	  
-														"日落沼澤", "暗影之月", "水晶之刺",	"狂熱之刃", "眾星之子", "米奈希爾",	  	  	  	  
-														"聖光之願", "血之谷", "語風", "銀翼要塞", "阿薩斯", "雲蛟衛", "雷鱗" };
+	public static final String[] ALL_REALMS = systemProperties.getProperty("wow.realms").split(",");
 	
 	public static final String WOW_IMG_BASE_PATH = "https://render-tw.worldofwarcraft.com/character/";
 	
@@ -52,11 +69,11 @@ public class NudoCCUtil {
 	
 	public static final String WOW_COMMAND_HELP = "-help";
 	
-	public static final String WOW_NAME_ERROR_MSG = "角色名稱的格式有誤哦~";
+	public static final String IROL_COMMAND = "-irol ";
 	
-	public static final String WOW_ITEM_PARAM_ERROR_MSG = "取得裝備資訊參數有誤哦~";
+	public static final String IROL_COMMAND_FIGHT = "-fight ";
 	
-	public static final String WOW_ENCHANTS_PARAM_ERROR_MSG = "取得附魔資訊參數有誤哦~";
+	public static final String IROL_COMMAND_SKILL = "-skill ";
 	
 	public static final String ROLL_COMMAND = "/roll";
 	
@@ -74,18 +91,31 @@ public class NudoCCUtil {
 	
 	public static final String ROLL_SUB_COMMAND_A = "-a";
 	
-	public static final String LEAVE_COMMAND = "稻葉請你";
+	public static final String LEAVE_COMMAND = systemProperties.getProperty("wow.command.leave");
 	
-	public static final String WHOAMI_COMMAND = "我是誰";
+	public static final String WHOAMI_COMMAND = systemProperties.getProperty("wow.command.whoami");
 	
-	public static final String SAD_COMMAND = "稻葉錯頻";
+	public static final String SAD_COMMAND = systemProperties.getProperty("wow.command.sad");
+	
+	public static final String IMG1_COMMAND = "><";
+	
+	public static final String OPEN_COMMAND = "open";
+	
+	public static final String BATTLE_COMMAND = "battle";
+	
+	public static final String EMOJI_COMMAND = systemProperties.getProperty("other.command.emoji");
+	
+	public static final String USER_ROLL_START_COMMAND = systemProperties.getProperty("roll.command.start");
+	
+	public static final String USER_ROLL_END_COMMAND = systemProperties.getProperty("roll.command.end");
 	
 	public static final String WCL_USER_COMMANDS = "[mhn]{1}[的]{1}(dps|hps|bossdps|tankhps|playerspeed){1}"; 
 	
-	public static final WowItemPartsEnum[] enchantsParts = {WowItemPartsEnum.NECK, WowItemPartsEnum.SHOULDER,
-															WowItemPartsEnum.FINGER1, WowItemPartsEnum.FINGER2,
-															WowItemPartsEnum.BACK
-															};
+	public static final WoWItemPartsEnum[] enchantsParts = { WoWItemPartsEnum.NECK, WoWItemPartsEnum.SHOULDER,
+															 WoWItemPartsEnum.FINGER1, WoWItemPartsEnum.FINGER2,
+															 WoWItemPartsEnum.BACK };
+
+	
 	
 	/**
 	 * 根據sie zip 機率 (權重  y = 1/(x+1)^2 )
@@ -120,5 +150,16 @@ public class NudoCCUtil {
 				new EnumeratedIntegerDistribution(numsToGenerate, discreteProbabilities);
 
 		return distribution.sample(numSamples);
+	}
+
+	/**
+	 * 以code 取得 訊息
+	 * 
+	 * @param code
+	 * @param args
+	 * @return
+	 */
+	public static String codeMessage(String code, Object... args) {
+		return MessageFormat.format(messageProperties.getProperty(code), args);
 	}
 }
