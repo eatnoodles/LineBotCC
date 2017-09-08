@@ -260,6 +260,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 */
 	private Message getParrotImage(String msg) {
 		LOG.info("getParrotImage msg=" + msg);
+		boolean hasCh = msg.getBytes().length != msg.length();
+		
+		if (hasCh) {
+			msg = "I'm_ameriBird!";
+		} else if (msg.length() > 15) {
+			msg = "fuck_too_long";
+		}
 		String img = System.getenv("ROOT_PATH") + "/API/parrot/" + msg;
 		LOG.info("getParrotImage path=" + img);
 		return new ImageMessage(img, img);
