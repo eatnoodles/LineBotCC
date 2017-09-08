@@ -1030,7 +1030,6 @@ public class IrolServiceImpl implements IIrolService {
 	 */
 	private void processIrolBuffs(List<FightingIrolBuffStatus> irolBuffs, FightingIrolStatus irolStatus, StringBuilder sb) {
 		// process buff
-		
 		Iterator<FightingIrolBuffStatus> iterator = irolBuffs.iterator();
 		if (iterator.hasNext()) {
 			FightingIrolBuffStatus buffStatus = iterator.next();
@@ -1052,8 +1051,6 @@ public class IrolServiceImpl implements IIrolService {
 				irolStatus.setDef(irolStatus.getDef() - buff.getDef());
 				irolStatus.setSpeed(irolStatus.getSpeed() - buff.getSpeed());
 				irolStatus.setMaxhp(irolStatus.getMaxhp() - buff.getMaxHp() <= 0 ? 1 :  irolStatus.getMaxhp() - buff.getMaxHp());
-//				irolBuffs.remove(buffStatus);
-//				iterator.remove();
 				fightingIrolBuffStatusDao.delete(buffStatus);
 			} else {
 				fightingIrolBuffStatusDao.save(buffStatus);

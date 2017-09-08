@@ -170,6 +170,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(OtherEventEnum.USER_ROLL_END);
 		} else if (command.equals(NudoCCUtil.EMOJI_COMMAND)) {
 			bean.setEventEnum(OtherEventEnum.EMOJI);
+		} else if (command.startsWith(NudoCCUtil.PARROT_COMMAND)) {
+			bean.setEventEnum(OtherEventEnum.PARROT);
 		} else {
 			bean.setEventEnum(OtherEventEnum.TALKING);
 		}
@@ -243,10 +245,22 @@ public class NudoCCServiceImpl implements INudoCCService {
 					return updateUserRoll(commandBean.getSenderId(), false);
 				case EMOJI:
 					return getEmojiMessage();
+				case PARROT:
+					return getParrotImage(commandBean.getCommand().replace(NudoCCUtil.PARROT_COMMAND, StringUtils.EMPTY));
 				default:
 					return null;
 			}
     	}
+	}
+
+	/**
+	 * 
+	 * @param msg
+	 * @return
+	 */
+	private Message getParrotImage(String msg) {
+		String img = System.getenv("ROOT_PATH") + "/API/parrot/" + msg;
+		return new ImageMessage(img, img);
 	}
 
 	/**
