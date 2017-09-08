@@ -105,7 +105,7 @@ public class NudoCCUtil {
 	
 	public static final String EMOJI_COMMAND = systemProperties.getProperty("other.command.emoji");
 	
-	public static final String PARROT_COMMAND = systemProperties.getProperty("other.command.parrot");
+	public static final String PARROT_COMMAND = "-bird ";
 	
 	public static final String USER_ROLL_START_COMMAND = systemProperties.getProperty("roll.command.start");
 	
