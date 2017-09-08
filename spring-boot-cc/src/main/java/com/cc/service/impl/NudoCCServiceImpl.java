@@ -259,7 +259,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @return
 	 */
 	private Message getParrotImage(String msg) {
+		LOG.info("getParrotImage msg=" + msg);
 		String img = System.getenv("ROOT_PATH") + "/API/parrot/" + msg;
+		LOG.info("getParrotImage path=" + img);
 		return new ImageMessage(img, img);
 	}
 
