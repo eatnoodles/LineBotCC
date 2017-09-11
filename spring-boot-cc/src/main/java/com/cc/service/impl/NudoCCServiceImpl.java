@@ -1,6 +1,8 @@
 package com.cc.service.impl;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -260,13 +262,14 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 */
 	private Message getParrotImage(String msg) {
 		LOG.info("getParrotImage msg=" + msg);
-		boolean hasCh = msg.getBytes().length != msg.length();
 		
-		if (hasCh) {
-			msg = "I'm_ameriBird!";
-		} else if (msg.length() > 15) {
-			msg = "fuck_too_long";
+		try {
+			msg = URLEncoder.encode(msg, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			LOG.error(e.getMessage());
+			return null;
 		}
+		
 		String img = System.getenv("ROOT_PATH") + "/API/parrot/" + msg;
 		LOG.info("getParrotImage path=" + img);
 		return new ImageMessage(img, img);
