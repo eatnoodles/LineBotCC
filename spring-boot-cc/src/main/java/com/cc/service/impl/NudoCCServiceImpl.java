@@ -264,6 +264,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 		LOG.info("getParrotImage msg=" + msg);
 		
 		try {
+			if (msg.length() > 11) {
+				msg = NudoCCUtil.codeMessage("OTR008");
+			}
 			msg = URLEncoder.encode(msg, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			LOG.error(e.getMessage());
