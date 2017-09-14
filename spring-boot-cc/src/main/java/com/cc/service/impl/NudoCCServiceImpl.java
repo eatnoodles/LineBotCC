@@ -1,6 +1,8 @@
 package com.cc.service.impl;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -170,6 +172,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(OtherEventEnum.USER_ROLL_END);
 		} else if (command.equals(NudoCCUtil.EMOJI_COMMAND)) {
 			bean.setEventEnum(OtherEventEnum.EMOJI);
+		} else if (command.startsWith(NudoCCUtil.PARROT_COMMAND)) {
+			bean.setEventEnum(OtherEventEnum.PARROT);
 		} else {
 			bean.setEventEnum(OtherEventEnum.TALKING);
 		}
@@ -243,10 +247,38 @@ public class NudoCCServiceImpl implements INudoCCService {
 					return updateUserRoll(commandBean.getSenderId(), false);
 				case EMOJI:
 					return getEmojiMessage();
+				case PARROT:
+					return getParrotImage(commandBean.getCommand().replace(NudoCCUtil.PARROT_COMMAND, StringUtils.EMPTY));
 				default:
 					return null;
 			}
     	}
+	}
+
+	/**
+	 * 
+	 * @param msg
+	 * @return
+	 */
+	private Message getParrotImage(String msg) {
+		LOG.info("getParrotImage msg=" + msg);
+		
+		try {
+			if (msg.length() > 11) {
+				msg = NudoCCUtil.codeMessage("OTR008");
+			}
+			msg = URLEncoder.encode(msg, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			LOG.error(e.getMessage());
+			return null;
+		}
+		Random random = new Random();
+		int index = random.nextInt(10) + 1;
+		
+		String path = String.format("%s/API/parrot/%s/%s", System.getenv("ROOT_PATH"), index, msg) ;
+		
+		LOG.info("getParrotImage path=" + path);
+		return new ImageMessage(path, path);
 	}
 
 	/**
