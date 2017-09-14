@@ -272,10 +272,13 @@ public class NudoCCServiceImpl implements INudoCCService {
 			LOG.error(e.getMessage());
 			return null;
 		}
+		Random random = new Random();
+		int index = random.nextInt(10) + 1;
 		
-		String img = System.getenv("ROOT_PATH") + "/API/parrot/" + msg;
-		LOG.info("getParrotImage path=" + img);
-		return new ImageMessage(img, img);
+		String path = String.format("%s/API/parrot/%s/%s", System.getenv("ROOT_PATH"), index, msg) ;
+		
+		LOG.info("getParrotImage path=" + path);
+		return new ImageMessage(path, path);
 	}
 
 	/**
