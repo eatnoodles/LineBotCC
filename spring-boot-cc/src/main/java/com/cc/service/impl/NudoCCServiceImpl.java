@@ -273,7 +273,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 			return null;
 		}
 		Random random = new Random();
-		int index = random.nextInt(10) + 1;
+		int index = random.nextInt(20) + 1;
 		
 		String path = String.format("%s/API/parrot/%s/%s", System.getenv("ROOT_PATH"), index, msg) ;
 		
