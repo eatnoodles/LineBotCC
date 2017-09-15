@@ -268,8 +268,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 			if (msg.length() > 22) {
 				msg = NudoCCUtil.codeMessage("OTR008");
 			}
-			msg = msg.replaceAll("+", "{plus}");
-			msg = msg.replaceAll("/", "{slash}");
+			msg = msg.replace("+", "{plus}");
+			msg = msg.replace("/", "{slash}");
 			
 			msg = URLEncoder.encode(msg, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
