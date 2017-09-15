@@ -240,7 +240,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 				case IMG1:
 					return findStickerMessage("3", "181");
 				case TALKING:
-					return processUserTalk(commandBean.getCommand(), commandBean.getUserId());
+//					return processUserTalk(commandBean.getCommand(), commandBean.getUserId());
 				case USER_ROLL_START:
 					return updateUserRoll(commandBean.getSenderId(), true);
 				case USER_ROLL_END:
