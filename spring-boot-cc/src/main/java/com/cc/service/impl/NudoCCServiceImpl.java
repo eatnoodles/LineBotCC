@@ -240,7 +240,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 				case IMG1:
 					return findStickerMessage("3", "181");
 				case TALKING:
-					return processUserTalk(commandBean.getCommand(), commandBean.getUserId());
+//					return processUserTalk(commandBean.getCommand(), commandBean.getUserId());
+					return null;
 				case USER_ROLL_START:
 					return updateUserRoll(commandBean.getSenderId(), true);
 				case USER_ROLL_END:
@@ -264,16 +265,19 @@ public class NudoCCServiceImpl implements INudoCCService {
 		LOG.info("getParrotImage msg=" + msg);
 		
 		try {
-			if (msg.length() > 11) {
+			if (msg.length() > 22) {
 				msg = NudoCCUtil.codeMessage("OTR008");
 			}
+			msg = msg.replace("+", "{plus}");
+			msg = msg.replace("/", "{slash}");
+			
 			msg = URLEncoder.encode(msg, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			LOG.error(e.getMessage());
 			return null;
 		}
 		Random random = new Random();
-		int index = random.nextInt(10) + 1;
+		int index = random.nextInt(20) + 1;
 		
 		String path = String.format("%s/API/parrot/%s/%s", System.getenv("ROOT_PATH"), index, msg) ;
 		
