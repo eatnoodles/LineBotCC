@@ -215,12 +215,6 @@ public class NudoCCServiceImpl implements INudoCCService {
 		}
 		return new TextMessage(sb.toString());
 	}
-	
-	public static void main(String[] args){
-		String command = "[1 -1 1 1 0 110][2 -2 1 0 2 150]";
-		System.out.println(command.substring(command.indexOf("[") + 1, command.indexOf("]")));
-		System.out.println(command.substring(command.indexOf("]")+1));
-	}
 
 	/**
 	 * process wow command
