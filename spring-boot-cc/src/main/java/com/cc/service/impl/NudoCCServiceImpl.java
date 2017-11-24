@@ -191,17 +191,22 @@ public class NudoCCServiceImpl implements INudoCCService {
 	private Message getGaussResult(String command) {
 		
 		StringBuilder sb = new StringBuilder();
-		
-		String[] args = command.split("\r\n");
-		GaussUtil gaussUtil = new GaussUtil(args.length);
-		
 		List<Double> list = new ArrayList<>();
-		for (String arg :args) {
-			String[] nums = arg.split(" ");
+		
+		int n = 0;
+		
+		while(command.indexOf("[") != -1) {
+			n++;
+			String inputs = command.substring(command.indexOf("[") + 1, command.indexOf("]"));
+			String[] nums = inputs.split(" ");
 			for (String num :nums) {
 				list.add(Double.parseDouble(num));
 			}
+			command = command.substring(command.indexOf("]")+1);
 		}
+		
+		GaussUtil gaussUtil = new GaussUtil(n);
+		
 		gaussUtil.setA(list);
 		double[] results = gaussUtil.getResult();
 		
@@ -209,6 +214,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 			sb.append(String.format("C%s={%s}", i, results[i-1]));
 		}
 		return new TextMessage(sb.toString());
+	}
+	
+	public static void main(String[] args){
+		String command = "[1 -1 1 1 0 110][2 -2 1 0 2 150]";
+		System.out.println(command.substring(command.indexOf("[") + 1, command.indexOf("]")));
+		System.out.println(command.substring(command.indexOf("]")+1));
 	}
 
 	/**

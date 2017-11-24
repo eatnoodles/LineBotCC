@@ -77,7 +77,7 @@ public class NudoCCUtil {
 	
 	public static final String ROLL_COMMAND = "/roll";
 	
-	public static final String GAUSS_COMMAND = "/gauss\r\n";
+	public static final String GAUSS_COMMAND = "/gauss";
 	
 	public static final String NS_COMMAND = "/ns";
 	
