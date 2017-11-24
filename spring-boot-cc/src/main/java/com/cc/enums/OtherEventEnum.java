@@ -22,6 +22,9 @@ public enum OtherEventEnum {
 	USER_ROLL_END(9, ""),
 	EMOJI(10, ""),
 	PARROT(11, ""),
+	FOOD(12, ""),
+	SAVE_FOOD(13, ""),
+	GAUSS(14, ""),
 	NULL(0, StringUtils.EMPTY);
 	
 	private int value;

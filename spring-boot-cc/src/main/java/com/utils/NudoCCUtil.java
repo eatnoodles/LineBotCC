@@ -77,6 +77,8 @@ public class NudoCCUtil {
 	
 	public static final String ROLL_COMMAND = "/roll";
 	
+	public static final String GAUSS_COMMAND = "/gauss\r\n";
+	
 	public static final String NS_COMMAND = "/ns";
 	
 	public static final String GET_USER_ID_COMMAND = "/id";
@@ -112,6 +114,10 @@ public class NudoCCUtil {
 	public static final String USER_ROLL_END_COMMAND = systemProperties.getProperty("roll.command.end");
 	
 	public static final String WCL_USER_COMMANDS = "[mhn]{1}[的]{1}(dps|hps|bossdps|tankhps|playerspeed){1}"; 
+	
+	public static final String FOOD_COMMAND = systemProperties.getProperty("other.command.food");
+	
+	public static final String SAVE_FOOD_COMMAND = "-food ";
 	
 	public static final WoWItemPartsEnum[] enchantsParts = { WoWItemPartsEnum.NECK, WoWItemPartsEnum.SHOULDER,
 															 WoWItemPartsEnum.FINGER1, WoWItemPartsEnum.FINGER2,
