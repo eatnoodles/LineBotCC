@@ -211,7 +211,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		double[] results = gaussUtil.getResult();
 		
 		for (int i = 1; i <= results.length; i++) {
-			sb.append(String.format("C%s={%s}", i, results[i-1]));
+			sb.append(String.format("C%s = %s \r\n", i, results[i-1]));
 		}
 		return new TextMessage(sb.toString());
 	}
