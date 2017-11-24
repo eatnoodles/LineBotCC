@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,12 +126,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 		OtherCommandBean bean = new OtherCommandBean(command, senderId, userId);
 		
 		//other command
-		if (command.equals(NudoCCUtil.FOOD_COMMAND)) {
-			bean.setEventEnum(OtherEventEnum.FOOD);
-		} else if (command.toLowerCase().startsWith(NudoCCUtil.SAVE_FOOD_COMMAND)) {
-			command = command.replaceAll(NudoCCUtil.SAVE_FOOD_COMMAND, StringUtils.EMPTY).trim();
-			bean.setEventEnum(OtherEventEnum.SAVE_FOOD);
-			bean.setCommand(command);
+		if (command.equals(NudoCCUtil.ROLL_COMMAND)) {
+			bean.setEventEnum(OtherEventEnum.ROLL);
 		} else if (command.toLowerCase().startsWith(NudoCCUtil.GAUSS_COMMAND)) {
 			command = command.replaceAll(NudoCCUtil.GAUSS_COMMAND, StringUtils.EMPTY).trim();
 			bean.setEventEnum(OtherEventEnum.GAUSS);
@@ -175,11 +172,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 		if (StringUtils.isNotBlank(commandBean.getErrorMsg())) {
     		return new TextMessage(commandBean.getErrorMsg());
     	} else {
+    		LOG.info(String.format("command={%s}", commandBean.getCommand()));
     		switch (commandBean.getEventEnum()) {
     			case ROLL:
     				return this.getRollMessage(commandBean.getCommand().toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY), commandBean.getSenderId());
     			case GAUSS:
-    				return this.getGaussResult(commandBean.getCommand().toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY));
+    				return this.getGaussResult(commandBean.getCommand().toLowerCase().replace(NudoCCUtil.GAUSS_COMMAND, StringUtils.EMPTY));
 				default:
 					return null;
 			}
