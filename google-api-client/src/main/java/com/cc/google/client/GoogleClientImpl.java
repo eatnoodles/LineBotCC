@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.commons.io.IOUtils;
 
 import com.cc.google.client.exception.GoogleApiException;
+import com.cc.google.shortener.ShortenParam;
 import com.cc.google.shortener.ShortenUrl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -22,7 +23,7 @@ public class GoogleClientImpl implements GoogleClient {
 	
 	@Override
 	public CompletableFuture<ShortenUrl> getShortenURL(String url) {
-		return toFuture(retrofitImpl.getShortenURL(url));
+		return toFuture(retrofitImpl.getShortenURL(new ShortenParam(url)));
 	}
 
 	private static <T> CompletableFuture<T> toFuture(Call<T> callToWrap) {
