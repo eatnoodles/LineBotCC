@@ -131,6 +131,10 @@ public class NudoCCServiceImpl implements INudoCCService {
 			command = command.replaceAll(NudoCCUtil.GAUSS_COMMAND, StringUtils.EMPTY).trim();
 			bean.setEventEnum(OtherEventEnum.GAUSS);
 			bean.setCommand(command);
+		} else if (command.toLowerCase().startsWith(NudoCCUtil.SHORTENER_COMMAND)) {
+			command = command.replaceAll(NudoCCUtil.SHORTENER_COMMAND, StringUtils.EMPTY).trim();
+			bean.setEventEnum(OtherEventEnum.SHORTENER);
+			bean.setCommand(command);
 		}
 		return bean;
 	}
@@ -177,10 +181,22 @@ public class NudoCCServiceImpl implements INudoCCService {
     				return this.getRollMessage(commandBean.getCommand().toLowerCase().replace(NudoCCUtil.ROLL_COMMAND, StringUtils.EMPTY), commandBean.getSenderId());
     			case GAUSS:
     				return this.getGaussResult(commandBean.getCommand().toLowerCase().replace(NudoCCUtil.GAUSS_COMMAND, StringUtils.EMPTY));
+    			case SHORTENER:	
+    				return this.getShortenURL(commandBean.getCommand());
 				default:
 					return null;
 			}
     	}
+	}
+
+	/**
+	 * 
+	 * @param command
+	 * @return
+	 */
+	private Message getShortenURL(String command) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/**

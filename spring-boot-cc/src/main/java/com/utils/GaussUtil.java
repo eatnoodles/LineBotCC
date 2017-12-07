@@ -49,7 +49,6 @@ public class GaussUtil {
 			a[i][k] = 0;
 			for (int j = k + 1; j < n + 1; j++) {
 				a[i][j] = a[i][j] - m * a[k][j];
-				// System.out.println("tt="+m*a[k][j]);
 			}
 		}
 	}
@@ -63,7 +62,6 @@ public class GaussUtil {
 			for (int j = n - 1; j > i; j--) {
 				a[i][n] = a[i][n] - x[j] * a[i][j];
 			}
-			System.out.println(a[i][n]);
 			x[i] = a[i][n] / a[i][i];
 		}
 	}

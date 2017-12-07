@@ -22,6 +22,8 @@ dependencies {
     compile project(':wow-community-model')
     compile project(':warcraft-logs-api-client')
     compile project(':warcraft-logs-model')
+    compile project(':google-api-client')
+    compile project(':google-model')
     compile 'org.springframework.boot:spring-boot-autoconfigure'
     compile 'org.springframework.boot:spring-boot-starter-web'
 

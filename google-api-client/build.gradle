@@ -1,0 +1,12 @@
+
+dependencies {
+    compile project(':google-model')
+    compile 'com.fasterxml.jackson.core:jackson-core'
+    compile 'com.fasterxml.jackson.core:jackson-databind'
+    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    compile 'com.squareup.okhttp3:logging-interceptor'
+    compile 'com.squareup.retrofit2:converter-jackson'
+    compile 'com.squareup.retrofit2:retrofit'
+	compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
+    optional 'org.slf4j:slf4j-api'
+}
