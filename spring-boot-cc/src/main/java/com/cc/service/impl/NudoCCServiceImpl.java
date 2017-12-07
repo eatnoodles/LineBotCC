@@ -18,6 +18,7 @@ import com.cc.bean.IrolCommandBean;
 import com.cc.bean.OtherCommandBean;
 import com.cc.bean.WoWCommandBean;
 import com.cc.enums.OtherEventEnum;
+import com.cc.service.IGoogleService;
 import com.cc.service.IIrolService;
 import com.cc.service.INudoCCService;
 import com.cc.service.IWoWService;
@@ -70,6 +71,9 @@ public class NudoCCServiceImpl implements INudoCCService {
 	
 	@Autowired
 	private IIrolService irolService;
+	
+	@Autowired
+	private IGoogleService googleService;
 		
 	/**
 	 * find line sticker message
@@ -195,8 +199,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 	 * @return
 	 */
 	private Message getShortenURL(String command) {
-		// TODO Auto-generated method stub
-		return null;
+		return googleService.getShortenURL(command);
 	}
 
 	/**
