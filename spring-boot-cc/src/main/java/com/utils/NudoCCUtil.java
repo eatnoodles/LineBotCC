@@ -81,6 +81,8 @@ public class NudoCCUtil {
 	
 	public static final String SHORTENER_COMMAND = "/s ";
 	
+	public static final String LMGFTY_COMMAND = "/lmgfty ";
+	
 	public static final String NS_COMMAND = "/ns";
 	
 	public static final String GET_USER_ID_COMMAND = "/id";

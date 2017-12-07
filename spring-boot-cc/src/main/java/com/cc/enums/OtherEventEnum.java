@@ -26,6 +26,7 @@ public enum OtherEventEnum {
 	SAVE_FOOD(13, ""),
 	GAUSS(14, ""),
 	SHORTENER(15, ""),
+	LMGFTY(16, ""),
 	NULL(0, StringUtils.EMPTY);
 	
 	private int value;

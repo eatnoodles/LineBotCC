@@ -1,6 +1,7 @@
 package com.cc.service.impl;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -139,7 +140,12 @@ public class NudoCCServiceImpl implements INudoCCService {
 			command = command.replaceAll(NudoCCUtil.SHORTENER_COMMAND, StringUtils.EMPTY).trim();
 			bean.setEventEnum(OtherEventEnum.SHORTENER);
 			bean.setCommand(command);
+		} else if (command.toLowerCase().startsWith(NudoCCUtil.LMGFTY_COMMAND)) {
+			command = command.replaceAll(NudoCCUtil.LMGFTY_COMMAND, StringUtils.EMPTY).trim();
+			bean.setEventEnum(OtherEventEnum.LMGFTY);
+			bean.setCommand(command);
 		}
+		
 		return bean;
 	}
 
@@ -187,10 +193,26 @@ public class NudoCCServiceImpl implements INudoCCService {
     				return this.getGaussResult(commandBean.getCommand().toLowerCase().replace(NudoCCUtil.GAUSS_COMMAND, StringUtils.EMPTY));
     			case SHORTENER:	
     				return this.getShortenURL(commandBean.getCommand());
+    			case LMGFTY:
+    				return this.getLmgftyURL(commandBean.getCommand());
 				default:
 					return null;
 			}
     	}
+	}
+
+	/**
+	 * 
+	 * @param command
+	 * @return
+	 */
+	private Message getLmgftyURL(String command) {
+		try {
+			String encodeMsg = URLEncoder.encode(command, "UTF-8");
+			return googleService.getShortenURL(String.format("http://lmgtfy.com/?q=%s", encodeMsg));
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	/**
