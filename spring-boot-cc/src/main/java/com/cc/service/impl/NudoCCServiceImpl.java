@@ -144,6 +144,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 			command = command.replaceAll(NudoCCUtil.LMGFTY_COMMAND, StringUtils.EMPTY).trim();
 			bean.setEventEnum(OtherEventEnum.LMGFTY);
 			bean.setCommand(command);
+		} else if (command.equals(NudoCCUtil.COMM_SAD_COMMAND)) {
+			bean.setEventEnum(OtherEventEnum.SAD);
 		}
 		
 		return bean;
@@ -195,6 +197,8 @@ public class NudoCCServiceImpl implements INudoCCService {
     				return this.getShortenURL(commandBean.getCommand());
     			case LMGFTY:
     				return this.getLmgftyURL(commandBean.getCommand());
+    			case SAD:
+    				return new TextMessage(NudoCCUtil.codeMessage("OTR009"));
 				default:
 					return null;
 			}

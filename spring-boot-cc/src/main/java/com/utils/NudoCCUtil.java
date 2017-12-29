@@ -1,5 +1,6 @@
 package com.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Properties;
@@ -103,6 +104,8 @@ public class NudoCCUtil {
 	
 	public static final String SAD_COMMAND = systemProperties.getProperty("wow.command.sad");
 	
+	public static final String COMM_SAD_COMMAND = systemProperties.getProperty("other.command.sad");
+	
 	public static final String IMG1_COMMAND = "><";
 	
 	public static final String OPEN_COMMAND = "open";
@@ -138,7 +141,7 @@ public class NudoCCUtil {
 	public static double[] zipfDistribution(int populationSize) {
 		double[] ratio = new double[populationSize];
 		for (int x = 0; x < populationSize; ++x){
-			ratio[x] = 1.0 / Math.pow((x + 2), 2);
+			ratio[x] = 1.0 / Math.pow(x + 2, 2);
 		}
 		double sum = 0.0;
 		for (int i = 0; i < ratio.length; ++i)
@@ -173,5 +176,29 @@ public class NudoCCUtil {
 	 */
 	public static String codeMessage(String code, Object... args) {
 		return MessageFormat.format(messageProperties.getProperty(code), args);
+	}
+	
+	/**
+	 * update 最後修改時間
+	 * 
+	 * @param filename
+	 * @param copyTimeFile
+	 */
+	public static void changeFiletime(String filename, String copyTimeFile) {
+
+		File fileToChange = new File(filename);
+		File sourceFile = new File(copyTimeFile);
+		
+//		Date filetime = new Date(fileToChange.lastModified());
+//		System.out.println(filetime.toString());
+
+		if (fileToChange.setLastModified(sourceFile.lastModified()))
+			LOG.info("success!");
+		else
+			LOG.info("Failed!");
+
+//		filetime = new Date(fileToChange.lastModified());
+//		System.out.println(filetime.toString());
+
 	}
 }

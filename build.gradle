@@ -191,13 +191,6 @@ subprojects {
                                     url 'https://opensource.org/licenses/Apache-2.0'
                                 }
                             }
-                            developers {
-                                developer {
-                                    id 'tokuhirom'
-                                    name 'Tokuhiro Matsuno'
-                                    email 'tokuhirom@gmail.com'
-                                }
-                            }
                         }
                     }
                 }

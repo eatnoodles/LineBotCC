@@ -27,6 +27,7 @@ public enum OtherEventEnum {
 	GAUSS(14, ""),
 	SHORTENER(15, ""),
 	LMGFTY(16, ""),
+	SAD(17, ""),
 	NULL(0, StringUtils.EMPTY);
 	
 	private int value;
