@@ -106,6 +106,12 @@ public class NudoCCUtil {
 	
 	public static final String COMM_SAD_COMMAND = systemProperties.getProperty("other.command.sad");
 	
+	public static final String SAKI_COMMAND_1 = "!?";
+	
+	public static final String SAKI_COMMAND_2 = "!!";
+	
+	public static final String SAKI_COMMAND_3 = "?!";
+	
 	public static final String IMG1_COMMAND = "><";
 	
 	public static final String OPEN_COMMAND = "open";

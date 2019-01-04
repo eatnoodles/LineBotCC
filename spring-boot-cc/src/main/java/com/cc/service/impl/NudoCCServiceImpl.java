@@ -146,6 +146,11 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setCommand(command);
 		} else if (command.equals(NudoCCUtil.COMM_SAD_COMMAND)) {
 			bean.setEventEnum(OtherEventEnum.SAD);
+		}  else if (command.equals(NudoCCUtil.SAKI_COMMAND_1) || command.equals(NudoCCUtil.SAKI_COMMAND_2)
+				|| command.equals(NudoCCUtil.SAKI_COMMAND_3)) {
+			bean.setEventEnum(OtherEventEnum.SAKI);
+		} else {
+			return null;
 		}
 		
 		return bean;
@@ -199,10 +204,29 @@ public class NudoCCServiceImpl implements INudoCCService {
     				return this.getLmgftyURL(commandBean.getCommand());
     			case SAD:
     				return new TextMessage(NudoCCUtil.codeMessage("OTR009"));
+    			case SAKI:
+    				return this.getSakiMessage();
 				default:
 					return null;
 			}
     	}
+	}
+
+	/**
+	 * get radom saki message
+	 * 
+	 * @return
+	 */
+	private Message getSakiMessage() {
+		String msg = "";
+		int i = this.probabilityControl(1, 3);
+		switch (i) {
+			case 1:  msg = "!?"; break;
+			case 2:  msg = "!!"; break;
+			case 3:  msg = "?!"; break;
+			default: msg = "!?"; break;
+		}
+		return new TextMessage(msg);
 	}
 
 	/**
