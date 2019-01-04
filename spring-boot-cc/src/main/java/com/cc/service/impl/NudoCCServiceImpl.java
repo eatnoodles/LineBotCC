@@ -130,7 +130,7 @@ public class NudoCCServiceImpl implements INudoCCService {
 		OtherCommandBean bean = new OtherCommandBean(command, senderId, userId);
 		
 		//other command
-		if (command.equals(NudoCCUtil.ROLL_COMMAND)) {
+		if (command.toLowerCase().startsWith(NudoCCUtil.ROLL_COMMAND)) {
 			bean.setEventEnum(OtherEventEnum.ROLL);
 		} else if (command.toLowerCase().startsWith(NudoCCUtil.GAUSS_COMMAND)) {
 			command = command.replaceAll(NudoCCUtil.GAUSS_COMMAND, StringUtils.EMPTY).trim();
