@@ -3,6 +3,7 @@ package com.cc.service.impl;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -146,9 +147,11 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setCommand(command);
 		} else if (command.equals(NudoCCUtil.COMM_SAD_COMMAND)) {
 			bean.setEventEnum(OtherEventEnum.SAD);
-		}  else if (command.equals(NudoCCUtil.SAKI_COMMAND_1) || command.equals(NudoCCUtil.SAKI_COMMAND_2)
+		} else if (command.equals(NudoCCUtil.SAKI_COMMAND_1) || command.equals(NudoCCUtil.SAKI_COMMAND_2)
 				|| command.equals(NudoCCUtil.SAKI_COMMAND_3)) {
 			bean.setEventEnum(OtherEventEnum.SAKI);
+		} else if (Arrays.stream(NudoCCUtil.LOVE_COMMAND).anyMatch(command::equals)) {
+			bean.setEventEnum(OtherEventEnum.LOVE);
 		} else {
 			return null;
 		}
@@ -206,10 +209,21 @@ public class NudoCCServiceImpl implements INudoCCService {
     				return new TextMessage(NudoCCUtil.codeMessage("OTR009"));
     			case SAKI:
     				return this.getSakiMessage();
+    			case LOVE:
+    				return this.getLoveMessage(commandBean.getCommand());
 				default:
 					return null;
 			}
     	}
+	}
+
+	/**
+	 * get love message
+	 * 
+	 * @return
+	 */
+	private Message getLoveMessage(String command) {
+		return new TextMessage(NudoCCUtil.codeMessage("OTR010", command));
 	}
 
 	/**

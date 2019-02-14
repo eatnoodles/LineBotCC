@@ -29,6 +29,7 @@ public enum OtherEventEnum {
 	LMGFTY(16, ""),
 	SAD(17, ""),
 	SAKI(18, ""),
+	LOVE(19, ""),
 	NULL(0, StringUtils.EMPTY);
 	
 	private int value;
