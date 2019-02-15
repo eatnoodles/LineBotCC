@@ -30,6 +30,7 @@ public enum OtherEventEnum {
 	SAD(17, ""),
 	SAKI(18, ""),
 	LOVE(19, ""),
+	TARU(20, ""),
 	NULL(0, StringUtils.EMPTY);
 	
 	private int value;

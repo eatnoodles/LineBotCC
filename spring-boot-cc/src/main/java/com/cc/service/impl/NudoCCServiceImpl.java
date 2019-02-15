@@ -152,6 +152,8 @@ public class NudoCCServiceImpl implements INudoCCService {
 			bean.setEventEnum(OtherEventEnum.SAKI);
 		} else if (Arrays.stream(NudoCCUtil.LOVE_COMMAND).anyMatch(command::equals)) {
 			bean.setEventEnum(OtherEventEnum.LOVE);
+		} else if (command.equals(NudoCCUtil.TARU_COMMAND)) {
+			bean.setEventEnum(OtherEventEnum.TARU);
 		} else {
 			return null;
 		}
@@ -211,6 +213,8 @@ public class NudoCCServiceImpl implements INudoCCService {
     				return this.getSakiMessage();
     			case LOVE:
     				return this.getLoveMessage(commandBean.getCommand());
+    			case TARU:
+    				return new TextMessage(NudoCCUtil.codeMessage("OTR011"));
 				default:
 					return null;
 			}

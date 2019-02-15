@@ -104,6 +104,8 @@ public class NudoCCUtil {
 	
 	public static final String SAD_COMMAND = systemProperties.getProperty("wow.command.sad");
 	
+	public static final String TARU_COMMAND = systemProperties.getProperty("other.command.taru");
+	
 	public static final String[] LOVE_COMMAND = systemProperties.getProperty("other.command.love").split(";");
 	
 	public static final String COMM_SAD_COMMAND = systemProperties.getProperty("other.command.sad");
